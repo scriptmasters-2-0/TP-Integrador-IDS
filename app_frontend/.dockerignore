@@ -1,0 +1,22 @@
+# Compilados / caché
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Entornos virtuales
+.venv
+venv
+env
+
+# Archivos de entorno
+.env
+.env.*
+
+# Control de versiones y varios
+.git
+.gitignore
+README.md
+Dockerfile
+
+# Conservar solo templates y fuentes Python

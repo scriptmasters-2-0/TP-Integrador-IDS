@@ -1,0 +1,14 @@
+from pathlib import Path
+import os
+from dotenv import find_dotenv, load_dotenv
+
+# Localiza y carga el archivo .env más cercano
+env_path = find_dotenv()
+if env_path:
+    load_dotenv(env_path)
+
+# Expone valores de configuración comunes con valores por defecto razonables
+SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret")
+DEBUG = os.environ.get('FLASK_DEBUG', '0') == '1'
+HOST = os.environ.get('FRONTEND_HOST', '127.0.0.1')
+PORT = int(os.environ.get('FRONTEND_PORT', '5000'))

@@ -1,0 +1,55 @@
+services:
+  backend:
+    build:
+      context: ./app_backend/.
+      args:
+        MYPORT: ${BACKEND_PORT}
+    container_name: tp_integrador_backend
+    restart: no
+    depends_on:
+      - db
+    env_file:
+      - .env
+    environment:
+      BACKEND_HOST: 0.0.0.0
+      DB_HOST: tp_integrador_db
+      DB_PORT: 3306
+    ports:
+      - ${BACKEND_PORT}:${BACKEND_PORT}
+
+  frontend:
+    build:
+      context: ./app_frontend/.
+      args:
+        MYPORT: ${FRONTEND_PORT}
+    container_name: tp_integrador_frontend
+    restart: no
+    depends_on:
+      - backend
+    env_file:
+      - .env
+    environment:
+      FRONTEND_HOST: 0.0.0.0
+      BACKEND_HOST: tp_integrador_backend
+    ports:
+      - ${FRONTEND_PORT}:${FRONTEND_PORT}
+
+  db:
+    image: mysql:latest
+    container_name: tp_integrador_db
+    restart: always
+    env_file:
+      - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - 3306:${DB_PORT}
+    volumes:
+      - tp_integrador_db:/var/lib/mysql
+
+volumes:
+  tp_integrador_db:
+    name: tp_integrador_db

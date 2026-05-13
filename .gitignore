@@ -1,10 +1,55 @@
-# Python-generated files
+# Archivos compilados de Python y cachés
 __pycache__/
-*.py[oc]
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Empaquetado y salida de compilación
 build/
 dist/
 wheels/
-*.egg-info
+*.egg-info/
 
-# Virtual environments
-.venv
+# Entornos virtuales
+.venv/
+venv/
+env/
+ENV/
+
+# Archivos de Flask y archivos de ejecución local
+instance/
+.webassets-cache
+*.log
+*.pid
+
+# Variables de entorno y secretos locales
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*password*.txt
+
+# Bases de datos locales y volcados
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+*.sql.gz
+
+# Archivos del sistema operativo e IDEs
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.code-workspace
+
+# Herramientas y archivos temporales
+.cache/
+.tmp/
+tmp/
+temp/
