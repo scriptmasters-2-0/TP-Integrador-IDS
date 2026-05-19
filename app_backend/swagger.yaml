@@ -1,0 +1,1114 @@
+openapi: 3.0.3
+info:
+  title: API de Gestión de Inventario, Préstamos y Penalizaciones
+  description: >
+    Esta API maneja la autenticación de usuarios, administración de perfiles, 
+    control centralizado de stock (materiales, herramientas, placas, libros), 
+    flujo de préstamos/reservas mediante validación por QR, gestión de penalizaciones 
+    y generación de reportes/estadísticas.
+  version: 2.0.0
+servers:
+  - url: /api
+    description: Servidor Base Local
+
+paths:
+  # ==========================================
+  # 1. Autenticación y Accesos (/api/auth)
+  # ==========================================
+  /auth/login:
+    post:
+      tags:
+        - Autenticación
+      summary: Inicia sesión utilizando flask-login
+      description: Valida credenciales y establece la sesión indicando el rol (alumno/docente, bibliotecario/admin).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Autenticación exitosa. Devuelve el rol y los datos de perfil.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Credenciales inválidas.
+        '400':
+          description: Datos de entrada incorrectos.
+
+  /auth/logout:
+    post:
+      tags:
+        - Autenticación
+      summary: Cierra la sesión activa del usuario
+      description: Cierra la sesión actual del usuario.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Sesión cerrada con éxito.
+        '401':
+          description: No autorizado.
+
+  /auth/me:
+    get:
+      tags:
+        - Autenticación
+      summary: Obtener datos del perfil actual
+      description: Devuelve los datos de perfil y el rol del usuario actualmente autenticado.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Datos del usuario autenticado obtenidos correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPerfil'
+        '401':
+          description: No autorizado.
+
+  # ==========================================
+  # 2. Usuarios (/api/users)
+  # ==========================================
+  /users:
+    get:
+      tags:
+        - Usuarios
+      summary: Lista los usuarios registrados
+      description: Devuelve una lista completa de usuarios. (Solo Admin).
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Lista de usuarios obtenida con éxito.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserDetail'
+        '403':
+          description: Prohibido. Permisos insuficientes.
+        '401':
+          description: No autorizado.
+
+    post:
+      tags:
+        - Usuarios
+      summary: Alta (ABM) de un nuevo usuario
+      description: Permite registrar un nuevo usuario en el sistema. (Solo Admin).
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+      responses:
+        '201':
+          description: Usuario creado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetail'
+        '400':
+          description: Datos inválidos o conflicto.
+        '403':
+          description: Prohibido. Permisos insuficientes.
+
+  /users/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Identificador único del usuario.
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - Usuarios
+      summary: Obtiene los detalles de un usuario específico
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Detalles del usuario.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetail'
+        '404':
+          description: Usuario no encontrado.
+
+    put:
+      tags:
+        - Usuarios
+      summary: Modifica los datos de un usuario existente
+      description: Reemplazo completo de la información general del usuario.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '200':
+          description: Usuario modificado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetail'
+        '400':
+          description: Datos de actualización inválidos.
+        '404':
+          description: Usuario no encontrado.
+
+    delete:
+      tags:
+        - Usuarios
+      summary: Baja o desactivación lógica de un usuario (Opción 1)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Usuario dado de baja con éxito.
+        '404':
+          description: Usuario no encontrado.
+
+  /users/{id}/status:
+    patch:
+      tags:
+        - Usuarios
+      summary: Activa o desactiva a un usuario (Opción 2)
+      description: Actualización parcial para cambiar únicamente el estado de actividad del usuario.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserStatusUpdate'
+      responses:
+        '200':
+          description: Estado del usuario actualizado.
+        '404':
+          description: Usuario no encontrado.
+
+  /users/{id}/loans:
+    get:
+      tags:
+        - Usuarios
+      summary: Obtiene el historial personal de préstamos/pedidos
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Historial obtenido correctamente.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LoanCompact'
+        '404':
+          description: Alumno no encontrado.
+
+  /users/{id}/penalties:
+    get:
+      tags:
+        - Usuarios
+      summary: Obtiene las penalizaciones vigentes e históricas de un alumno
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Historial de penalizaciones obtenido.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PenaltyDetail'
+        '404':
+          description: Alumno no encontrado.
+
+  # ==========================================
+  # 3. Inventario y Materiales (/api/items)
+  # ==========================================
+  /items:
+    get:
+      tags:
+        - Inventario y Materiales
+      summary: Lista el material disponible
+      description: Acceso público (sin autenticación requerida). Incluye soporte para filtros por tipo, estado y disponibilidad.
+      parameters:
+        - name: category
+          in: query
+          required: false
+          description: Filtrar por tipo o categoría.
+          schema:
+            type: string
+        - name: condition
+          in: query
+          required: false
+          description: Filtrar por condición física.
+          schema:
+            type: string
+        - name: available
+          in: query
+          required: false
+          description: Filtrar solo elementos disponibles.
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Catálogo obtenido correctamente.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ItemDetail'
+
+    post:
+      tags:
+        - Inventario y Materiales
+      summary: Ingreso/creación de un nuevo ítem al inventario
+      description: (Solo Admin).
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemCreate'
+      responses:
+        '201':
+          description: Ítem agregado con éxito.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemDetail'
+        '400':
+          description: Datos incorrectos.
+        '403':
+          description: Prohibido. Permisos insuficientes.
+
+  /items/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - Inventario y Materiales
+      summary: Consulta el detalle, normativas específicas y estado de un ítem particular
+      responses:
+        '200':
+          description: Detalle del ítem.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemDetail'
+        '404':
+          description: Ítem no encontrado.
+
+    put:
+      tags:
+        - Inventario y Materiales
+      summary: Actualiza la información general de un ítem
+      description: (Solo Admin).
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemUpdate'
+      responses:
+        '200':
+          description: Ítem actualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemDetail'
+        '403':
+          description: Prohibido.
+        '404':
+          description: Ítem no encontrado.
+
+    delete:
+      tags:
+        - Inventario y Materiales
+      summary: Baja definitiva o lógica del ítem del inventario
+      description: (Solo Admin).
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Ítem eliminado.
+        '403':
+          description: Prohibido.
+        '404':
+          description: Ítem no encontrado.
+
+  /items/{id}/condition:
+    patch:
+      tags:
+        - Inventario y Materiales
+      summary: Actualiza específicamente el estado o condición física del ítem
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemConditionUpdate'
+      responses:
+        '200':
+          description: Condición actualizada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemDetail'
+        '404':
+          description: Ítem no encontrado.
+
+  # ==========================================
+  # 4. Préstamos y Solicitudes (/api/loans)
+  # ==========================================
+  /loans:
+    get:
+      tags:
+        - Préstamos y Reservas
+      summary: Lista los préstamos
+      description: Admin ve todos, el alumno ve los propios. Permite filtrar por estado, fechas o disponibilidad.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [Pendiente, Aprobado, Entregado, Devuelto, Rechazado]
+        - name: startDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Lista de préstamos obtenida.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LoanDetail'
+
+    post:
+      tags:
+        - Préstamos y Reservas
+      summary: Crea una nueva solicitud de reserva
+      description: Valida disponibilidad, sanciones y límites.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoanCreate'
+      responses:
+        '201':
+          description: Reserva creada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoanDetail'
+        '400':
+          description: Validaciones fallidas.
+
+  /loans/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - Préstamos y Reservas
+      summary: Obtiene los detalles completos de un préstamo o solicitud
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Detalles devueltos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoanDetail'
+        '404':
+          description: Préstamo no encontrado.
+
+  /loans/{id}/status:
+    patch:
+      tags:
+        - Préstamos y Reservas
+      summary: Cambia el estado del préstamo
+      description: (Solo Admin).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoanStatusUpdate'
+      responses:
+        '200':
+          description: Estado actualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoanDetail'
+        '403':
+          description: Prohibido.
+        '404':
+          description: Préstamo no encontrado.
+
+  # ==========================================
+  # 5. Códigos QR (/api/qr)
+  # ==========================================
+  /qr/loans/{loan_id}:
+    get:
+      tags:
+        - Códigos QR
+      summary: Genera o devuelve el código QR dinámico
+      description: Devuelve el código QR asociado al préstamo aprobado.
+      parameters:
+        - name: loan_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Código QR generado/obtenido correctamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  qrData:
+                    type: string
+                    description: Contenido o representación base64 del QR.
+        '404':
+          description: Préstamo no encontrado.
+
+  # ==========================================
+  # 6. Penalizaciones (/api/penalties)
+  # ==========================================
+  /penalties:
+    get:
+      tags:
+        - Penalizaciones
+      summary: Lista general de penalizaciones activas e históricas
+      description: (Solo Admin).
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Listado obtenido.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PenaltyDetail'
+        '403':
+          description: Prohibido.
+
+    post:
+      tags:
+        - Penalizaciones
+      summary: Genera una nueva penalización manual a un alumno
+      description: (Solo Admin).
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PenaltyCreate'
+      responses:
+        '201':
+          description: Penalización creada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PenaltyDetail'
+        '400':
+          description: Error en datos.
+        '403':
+          description: Prohibido.
+
+  /penalties/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - Penalizaciones
+      summary: Obtiene el detalle de una penalización específica
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Detalle obtenido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PenaltyDetail'
+        '404':
+          description: Penalización no encontrada.
+
+    put:
+      tags:
+        - Penalizaciones
+      summary: Modifica o levanta una penalización reemplazando el registro completo
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PenaltyUpdate'
+      responses:
+        '200':
+          description: Penalización reemplazada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PenaltyDetail'
+        '404':
+          description: Penalización no encontrada.
+
+    patch:
+      tags:
+        - Penalizaciones
+      summary: Actualiza parcialmente los datos de una penalización
+      description: Ajusta severidad, agrega notas o la marca como resuelta.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PenaltyPatchUpdate'
+      responses:
+        '200':
+          description: Penalización actualizada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PenaltyDetail'
+        '404':
+          description: Penalización no encontrada.
+
+  # ==========================================
+  # 7. Reportes y Estadísticas (/api/reports)
+  # ==========================================
+  /reports:
+    get:
+      tags:
+        - Reportes y Estadísticas
+      summary: Endpoint unificado y centralizado para la generación de reportes
+      description: (Solo Admin). Soporta Dashboard, demanda, morosidad, historial, inventario mediante query params.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: type
+          in: query
+          required: true
+          description: Tipo de reporte a generar.
+          schema:
+            type: string
+            enum: [dashboard, demand, overdue, history, inventory]
+        - name: format
+          in: query
+          required: false
+          description: Formato de salida del reporte.
+          schema:
+            type: string
+            enum: [json, pdf]
+            default: pdf
+      responses:
+        '200':
+          description: Reporte generado exitosamente.
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            application/json:
+              schema:
+                type: object
+                description: Esquema dinámico dependiendo del type (DashboardData, DemandReportItem, etc.)
+        '400':
+          description: Parámetros inválidos.
+        '403':
+          description: Prohibido.
+
+  # ==========================================
+  # 8. Salud del Sistema (/ping)
+  # ==========================================
+  /ping:
+    get:
+      tags:
+        - Salud del Sistema
+      summary: Verifica que el backend esté activo y respondiendo
+      responses:
+        '200':
+          description: El servicio está operativo.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          example: juan.perez
+        password:
+          type: string
+          format: password
+          example: 'Segura123*'
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        role:
+          type: string
+          enum: [alumno, docente, bibliotecario, admin]
+        user:
+          $ref: '#/components/schemas/UserPerfil'
+
+    UserPerfil:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        lastName:
+          type: string
+        role:
+          type: string
+        career:
+          type: string
+
+    UserDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        lastName:
+          type: string
+        role:
+          type: string
+          enum: [alumno, docente, bibliotecario, admin]
+        career:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+
+    UserCreate:
+      type: object
+      required:
+        - username
+        - email
+        - password
+        - firstName
+        - lastName
+        - role
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+        firstName:
+          type: string
+        lastName:
+          type: string
+        role:
+          type: string
+          enum: [alumno, docente, bibliotecario, admin]
+        career:
+          type: string
+
+    UserUpdate:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        lastName:
+          type: string
+        role:
+          type: string
+          enum: [alumno, docente, bibliotecario, admin]
+        career:
+          type: string
+        isActive:
+          type: boolean
+
+    UserStatusUpdate:
+      type: object
+      required:
+        - isActive
+      properties:
+        isActive:
+          type: boolean
+          example: false
+
+    ItemDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        stockTotal:
+          type: integer
+        stockAvailable:
+          type: integer
+        condition:
+          type: string
+          enum: [Excelente, Bueno, Regular, En Reparacion, Damagado]
+        specificRegulations:
+          type: string
+
+    ItemCreate:
+      type: object
+      required:
+        - name
+        - category
+        - stockTotal
+        - condition
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        stockTotal:
+          type: integer
+        condition:
+          type: string
+          enum: [Excelente, Bueno, Regular]
+        specificRegulations:
+          type: string
+
+    ItemUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        stockTotal:
+          type: integer
+        condition:
+          type: string
+          enum: [Excelente, Bueno, Regular]
+        specificRegulations:
+          type: string
+
+    ItemConditionUpdate:
+      type: object
+      required:
+        - condition
+      properties:
+        condition:
+          type: string
+          enum: [Excelente, Bueno, Regular, En Reparacion, Damagado]
+        notes:
+          type: string
+
+    LoanDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        itemId:
+          type: string
+          format: uuid
+        quantity:
+          type: integer
+        requestDate:
+          type: string
+          format: date-time
+        expectedReturnDate:
+          type: string
+          format: date-time
+        actualReturnDate:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          type: string
+          enum: [Pendiente, Aprobado, Entregado, Devuelto, Rechazado]
+
+    LoanCompact:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        itemName:
+          type: string
+        quantity:
+          type: integer
+        requestDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [Pendiente, Entregado, Devuelto]
+
+    LoanCreate:
+      type: object
+      required:
+        - itemId
+        - quantity
+      properties:
+        itemId:
+          type: string
+          format: uuid
+        quantity:
+          type: integer
+          minimum: 1
+        notes:
+          type: string
+
+    LoanStatusUpdate:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum: [Pendiente, Aprobado, Entregado, Devuelto, Rechazado]
+
+    PenaltyDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        loanId:
+          type: string
+          format: uuid
+          nullable: true
+        reason:
+          type: string
+        status:
+          type: string
+          enum: [Activa, Levantada]
+        severity:
+          type: string
+        notes:
+          type: string
+        createdAt:
+          type: string
+          format: date
+        resolvedAt:
+          type: string
+          format: date
+          nullable: true
+
+    PenaltyCreate:
+      type: object
+      required:
+        - userId
+        - reason
+      properties:
+        userId:
+          type: string
+          format: uuid
+        loanId:
+          type: string
+          format: uuid
+        reason:
+          type: string
+
+    PenaltyUpdate:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum: [Activa, Levantada]
+        resolutionNotes:
+          type: string
+
+    PenaltyPatchUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [Activa, Levantada]
+        severity:
+          type: string
+          example: Alta
+        notes:
+          type: string
+
+    DashboardData:
+      type: object
+      properties:
+        itemsAvailable:
+          type: integer
+        itemsLoaned:
+          type: integer
+        reservationsToday:
+          type: integer
+        activePenaltiesCount:
+          type: integer
+
+    DemandReportItem:
+      type: object
+      properties:
+        career:
+          type: string
+        totalRequests:
+          type: integer
+        mostRequestedCategory:
+          type: string
