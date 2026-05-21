@@ -1,6 +1,3 @@
-CREATE DATABASE IF NOT EXISTS tp_integrador_ids;
-USE tp_integrador_ids;
-
 CREATE TABLE IF NOT EXISTS usuario (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL,
