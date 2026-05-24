@@ -3,8 +3,9 @@ CREATE TABLE IF NOT EXISTS usuario (
     nombre VARCHAR(50) NOT NULL,
     mail VARCHAR(50) UNIQUE NOT NULL,
     score INT DEFAULT 0,
-    rol VARCHAR(20) DEFAULT 'alumno',
-    carrera VARCHAR(50)
+    rol enum('alumno', 'profesor', 'bibliotecario', 'admin') NOT NULL DEFAULT 'alumno',
+    carrera VARCHAR(50),
+    password_hash VARCHAR(255) DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS articulos (
