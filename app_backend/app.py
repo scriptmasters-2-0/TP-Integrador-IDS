@@ -1,8 +1,9 @@
-import config
-from flask import Flask, send_from_directory
 from database import init_database
-from routes.ping import ping_bp
+from flask import Flask, send_from_directory
 from flask_swagger_ui import get_swaggerui_blueprint
+from routes.ping import ping_bp
+from routes.usuarios_route import usuarios_bp
+import config
 import os
 
 app = Flask(__name__)
@@ -10,7 +11,7 @@ app = Flask(__name__)
 init_database()
 
 app.register_blueprint(ping_bp)
-
+app.register_blueprint(usuarios_bp)
 
 HERE = os.path.dirname(__file__)
 
