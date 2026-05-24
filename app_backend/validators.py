@@ -60,8 +60,11 @@ def valid_user_update(data):
         return False, "payload_must_be_object"
 
     allowed = ["nombre", "mail", "rol", "carrera", "score"]
-    if not any(k in data for k in allowed):
+    if not any(keys in data for keys in allowed):
         return False, "no_updatable_fields"
+
+    if any(keys not in allowed for keys in data.keys()):
+        return False, "invalid_fields_present"
 
     if "nombre" in data:
         if data["nombre"] is None:
@@ -117,7 +120,6 @@ def valid_login(data):
     if not isinstance(data, dict):
         return False, "payload_must_be_object"
 
-    # username
     if data.get("username") is None:
         return False, "missing:username"
     if not isinstance(data.get("username"), str):
@@ -127,12 +129,49 @@ def valid_login(data):
     if len(data.get("username").strip()) < 3:
         return False, "invalid_value:username"
 
-    # password
     if data.get("password") is None:
         return False, "missing:password"
     if not isinstance(data.get("password"), str):
         return False, "invalid_type:password"
     if data.get("password").strip() == "":
         return False, "empty:password"
+
+    return True, None
+
+
+def valid_penalty_patch(data):
+    if not isinstance(data, dict):
+        return False, "payload_must_be_object"
+
+    allowed = ["status", "severity", "notes"]
+    if not any(keys in data for keys in allowed):
+        return False, "no_updatable_fields"
+
+    if any(keys not in allowed for keys in data.keys()):
+        return False, "invalid_fields_present"
+
+    if "status" in data:
+        if data.get("status") is None:
+            return False, "null:status"
+        if not isinstance(data.get("status"), str):
+            return False, "invalid_type:status"
+        if data.get("status") not in ("Activa", "Levantada"):
+            return False, "invalid_value:status"
+
+    if "severity" in data:
+        if data.get("severity") is None:
+            return False, "null:severity"
+        if not isinstance(data.get("severity"), str):
+            return False, "invalid_type:severity"
+        if data.get("severity").strip() == "":
+            return False, "empty:severity"
+
+    if "notes" in data:
+        if data.get("notes") is None:
+            return False, "null:notes"
+        if not isinstance(data.get("notes"), str):
+            return False, "invalid_type:notes"
+        if data.get("notes").strip() == "":
+            return False, "empty:notes"
 
     return True, None

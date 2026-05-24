@@ -170,7 +170,7 @@ def update_user(user_id):
     keysToUpdate = data.keys()
 
     set_clause = ", ".join([f"{f} = %({f})s" for f in keysToUpdate])
-    data["user_id"] = user_id
+    data.update({"user_id": user_id})
 
     cursor = None
 

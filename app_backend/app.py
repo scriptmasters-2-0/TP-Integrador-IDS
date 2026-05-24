@@ -4,6 +4,7 @@ from flask_swagger_ui import get_swaggerui_blueprint
 from routes.ping import ping_bp
 from routes.usuarios_route import usuarios_bp
 from routes.auth_route import auth_bp
+from routes.penalties_route import penalties_bp
 import config
 import os
 
@@ -14,6 +15,7 @@ init_database()
 app.register_blueprint(ping_bp)
 app.register_blueprint(usuarios_bp)
 app.register_blueprint(auth_bp)
+app.register_blueprint(penalties_bp)
 
 HERE = os.path.dirname(__file__)
 
