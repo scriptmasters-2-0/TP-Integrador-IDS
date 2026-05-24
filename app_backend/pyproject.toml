@@ -8,4 +8,6 @@ dependencies = [
     "mysql-connector-python>=9.7.0",
     "python-dotenv>=1.2.2",
     "flask-swagger-ui>=3.0.3",
+    "bcrypt>=5.0.0",
+    "pyjwt>=2.13.0",
 ]

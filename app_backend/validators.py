@@ -103,11 +103,36 @@ def valid_user_update(data):
             return False, "invalid_value:score"
 
     if "carrera" in data:
-        if data["carrera"] is None:
+        if data.get("carrera") is None:
             return False, "null:carrera"
-        if not isinstance(data["carrera"], str):
+        if not isinstance(data.get("carrera"), str):
             return False, "invalid_type:carrera"
-        if data["carrera"].strip() == "":
+        if data.get("carrera").strip() == "":
             return False, "empty:carrera"
+
+    return True, None
+
+
+def valid_login(data):
+    if not isinstance(data, dict):
+        return False, "payload_must_be_object"
+
+    # username
+    if data.get("username") is None:
+        return False, "missing:username"
+    if not isinstance(data.get("username"), str):
+        return False, "invalid_type:username"
+    if data.get("username").strip() == "":
+        return False, "empty:username"
+    if len(data.get("username").strip()) < 3:
+        return False, "invalid_value:username"
+
+    # password
+    if data.get("password") is None:
+        return False, "missing:password"
+    if not isinstance(data.get("password"), str):
+        return False, "invalid_type:password"
+    if data.get("password").strip() == "":
+        return False, "empty:password"
 
     return True, None
