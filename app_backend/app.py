@@ -1,12 +1,14 @@
-from database import init_database
+import os
+
 from flask import Flask, send_from_directory
 from flask_swagger_ui import get_swaggerui_blueprint
-from routes.ping import ping_bp
-from routes.usuarios_route import usuarios_bp
+
+import config
+from database import init_database
 from routes.auth_route import auth_bp
 from routes.penalties_route import penalties_bp
-import config
-import os
+from routes.ping import ping_bp
+from routes.usuarios_route import usuarios_bp
 
 app = Flask(__name__)
 

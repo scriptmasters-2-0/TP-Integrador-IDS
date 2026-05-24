@@ -1,19 +1,20 @@
+import bcrypt
+import jwt
 from flask import Blueprint, jsonify, request
+
 from config import JWT_ALGORITHM, JWT_SECRET
 from database import obtener_conexion
-from validators import valid_login
 from http_codes_and_messages import (
-    HTTP_UNAUTHORIZED,
-    HTTP_OK,
     HTTP_BAD_REQUEST,
     HTTP_INTERNAL_SERVER_ERROR,
+    HTTP_OK,
+    HTTP_UNAUTHORIZED,
     MSG_BAD_REQUEST,
     MSG_DB_CONNECTION_FAILED,
-    MSG_UNAUTHORIZED,
     MSG_INTERNAL_SERVER_ERROR,
+    MSG_UNAUTHORIZED,
 )
-import jwt
-import bcrypt
+from validators import valid_login
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -141,7 +142,9 @@ def login():
 
         token = generar_token(user.get("id"), user.get("rol"))
 
-        return jsonify({"token": token, "role": user.get("rol"), "user": user_profile}), HTTP_OK
+        return jsonify(
+            {"token": token, "role": user.get("rol"), "user": user_profile}
+        ), HTTP_OK
 
     except Exception:
         return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR

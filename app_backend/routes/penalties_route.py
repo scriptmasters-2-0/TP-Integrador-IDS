@@ -1,18 +1,20 @@
 import traceback
-from database import obtener_conexion
+
 import mysql.connector
 from flask import Blueprint, jsonify, request
-from validators import valid_id, valid_penalty_patch
+
+from database import obtener_conexion
 from http_codes_and_messages import (
-    HTTP_OK,
     HTTP_BAD_REQUEST,
-    HTTP_NOT_FOUND,
     HTTP_INTERNAL_SERVER_ERROR,
-    MSG_DB_CONNECTION_FAILED,
-    MSG_NOT_FOUND,
+    HTTP_NOT_FOUND,
+    HTTP_OK,
     MSG_BAD_REQUEST,
+    MSG_DB_CONNECTION_FAILED,
     MSG_INTERNAL_SERVER_ERROR,
+    MSG_NOT_FOUND,
 )
+from validators import valid_id, valid_penalty_patch
 
 penalties_bp = Blueprint("penalties", __name__)
 
@@ -39,14 +41,15 @@ def patch_penalty(penalty_id):
     if "status" in data:
         data.update({"activa": 1 if data.get("status") == "Activa" else 0})
         data.pop("status")
-        if not data.get("activa"):
-            keysToUpdate.append("fecha_fin = NOW()")
 
     if "notes" in data:
         data.update({"motivo": data.get("notes")})
         data.pop("notes")
 
     keysToUpdate = data.keys()
+
+    if not data.get("activa", True):
+        keysToUpdate.append("fecha_fin = NOW()")
 
     set_clause = ", ".join([f"{f} = %({f})s" for f in keysToUpdate])
     data.update({"penalty_id": penalty_id})

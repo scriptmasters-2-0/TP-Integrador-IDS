@@ -1,5 +1,3 @@
-
-
 def valid_id(value):
     if value is None:
         return None
@@ -60,11 +58,8 @@ def valid_user_update(data):
         return False, "payload_must_be_object"
 
     allowed = ["nombre", "mail", "rol", "carrera", "score"]
-    if not any(keys in data for keys in allowed):
+    if not any(k in data for k in allowed):
         return False, "no_updatable_fields"
-
-    if any(keys not in allowed for keys in data.keys()):
-        return False, "invalid_fields_present"
 
     if "nombre" in data:
         if data["nombre"] is None:
@@ -144,11 +139,8 @@ def valid_penalty_patch(data):
         return False, "payload_must_be_object"
 
     allowed = ["status", "severity", "notes"]
-    if not any(keys in data for keys in allowed):
+    if not any(k in data for k in allowed):
         return False, "no_updatable_fields"
-
-    if any(keys not in allowed for keys in data.keys()):
-        return False, "invalid_fields_present"
 
     if "status" in data:
         if data.get("status") is None:
