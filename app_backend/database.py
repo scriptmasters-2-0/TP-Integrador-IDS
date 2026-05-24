@@ -28,7 +28,7 @@ def init_database():
     conn = obtener_conexion()
     cursor = None
 
-    if conn == None:
+    if conn is None:
         return
 
     try:
