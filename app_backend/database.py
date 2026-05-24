@@ -1,6 +1,8 @@
-import mysql.connector
-import config
 import os
+
+import mysql.connector
+
+import config
 
 
 def obtener_conexion():

@@ -1,21 +1,21 @@
-import traceback
-from database import obtener_conexion
 import mysql.connector
 from flask import Blueprint, jsonify, request
-from validators import valid_user, valid_user_update, valid_id
+
+from database import obtener_conexion
 from http_codes_and_messages import (
-    HTTP_NOT_FOUND,
-    HTTP_OK,
-    HTTP_CREATED,
     HTTP_BAD_REQUEST,
     HTTP_CONFLICT,
+    HTTP_CREATED,
     HTTP_INTERNAL_SERVER_ERROR,
-    MSG_DB_CONNECTION_FAILED,
-    MSG_NOT_FOUND,
+    HTTP_NOT_FOUND,
+    HTTP_OK,
     MSG_BAD_REQUEST,
     MSG_CONFLICT,
+    MSG_DB_CONNECTION_FAILED,
     MSG_INTERNAL_SERVER_ERROR,
+    MSG_NOT_FOUND,
 )
+from validators import valid_id, valid_user, valid_user_update
 
 usuarios_bp = Blueprint("usuarios", __name__)
 
