@@ -1,4 +1,5 @@
 from database import obtener_conexion
+import mysql.connector
 from flask import Blueprint, jsonify, request
 from validators import valid_user
 from http_codes_and_messages import (
@@ -6,10 +7,12 @@ from http_codes_and_messages import (
     HTTP_OK,
     HTTP_CREATED,
     HTTP_BAD_REQUEST,
+    HTTP_CONFLICT,
     HTTP_INTERNAL_SERVER_ERROR,
     MSG_DB_CONNECTION_FAILED,
     MSG_NOT_FOUND,
     MSG_BAD_REQUEST,
+    MSG_CONFLICT,
     MSG_INTERNAL_SERVER_ERROR,
 )
 
@@ -93,30 +96,36 @@ def create_user():
 
     try:
         cursor = conn.cursor()
-        sql = "INSERT INTO usuario (nombre, mail, rol, carrera) VALUES (%(nombre)s, %(mail)s, %(rol)s, %(carrera)s)"
+        sql = "INSERT INTO usuario (nombre, mail, score, rol, carrera) VALUES (%(nombre)s, %(mail)s, %(score)s, %(rol)s, %(carrera)s)"
         values = {
-            "nombre": f"{data.get('firstName')} {data.get('lastName')}",
-            "mail": data.get("email"),
-            "rol": data.get("role"),
-            "carrera": data.get("career"),
+            "nombre": data.get("nombre"),
+            "mail": data.get("mail"),
+            "score": data.get("score") if data.get("score") is not None else 0,
+            "rol": data.get("rol"),
+            "carrera": data.get("carrera"),
         }
         cursor.execute(sql, values)
         conn.commit()
-
         user_id = cursor.lastrowid
 
         user = {
             "id": user_id,
-            "username": data.get("username"),
-            "email": data.get("email"),
-            "firstName": data.get("firstName"),
-            "lastName": data.get("lastName"),
-            "role": data.get("role"),
-            "career": data.get("career"),
-            "isActive": True,
+            "nombre": data.get("nombre"),
+            "mail": data.get("mail"),
+            "score": data.get("score") if data.get("score") is not None else 0,
+            "rol": data.get("rol"),
+            "carrera": data.get("carrera"),
         }
 
         return jsonify(user), HTTP_CREATED
+
+    except mysql.connector.Error as err:
+        try:
+            if err.errno == 1062:
+                return jsonify({"error": MSG_CONFLICT, "detail": "duplicate_entry"}), HTTP_CONFLICT
+        except Exception:
+            pass
+        return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
 
     except Exception:
         return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
