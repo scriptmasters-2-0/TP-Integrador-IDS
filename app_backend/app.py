@@ -1,3 +1,5 @@
+"""Backend Flask application entrypoint."""
+
 import os
 
 from flask import Flask, send_from_directory
@@ -6,6 +8,7 @@ from flask_swagger_ui import get_swaggerui_blueprint
 import config
 from database import init_database
 from routes.auth_route import auth_bp
+from routes.items_route import items_bp
 from routes.penalties_route import penalties_bp
 from routes.ping import ping_bp
 from routes.usuarios_route import usuarios_bp
@@ -18,12 +21,14 @@ app.register_blueprint(ping_bp)
 app.register_blueprint(usuarios_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(penalties_bp)
+app.register_blueprint(items_bp)
 
 HERE = os.path.dirname(__file__)
 
 
 @app.route("/swagger.yaml")
 def swagger_spec():
+    """Serve the OpenAPI specification file."""
     return send_from_directory(HERE, "swagger.yaml")
 
 

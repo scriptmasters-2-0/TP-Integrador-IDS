@@ -1,4 +1,10 @@
+"""Request payload validators."""
+
+MIN_USERNAME_LENGTH = 3
+
+
 def valid_id(value):
+    """Validate positive integer identifiers."""
     if value is None:
         return None
 
@@ -16,7 +22,8 @@ def valid_id(value):
     return val
 
 
-def valid_user(data):
+def valid_user(data):  # noqa: PLR0911
+    """Validate user creation payload."""
     if not isinstance(data, dict):
         return False, "payload_must_be_object"
 
@@ -53,7 +60,8 @@ def valid_user(data):
     return True, None
 
 
-def valid_user_update(data):
+def valid_user_update(data):  # noqa: PLR0911, PLR0912
+    """Validate user update payload."""
     if not isinstance(data, dict):
         return False, "payload_must_be_object"
 
@@ -111,7 +119,8 @@ def valid_user_update(data):
     return True, None
 
 
-def valid_login(data):
+def valid_login(data):  # noqa: PLR0911
+    """Validate login payload."""
     if not isinstance(data, dict):
         return False, "payload_must_be_object"
 
@@ -121,7 +130,7 @@ def valid_login(data):
         return False, "invalid_type:username"
     if data.get("username").strip() == "":
         return False, "empty:username"
-    if len(data.get("username").strip()) < 3:
+    if len(data.get("username").strip()) < MIN_USERNAME_LENGTH:
         return False, "invalid_value:username"
 
     if data.get("password") is None:
@@ -134,7 +143,171 @@ def valid_login(data):
     return True, None
 
 
-def valid_penalty_patch(data):
+def _valid_required_string(data, field):
+    value = data.get(field)
+    if value is None:
+        return False, f"missing:{field}"
+    if not isinstance(value, str):
+        return False, f"invalid_type:{field}"
+    if value.strip() == "":
+        return False, f"empty:{field}"
+
+    return True, None
+
+
+def _valid_optional_string(data, field):
+    if field not in data:
+        return True, None
+    if data.get(field) is None:
+        return False, f"null:{field}"
+    if not isinstance(data.get(field), str):
+        return False, f"invalid_type:{field}"
+    if data.get(field).strip() == "":
+        return False, f"empty:{field}"
+
+    return True, None
+
+
+def _valid_optional_positive_int(data, field):
+    if field not in data:
+        return True, None
+    if data.get(field) is None:
+        return False, f"null:{field}"
+    try:
+        value = int(data.get(field))
+    except (ValueError, TypeError):
+        return False, f"invalid_type:{field}"
+    if value <= 0:
+        return False, f"invalid_value:{field}"
+
+    return True, None
+
+
+def _valid_optional_non_negative_int(data, field):
+    if field not in data:
+        return True, None
+    if data.get(field) is None:
+        return False, f"null:{field}"
+    try:
+        value = int(data.get(field))
+    except (ValueError, TypeError):
+        return False, f"invalid_type:{field}"
+    if value < 0:
+        return False, f"invalid_value:{field}"
+
+    return True, None
+
+
+def _valid_optional_bool(data, field):
+    if field not in data:
+        return True, None
+    if not isinstance(data.get(field), bool):
+        return False, f"invalid_type:{field}"
+
+    return True, None
+
+
+def valid_item(data):  # noqa: PLR0911
+    """Validate item creation payload."""
+    if not isinstance(data, dict):
+        return False, "payload_must_be_object"
+
+    for field in ("nombre_art", "tipo", "seccion"):
+        is_valid, error = _valid_required_string(data, field)
+        if not is_valid:
+            return False, error
+
+    if data.get("prestacion_maxima") is None:
+        return False, "missing:prestacion_maxima"
+
+    is_valid, error = _valid_optional_positive_int(data, "prestacion_maxima")
+    if not is_valid:
+        return False, error
+
+    is_valid, error = _valid_optional_non_negative_int(data, "stock")
+    if not is_valid:
+        return False, error
+
+    is_valid, error = _valid_optional_bool(data, "necesita_reparacion")
+    if not is_valid:
+        return False, error
+
+    return True, None
+
+
+def valid_item_update(data):  # noqa: PLR0911
+    """Validate item update payload."""
+    if not isinstance(data, dict):
+        return False, "payload_must_be_object"
+
+    allowed = [
+        "nombre_art",
+        "tipo",
+        "seccion",
+        "prestacion_maxima",
+        "stock",
+        "necesita_reparacion",
+    ]
+
+    if not any(k in data for k in allowed):
+        return False, "no_updatable_fields"
+
+    invalid_fields = [field for field in data if field not in allowed]
+    if invalid_fields:
+        return False, f"invalid_fields:{','.join(invalid_fields)}"
+
+    for field in ("nombre_art", "tipo", "seccion"):
+        is_valid, error = _valid_optional_string(data, field)
+        if not is_valid:
+            return False, error
+
+    is_valid, error = _valid_optional_positive_int(data, "prestacion_maxima")
+    if not is_valid:
+        return False, error
+
+    is_valid, error = _valid_optional_non_negative_int(data, "stock")
+    if not is_valid:
+        return False, error
+
+    is_valid, error = _valid_optional_bool(data, "necesita_reparacion")
+    if not is_valid:
+        return False, error
+
+    return True, None
+
+
+def valid_item_filters(filters):
+    """Validate and parse item query filters."""
+    parsed_filters = {
+        "tipo": None,
+        "seccion": None,
+        "disponible": None,
+        "necesita_reparacion": None,
+    }
+
+    for field in ("tipo", "seccion"):
+        value = filters.get(field)
+        if value is not None:
+            if value.strip() == "":
+                return False, f"empty:{field}", None
+            parsed_filters[field] = value
+
+    for field in ("disponible", "necesita_reparacion"):
+        value = filters.get(field)
+        if value is not None:
+            normalized = value.lower()
+            if normalized in ("true", "1"):
+                parsed_filters[field] = True
+            elif normalized in ("false", "0"):
+                parsed_filters[field] = False
+            else:
+                return False, f"invalid_value:{field}", None
+
+    return True, None, parsed_filters
+
+
+def valid_penalty_patch(data):  # noqa: PLR0911, PLR0912
+    """Validate penalty partial update payload."""
     if not isinstance(data, dict):
         return False, "payload_must_be_object"
 
