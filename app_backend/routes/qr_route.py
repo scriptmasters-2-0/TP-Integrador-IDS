@@ -1,16 +1,19 @@
-import io
 import base64
+import io
 import json
+
 import qrcode
 from flask import Blueprint, jsonify
-from flask_jwt_extended import jwt_required
-from constants import HTTP_OK, HTTP_NOT_FOUND, QR_TAMANIO, QR_BORDE
+
+from config import QR_BORDE, QR_TAMANIO
 from database import obtener_conexion
+from http_codes_and_messages import HTTP_NOT_FOUND, HTTP_OK
 
-blueprint_qr = Blueprint("qr", __name__)
+qr_bp = Blueprint("qr", __name__)
 
-#pre:  datos es un string no vacío con el contenido a codificar en el QR.
-#post: devuelve un string en base64 que representa la imagen PNG del QR.
+
+# pre:  datos es un string no vacío con el contenido a codificar en el QR.
+# post: devuelve un string en base64 que representa la imagen PNG del QR.
 def generar_qr(datos):
     codigo_qr = qrcode.QRCode(
         version=1,
@@ -29,19 +32,21 @@ def generar_qr(datos):
 
     return base64.b64encode(buffer.getvalue()).decode("utf-8")
 
-#pre:  reserva es un diccionario con las claves: 'id_reserva', 'id_reservado', 'fecha_retiro', 'fecha_regreso'.
-#post: devuelve un string JSON con los datos de la reserva sin información sensible.
+
+# pre:  reserva es un diccionario con las claves: 'id_reserva', 'id_reservado', 'fecha_retiro', 'fecha_regreso'.
+# post: devuelve un string JSON con los datos de la reserva sin información sensible.
 def construir_contenido_qr(reserva):
     datos_qr = {
         "id_reserva": reserva["id_reserva"],
         "id_articulo": reserva["id_reservado"],
         "fecha_retiro": str(reserva["fecha_retiro"]),
-        "fecha_regreso": str(reserva["fecha_regreso"])
+        "fecha_regreso": str(reserva["fecha_regreso"]),
     }
     return json.dumps(datos_qr)
 
-#pre: -
-#post: devuelve un diccionario con los datos de la reserva si existe, None si no se encuentra.
+
+# pre: -
+# post: devuelve un diccionario con los datos de la reserva si existe, None si no se encuentra.
 def obtener_reserva_por_id(id_reserva):
     conexion = obtener_conexion()
     cursor = conexion.cursor(dictionary=True)
@@ -51,10 +56,10 @@ def obtener_reserva_por_id(id_reserva):
     conexion.close()
     return reserva
 
-#pre:  el request incluye un JWT válido. id_reserva es un entero correspondiente a una reserva existente.
-#post: devuelve 200 con 'id_reserva' y 'qrData' (imagen en base64), 404 si no existe la reserva.
-@blueprint_qr.route("/api/qr/loans/<int:id_reserva>", methods=["GET"])
-@jwt_required()
+
+# pre:  el request incluye un JWT válido. id_reserva es un entero correspondiente a una reserva existente.
+# post: devuelve 200 con 'id_reserva' y 'qrData' (imagen en base64), 404 si no existe la reserva.
+@qr_bp.route("/api/qr/loans/<int:id_reserva>", methods=["GET"])
 def obtener_qr_reserva(id_reserva):
     reserva = obtener_reserva_por_id(id_reserva)
 
@@ -64,7 +69,4 @@ def obtener_qr_reserva(id_reserva):
     contenido_qr = construir_contenido_qr(reserva)
     imagen_qr = generar_qr(contenido_qr)
 
-    return jsonify({
-        "id_reserva": id_reserva,
-        "qrData": imagen_qr
-    }), HTTP_OK
+    return jsonify({"id_reserva": id_reserva, "qrData": imagen_qr}), HTTP_OK

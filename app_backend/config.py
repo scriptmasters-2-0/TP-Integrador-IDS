@@ -26,3 +26,7 @@ DB_PASSWORD = os.environ.get("DB_PASSWORD", "password")
 JWT_SECRET = os.environ.get("JWT_SECRET", "secret")
 JWT_EXPIRATION_HORAS = int(os.environ.get("JWT_EXPIRATION_HORAS", 8))
 JWT_ALGORITHM = os.environ.get("JWT_ALGORITHM", "HS256")
+
+# QR settings
+QR_BORDE = int(os.environ.get("QR_BORDER", 4))
+QR_TAMANIO = int(os.environ.get("QR_TAMANIO", 10))

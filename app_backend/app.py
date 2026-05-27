@@ -12,18 +12,20 @@ from routes.items_route import items_bp
 from routes.loans_route import loans_bp
 from routes.penalties_route import penalties_bp
 from routes.ping import ping_bp
-from routes.usuarios_route import usuarios_bp
+from routes.qr_route import qr_bp
+from routes.users_routes import users_bp
 
 app = Flask(__name__)
 
 init_database()
 
-app.register_blueprint(ping_bp)
-app.register_blueprint(usuarios_bp)
 app.register_blueprint(auth_bp)
-app.register_blueprint(penalties_bp)
 app.register_blueprint(items_bp)
 app.register_blueprint(loans_bp)
+app.register_blueprint(penalties_bp)
+app.register_blueprint(ping_bp)
+app.register_blueprint(users_bp)
+app.register_blueprint(qr_bp)
 
 HERE = os.path.dirname(__file__)
 
@@ -40,6 +42,7 @@ swaggerui_bp = get_swaggerui_blueprint(
     SWAGGER_URL, API_URL, config={"app_name": "TP Integrador API"}
 )
 app.register_blueprint(swaggerui_bp, url_prefix=SWAGGER_URL)
+
 
 if __name__ == "__main__":
     app.run(host=config.HOST, port=config.PORT, debug=config.DEBUG)
