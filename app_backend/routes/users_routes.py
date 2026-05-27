@@ -1,86 +1,168 @@
-"""Routes for user and penalty endpoints."""
-
 import mysql.connector
 from flask import Blueprint, jsonify, request
+
 from database import obtener_conexion
-
-HTTP_OK = 200
-HTTP_BAD_REQUEST = 400
-HTTP_NOT_FOUND = 404
-HTTP_INTERNAL_SERVER_ERROR = 500
-
-MSG_BAD_REQUEST = "Invalid request data"
-MSG_NOT_FOUND = "Resource not found"
-MSG_DB_CONNECTION_FAILED = "Database connection failed"
-MSG_INTERNAL_SERVER_ERROR = "An internal server error occurred"
+from http_codes_and_messages import (
+    HTTP_BAD_REQUEST,
+    HTTP_CONFLICT,
+    HTTP_CREATED,
+    HTTP_INTERNAL_SERVER_ERROR,
+    HTTP_NOT_FOUND,
+    HTTP_OK,
+    MSG_BAD_REQUEST,
+    MSG_CONFLICT,
+    MSG_DB_CONNECTION_FAILED,
+    MSG_INTERNAL_SERVER_ERROR,
+    MSG_NOT_FOUND,
+)
+from validators import valid_id, valid_user, valid_user_update
 
 users_bp = Blueprint("users", __name__)
 
 
-def valid_id(identifier):
-    """Validate that the ID is a positive integer."""
-    if isinstance(identifier, int) and identifier > 0:
-        return identifier
-    return None
+# pre:  id_usuario es un entero positivo.
+# post: marca el usuario como inactivo, retorna True si se actualizó, False si no existía.
+def desactivar_usuario_db(id_usuario):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    cursor.execute("UPDATE usuario SET activo = FALSE WHERE id = %s", (id_usuario,))
+    conexion.commit()
+    actualizado = cursor.rowcount > 0
+    cursor.close()
+    conexion.close()
+    return actualizado
 
 
-def format_user(row):
-    """Format database user rows as API responses."""
-    return {
-        "id": row.get("id"),
-        "nombre": row.get("nombre"),
-        "mail": row.get("mail"),
-        "score": row.get("score"),
-        "rol": row.get("rol"),
-        "carrera": row.get("carrera"),
-    }
+@users_bp.route("/api/users/<int:user_id>/loans", methods=["GET"])
+def get_user_loans(user_id):
 
-
-def format_penalty(row):
-    """Format database penalty rows as API responses."""
-    return {
-        "id": row.get("id"),
-        "id_usuario": row.get("id_usuario"),
-        "motivo": row.get("motivo"),
-        "fecha_inicio": row.get("fecha_inicio").isoformat() if row.get("fecha_inicio") else None,
-        "fecha_fin": row.get("fecha_fin").isoformat() if row.get("fecha_fin") else None,
-        "activa": bool(row.get("activa")),
-    }
-
-
-@users_bp.route("/api/users", methods=["GET"])
-def get_users():
-    """Return all users registered in the system."""
     conn = obtener_conexion()
     if conn is None:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
 
-    sql = "SELECT id, nombre, mail, score, rol, carrera FROM usuario ORDER BY id"
     cursor = None
 
     try:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute(sql)
-        users = [format_user(row) for row in cursor.fetchall()]
 
-        return jsonify(users), HTTP_OK
+        sql_query = """
+            SELECT r.id,
+                   r.id_reservado,
+                   a.nombre_art AS nombre_articulo,
+                   r.estado_reserva,
+                   r.fecha_retiro,
+                   r.fecha_regreso
+            FROM reserva r
+            LEFT JOIN articulos a ON r.id_reservado = a.id
+            WHERE r.id_usuario = %(user_id)s
+            ORDER BY r.fecha_retiro DESC
+        """
+        values = {"user_id": user_id}
 
-    except mysql.connector.Error:
+        cursor.execute(sql_query, values)
+        loans = cursor.fetchall()
+
+        if len(loans) == 0:
+            return (
+                jsonify({"message": MSG_NOT_FOUND}),
+                HTTP_NOT_FOUND,
+            )
+
+        return jsonify(loans), HTTP_OK
+
+    except Exception:
+        return (
+            jsonify({"error": MSG_INTERNAL_SERVER_ERROR}),
+            HTTP_INTERNAL_SERVER_ERROR,
+        )
+
+    finally:
+        try:
+            cursor.close()
+        except Exception:
+            pass
+        try:
+            conn.close()
+        except Exception:
+            pass
+
+
+@users_bp.route("/api/users", methods=["POST"])
+def create_user():
+
+    conn = obtener_conexion()
+    if conn is None:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
+
+    try:
+        data = request.get_json()
+    except Exception:
+        data = None
+
+    if not data:
+        return jsonify({"error": MSG_BAD_REQUEST}), HTTP_BAD_REQUEST
+
+    is_valid, error = valid_user(data)
+    if not is_valid:
+        return jsonify({"error": MSG_BAD_REQUEST, "detail": error}), HTTP_BAD_REQUEST
+
+    cursor = None
+
+    try:
+        cursor = conn.cursor()
+        sql = "INSERT INTO usuario (nombre, mail, score, rol, carrera) VALUES (%(nombre)s, %(mail)s, %(score)s, %(rol)s, %(carrera)s)"
+        values = {
+            "nombre": data.get("nombre"),
+            "mail": data.get("mail"),
+            "score": data.get("score") if data.get("score") is not None else 0,
+            "rol": data.get("rol"),
+            "carrera": data.get("carrera"),
+        }
+        cursor.execute(sql, values)
+        conn.commit()
+        user_id = cursor.lastrowid
+
+        user = {
+            "id": user_id,
+            "nombre": data.get("nombre"),
+            "mail": data.get("mail"),
+            "score": data.get("score") if data.get("score") is not None else 0,
+            "rol": data.get("rol"),
+            "carrera": data.get("carrera"),
+        }
+
+        return jsonify(user), HTTP_CREATED
+
+    except mysql.connector.Error as err:
+        try:
+            if err.errno == 1062:
+                return (
+                    jsonify({"error": MSG_CONFLICT, "detail": "duplicate_entry"}),
+                    HTTP_CONFLICT,
+                )
+        except Exception:
+            pass
+        return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
 
     except Exception:
         return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
 
     finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
+        try:
+            if cursor:
+                cursor.close()
+        except Exception:
+            pass
+        try:
+            if conn:
+                conn.close()
+        except Exception:
+            pass
 
 
-@users_bp.route("/api/users/<int:user_id>", methods=["GET"])
-def get_user(user_id):
-    """Return a specific user by its ID."""
+@users_bp.route("/api/users/<int:user_id>", methods=["PUT"])
+def update_user(user_id):
+
     conn = obtener_conexion()
     if conn is None:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
@@ -88,65 +170,75 @@ def get_user(user_id):
     if valid_id(user_id) is None:
         return jsonify({"error": MSG_BAD_REQUEST}), HTTP_BAD_REQUEST
 
-    sql = "SELECT id, nombre, mail, score, rol, carrera FROM usuario WHERE id = %(user_id)s"
+    try:
+        data = request.get_json()
+
+    except Exception:
+        data = None
+
+    is_valid, error = valid_user_update(data)
+    if not is_valid:
+        return jsonify({"error": MSG_BAD_REQUEST, "detail": error}), HTTP_BAD_REQUEST
+
+    keysToUpdate = data.keys()
+
+    set_clause = ", ".join([f"{f} = %({f})s" for f in keysToUpdate])
+    data.update({"user_id": user_id})
+
     cursor = None
 
     try:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute(sql, {"user_id": user_id})
+        sql = f"UPDATE usuario SET {set_clause} WHERE id = %(user_id)s"
+        cursor.execute(sql, data)
+        conn.commit()
+
+        if cursor.rowcount == 0:
+            return jsonify({"message": MSG_NOT_FOUND}), HTTP_NOT_FOUND
+
+        cursor.execute(
+            "SELECT id, nombre, mail, score, rol, carrera FROM usuario WHERE id = %(user_id)s",
+            {"user_id": user_id},
+        )
+
         user = cursor.fetchone()
 
-        if not user:
-            return jsonify({"error": MSG_NOT_FOUND}), HTTP_NOT_FOUND
+        return jsonify(user), HTTP_OK
 
-        return jsonify(format_user(user)), HTTP_OK
-
-    except mysql.connector.Error:
-        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
+    except mysql.connector.Error as err:
+        try:
+            if err.errno == 1062:
+                return (
+                    jsonify({"error": MSG_CONFLICT, "detail": "duplicate_entry"}),
+                    HTTP_CONFLICT,
+                )
+        except Exception:
+            pass
+        return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
 
     except Exception:
         return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
 
     finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
+        try:
+            if cursor:
+                cursor.close()
+        except Exception:
+            pass
+        try:
+            if conn:
+                conn.close()
+        except Exception:
+            pass
 
 
-@users_bp.route("/api/users/<int:user_id>/penalties", methods=["GET"])
-def get_user_penalties(user_id):
-    """Return all penalties associated with a specific user."""
-    conn = obtener_conexion()
-    if conn is None:
-        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
+# pre:  el request incluye un JWT válido con rol admin. id_usuario es un entero positivo.
+# post: devuelve 200 si se dio de baja, 404 si no existe, 400 si el ID es inválido.
+@users_bp.route("/api/usuarios/<int:id_usuario>", methods=["DELETE"])
+def eliminar_usuario(id_usuario):
+    if id_usuario <= 0:
+        return jsonify({"error": "ID inválido"}), HTTP_BAD_REQUEST
 
-    if valid_id(user_id) is None:
-        return jsonify({"error": MSG_BAD_REQUEST}), HTTP_BAD_REQUEST
-
-    sql = """
-        SELECT id, id_usuario, motivo, fecha_inicio, fecha_fin, activa 
-        FROM penalizacion 
-        WHERE id_usuario = %(user_id)s
-        ORDER BY id
-    """
-    cursor = None
-
-    try:
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute(sql, {"user_id": user_id})
-        penalties = [format_penalty(row) for row in cursor.fetchall()]
-
-        return jsonify(penalties), HTTP_OK
-
-    except mysql.connector.Error:
-        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
-
-    except Exception:
-        return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
-
-    finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
+    if desactivar_usuario_db(id_usuario):
+        return jsonify({"mensaje": "Usuario dado de baja con éxito"}), HTTP_OK
+    return jsonify({"error": "Usuario no encontrado"}), HTTP_NOT_FOUND
