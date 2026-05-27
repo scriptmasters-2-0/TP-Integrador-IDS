@@ -340,3 +340,20 @@ def valid_penalty_patch(data):  # noqa: PLR0911, PLR0912
             return False, "empty:notes"
 
     return True, None
+
+
+def valid_loan_status_update(data):
+    """Validate loan status update payload."""
+    if not isinstance(data, dict):
+        return False, "payload_must_be_object"
+
+    if data.get("estado_reserva") is None:
+        return False, "missing:estado_reserva"
+    if not isinstance(data.get("estado_reserva"), str):
+        return False, "invalid_type:estado_reserva"
+
+    allowed_statuses = ("pendiente", "aprobado", "entregado", "devuelto", "cancelado")
+    if data.get("estado_reserva") not in allowed_statuses:
+        return False, "invalid_value:estado_reserva"
+
+    return True, None

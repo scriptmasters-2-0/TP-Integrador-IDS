@@ -9,6 +9,7 @@ import config
 from database import init_database
 from routes.auth_route import auth_bp
 from routes.items_route import items_bp
+from routes.loans_route import loans_bp
 from routes.penalties_route import penalties_bp
 from routes.ping import ping_bp
 from routes.usuarios_route import usuarios_bp
@@ -22,6 +23,7 @@ app.register_blueprint(usuarios_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(penalties_bp)
 app.register_blueprint(items_bp)
+app.register_blueprint(loans_bp)
 
 HERE = os.path.dirname(__file__)
 
