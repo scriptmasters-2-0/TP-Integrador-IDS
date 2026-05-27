@@ -1,3 +1,5 @@
+"""Routes for penalty endpoints."""
+
 import traceback
 
 import mysql.connector
@@ -19,9 +21,86 @@ from validators import valid_id, valid_penalty_patch
 penalties_bp = Blueprint("penalties", __name__)
 
 
-@penalties_bp.route("/api/penalties/<int:penalty_id>", methods=["PATCH"])
-def patch_penalty(penalty_id):
+def format_penalty(row):
+    """Format database penalty rows as API responses."""
+    return {
+        "id": row.get("id"),
+        "userId": row.get("id_usuario"),
+        "loanId": row.get("id_reserva"),
+        "reason": row.get("motivo"),
+        "status": "Activa" if row.get("activa") else "Levantada",
+        "severity": row.get("severity"),
+        "notes": row.get("motivo"),
+        "createdAt": (
+            row.get("fecha_inicio").isoformat() if row.get("fecha_inicio") else None
+        ),
+        "resolvedAt": (
+            row.get("fecha_fin").isoformat() if row.get("fecha_fin") else None
+        ),
+    }
 
+
+@penalties_bp.route("/api/penalties/<int:penalty_id>", methods=["GET"])
+def get_penalty(penalty_id):
+    """Return a penalty by id."""
+    conn = obtener_conexion()
+    if conn is None:
+        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
+
+    if valid_id(penalty_id) is None:
+        return jsonify({"error": MSG_BAD_REQUEST}), HTTP_BAD_REQUEST
+
+    cursor = None
+
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(
+            """
+            SELECT id,
+                   id_usuario,
+                   id_reserva,
+                   motivo,
+                   fecha_inicio,
+                   fecha_fin,
+                   activa,
+                   severity
+            FROM penalizacion
+            WHERE id = %(penalty_id)s
+            """,
+            {"penalty_id": penalty_id},
+        )
+        row = cursor.fetchone()
+
+        if not row:
+            return jsonify({"message": MSG_NOT_FOUND}), HTTP_NOT_FOUND
+
+        return jsonify(format_penalty(row)), HTTP_OK
+
+    except mysql.connector.Error:
+        traceback.print_exc()
+        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
+
+    except Exception:
+        traceback.print_exc()
+        return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
+
+    finally:
+        try:
+            cursor.close()
+
+        except Exception:
+            pass
+
+        try:
+            conn.close()
+
+        except Exception:
+            pass
+
+
+@penalties_bp.route("/api/penalties/<int:penalty_id>", methods=["PATCH"])
+def patch_penalty(penalty_id):  # noqa: PLR0911, PLR0912
+    """Update part of a penalty."""
     conn = obtener_conexion()
     if conn is None:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
@@ -46,12 +125,13 @@ def patch_penalty(penalty_id):
         data.update({"motivo": data.get("notes")})
         data.pop("notes")
 
-    keysToUpdate = data.keys()
+    keysToUpdate = list(data.keys())
+    set_expressions = [f"{f} = %({f})s" for f in keysToUpdate]
 
     if not data.get("activa", True):
-        keysToUpdate.append("fecha_fin = NOW()")
+        set_expressions.append("fecha_fin = NOW()")
 
-    set_clause = ", ".join([f"{f} = %({f})s" for f in keysToUpdate])
+    set_clause = ", ".join(set_expressions)
     data.update({"penalty_id": penalty_id})
 
     cursor = None
@@ -66,7 +146,18 @@ def patch_penalty(penalty_id):
             return jsonify({"message": MSG_NOT_FOUND}), HTTP_NOT_FOUND
 
         cursor.execute(
-            "SELECT id, id_usuario, motivo, fecha_inicio, fecha_fin, activa FROM penalizacion WHERE id = %(penalty_id)s",
+            """
+            SELECT id,
+                   id_usuario,
+                   id_reserva,
+                   motivo,
+                   fecha_inicio,
+                   fecha_fin,
+                   activa,
+                   severity
+            FROM penalizacion
+            WHERE id = %(penalty_id)s
+            """,
             {"penalty_id": penalty_id},
         )
 
@@ -75,23 +166,7 @@ def patch_penalty(penalty_id):
         if not row:
             return jsonify({"message": MSG_NOT_FOUND}), HTTP_NOT_FOUND
 
-        response = {
-            "id": row.get("id"),
-            "userId": row.get("id_usuario"),
-            "loanId": None,
-            "reason": row.get("motivo"),
-            "status": "Activa" if row.get("activa") else "Levantada",
-            "severity": None,
-            "notes": row.get("motivo"),
-            "createdAt": (
-                row.get("fecha_inicio").isoformat() if row.get("fecha_inicio") else None
-            ),
-            "resolvedAt": (
-                row.get("fecha_fin").isoformat() if row.get("fecha_fin") else None
-            ),
-        }
-
-        return jsonify(response), HTTP_OK
+        return jsonify(format_penalty(row)), HTTP_OK
 
     except mysql.connector.Error:
         traceback.print_exc()
