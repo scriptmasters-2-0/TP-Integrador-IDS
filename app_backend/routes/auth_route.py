@@ -276,13 +276,13 @@ def buscar_usuario_por_mail(mail):
 
 @auth_bp.route("/auth/logout", methods=["POST"])
 def logout():
-    """Cierra la sesión del usuario.
+    """Cierra la sesión del usuario autenticado.
 
-    El servidor responde confirmando el cierre de sesión. El cliente
-    debe descartar el token JWT almacenado.
+    El request debe incluir un JWT válido en el header Authorization.
+    El cliente debe descartar el token al recibir la respuesta.
 
     Returns:
-        tuple: JSON con mensaje de confirmación y código HTTP 200.
+        tuple: JSON con mensaje de confirmación y código 200.
 
     """
     return jsonify({"mensaje": "Sesión cerrada con éxito"}), HTTP_OK
