@@ -1,3 +1,9 @@
+"""Rutas de la API para la generación de códigos QR de reservas.
+
+Define los endpoints para generar y obtener códigos QR asociados
+a las reservas del sistema.
+"""
+
 import base64
 import io
 import json
@@ -12,9 +18,17 @@ from http_codes_and_messages import HTTP_NOT_FOUND, HTTP_OK
 qr_bp = Blueprint("qr", __name__)
 
 
-# pre:  datos es un string no vacío con el contenido a codificar en el QR.
-# post: devuelve un string en base64 que representa la imagen PNG del QR.
 def generar_qr(datos):
+    """Genera una imagen QR codificada en base64 a partir de un string.
+
+    Args:
+        datos (str): Contenido a codificar en el código QR.
+            No debe estar vacío.
+
+    Returns:
+        str: String en base64 que representa la imagen PNG del código QR.
+
+    """
     codigo_qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_H,
@@ -33,9 +47,20 @@ def generar_qr(datos):
     return base64.b64encode(buffer.getvalue()).decode("utf-8")
 
 
-# pre:  reserva es un diccionario con las claves: 'id_reserva', 'id_reservado', 'fecha_retiro', 'fecha_regreso'.
-# post: devuelve un string JSON con los datos de la reserva sin información sensible.
 def construir_contenido_qr(reserva):
+    """Construye el contenido JSON para codificar en el código QR.
+
+    Extrae los datos relevantes de la reserva sin incluir información
+    sensible del usuario.
+
+    Args:
+        reserva (dict): Diccionario con las claves 'id_reserva',
+            'id_reservado', 'fecha_retiro' y 'fecha_regreso'.
+
+    Returns:
+        str: String JSON con los datos de la reserva.
+
+    """
     datos_qr = {
         "id_reserva": reserva["id_reserva"],
         "id_articulo": reserva["id_reservado"],
@@ -45,22 +70,52 @@ def construir_contenido_qr(reserva):
     return json.dumps(datos_qr)
 
 
-# pre: -
-# post: devuelve un diccionario con los datos de la reserva si existe, None si no se encuentra.
 def obtener_reserva_por_id(id_reserva):
+    """Obtiene los datos de una reserva por su identificador.
+
+    Args:
+        id_reserva (int): Identificador de la reserva a buscar.
+
+    Returns:
+        dict | None: Diccionario con los datos de la reserva si existe,
+            None si no se encuentra.
+
+    """
     conexion = obtener_conexion()
     cursor = conexion.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM reserva WHERE id_reserva = %s", (id_reserva,))
+    cursor.execute(
+        """
+        SELECT id AS id_reserva,
+               id_reservado,
+               fecha_retiro,
+               fecha_regreso
+        FROM reserva
+        WHERE id = %s
+        """,
+        (id_reserva,),
+    )
     reserva = cursor.fetchone()
     cursor.close()
     conexion.close()
     return reserva
 
 
-# pre:  el request incluye un JWT válido. id_reserva es un entero correspondiente a una reserva existente.
-# post: devuelve 200 con 'id_reserva' y 'qrData' (imagen en base64), 404 si no existe la reserva.
 @qr_bp.route("/api/qr/loans/<int:id_reserva>", methods=["GET"])
 def obtener_qr_reserva(id_reserva):
+    """Genera y devuelve el código QR de una reserva.
+
+    Requiere un JWT válido en el request. Busca la reserva por su
+    identificador, construye el contenido del QR y genera la imagen.
+
+    Args:
+        id_reserva (int): Identificador de la reserva para la cual
+            generar el código QR.
+
+    Returns:
+        tuple: Respuesta JSON con 'id_reserva' y 'qrData' (imagen en
+            base64) y código HTTP 200. Retorna 404 si la reserva no existe.
+
+    """
     reserva = obtener_reserva_por_id(id_reserva)
 
     if reserva is None:

@@ -1,9 +1,16 @@
+"""Rutas de la API para la gestión de penalizaciones.
+
+Define los endpoints para consultar, crear y actualizar penalizaciones
+de usuarios en el sistema.
+"""
+
 import mysql.connector
 from flask import Blueprint, jsonify, request
 
 from database import obtener_conexion
 from http_codes_and_messages import (
     HTTP_BAD_REQUEST,
+    HTTP_CREATED,
     HTTP_INTERNAL_SERVER_ERROR,
     HTTP_NOT_FOUND,
     HTTP_OK,
@@ -17,9 +24,16 @@ from validators import valid_id, valid_penalty_patch
 penalties_bp = Blueprint("penalties", __name__)
 
 
-# pre: -
-# post: devuelve True si el usuario existe en la BD, False caso contrario
 def usuario_existe(id_usuario):
+    """Verifica si un usuario existe en la base de datos.
+
+    Args:
+        id_usuario (int): Identificador del usuario a verificar.
+
+    Returns:
+        bool: True si el usuario existe en la BD, False en caso contrario.
+
+    """
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     cursor.execute("SELECT id FROM usuario WHERE id = %s", (id_usuario,))
@@ -29,9 +43,13 @@ def usuario_existe(id_usuario):
     return existe
 
 
-# pre:-
-# post: devuelve una lista de diccionarios con todas las penalizaciones de la BD.
 def listar_penalizaciones_db():
+    """Obtiene todas las penalizaciones de la base de datos.
+
+    Returns:
+        list[dict]: Lista de diccionarios con todas las penalizaciones de la BD.
+
+    """
     conexion = obtener_conexion()
     cursor = conexion.cursor(dictionary=True)
     cursor.execute("SELECT * FROM penalizacion")
@@ -41,9 +59,21 @@ def listar_penalizaciones_db():
     return penalizaciones
 
 
-# pre:  id_usuario es entero positivo, motivo es string no vacío.
-# post: inserta una penalización activa por 15 días y retorna el ID generado.
 def crear_penalizacion_db(id_usuario, motivo):
+    """Inserta una nueva penalización activa en la base de datos.
+
+    Crea una penalización con duración de 15 días a partir de la
+    fecha actual.
+
+    Args:
+        id_usuario (int): Identificador del usuario a penalizar.
+            Debe ser un entero positivo.
+        motivo (str): Motivo de la penalización. No debe estar vacío.
+
+    Returns:
+        int: Identificador generado para la nueva penalización.
+
+    """
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     cursor.execute(
@@ -61,7 +91,17 @@ def crear_penalizacion_db(id_usuario, motivo):
 
 
 def format_penalty(row):
-    """Format database penalty rows as API responses."""
+    """Formatea una fila de penalización de la BD como respuesta de la API.
+
+    Args:
+        row (dict): Diccionario con los datos de la penalización obtenidos
+            de la base de datos.
+
+    Returns:
+        dict: Diccionario con los campos formateados para la respuesta
+            de la API.
+
+    """
     return {
         "id": row.get("id"),
         "userId": row.get("id_usuario"),
@@ -79,8 +119,17 @@ def format_penalty(row):
     }
 
 
-# post: devuelve un diccionario con los datos de la penalización si existe, None si no.
 def obtener_penalizacion_por_id(id_penalizacion):
+    """Obtiene una penalización por su identificador.
+
+    Args:
+        id_penalizacion (int): Identificador de la penalización a buscar.
+
+    Returns:
+        dict | None: Diccionario con los datos de la penalización si existe,
+            None si no se encuentra.
+
+    """
     conexion = obtener_conexion()
     cursor = conexion.cursor(dictionary=True)
     cursor.execute("SELECT * FROM penalizacion WHERE id = %s", (id_penalizacion,))
@@ -92,7 +141,19 @@ def obtener_penalizacion_por_id(id_penalizacion):
 
 @penalties_bp.route("/api/penalties/<int:penalty_id>", methods=["GET"])
 def get_penalty(penalty_id):
-    """Return a penalty by id."""
+    """Obtiene una penalización por su identificador.
+
+    Args:
+        penalty_id (int): Identificador de la penalización.
+
+    Returns:
+        tuple: Respuesta JSON con la penalización y código HTTP 200,
+            o un mensaje de error con el código correspondiente.
+
+    Raises:
+        mysql.connector.Error: Si ocurre un error de conexión a la BD.
+
+    """
     conn = obtener_conexion()
     if conn is None:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
@@ -147,8 +208,23 @@ def get_penalty(penalty_id):
 
 
 @penalties_bp.route("/api/penalties/<int:penalty_id>", methods=["PATCH"])
-def patch_penalty(penalty_id):
-    """Update part of a penalty."""
+def patch_penalty(penalty_id):  # noqa: PLR0911, PLR0912
+    """Actualiza parcialmente una penalización existente.
+
+    Permite modificar campos individuales de una penalización. Si se
+    cambia el estado a inactivo, se establece la fecha de fin automáticamente.
+
+    Args:
+        penalty_id (int): Identificador de la penalización a actualizar.
+
+    Returns:
+        tuple: Respuesta JSON con la penalización actualizada y código
+            HTTP 200, o un mensaje de error con el código correspondiente.
+
+    Raises:
+        mysql.connector.Error: Si ocurre un error de conexión a la BD.
+
+    """
     conn = obtener_conexion()
     if conn is None:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
@@ -236,18 +312,34 @@ def patch_penalty(penalty_id):
             pass
 
 
-# pre:  el request incluye un JWT válido con rol admin.
-# post: retorna 200 con lista de todas las penalizaciones, 403 si no es admin.
 @penalties_bp.route("/api/penalties", methods=["GET"])
 def listar_penalizaciones():
+    """Lista todas las penalizaciones del sistema.
+
+    Requiere un JWT válido con rol admin en el request.
+
+    Returns:
+        tuple: Respuesta JSON con la lista de todas las penalizaciones
+            y código HTTP 200. Retorna 403 si el usuario no es admin.
+
+    """
     penalizaciones = listar_penalizaciones_db()
     return jsonify(penalizaciones), HTTP_OK
 
 
-# pre:  el request incluye un JWT válido con rol admin y body con 'user_id' y 'reason'.
-# post: retorna 201 con la penalización creada, 400 si faltan datos, 404 si el usuario no existe.
 @penalties_bp.route("/api/penalties", methods=["POST"])
 def crear_penalizacion():
+    """Crea una nueva penalización para un usuario.
+
+    Requiere un JWT válido con rol admin y un cuerpo JSON con los
+    campos 'user_id' y 'reason'.
+
+    Returns:
+        tuple: Respuesta JSON con la penalización creada y código
+            HTTP 201. Retorna 400 si faltan datos obligatorios,
+            o 404 si el usuario no existe.
+
+    """
     datos = request.get_json()
 
     if not datos or not datos.get("user_id") or not datos.get("reason"):

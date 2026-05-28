@@ -1,4 +1,4 @@
-"""Routes for loan endpoints."""
+"""Rutas para los endpoints de préstamos."""
 
 import mysql.connector
 from flask import Blueprint, jsonify, request
@@ -20,7 +20,18 @@ loans_bp = Blueprint("loans", __name__)
 
 
 def format_loan(row):
-    """Format database loan rows as API responses."""
+    """Formatea una fila de préstamo de la base de datos como respuesta de la API.
+
+    Convierte los campos de fecha a formato ISO 8601 cuando están presentes.
+
+    Args:
+        row (dict): Diccionario con los datos del préstamo obtenidos de la
+            base de datos.
+
+    Returns:
+        dict: Diccionario formateado con los campos del préstamo para la respuesta.
+
+    """
     return {
         "id": row.get("id"),
         "id_usuario": row.get("id_usuario"),
@@ -37,7 +48,18 @@ def format_loan(row):
 
 @loans_bp.route("/api/loans/<int:loan_id>/status", methods=["PATCH"])
 def patch_loan_status(loan_id):  # noqa: PLR0911
-    """Update loan status."""
+    """Actualiza el estado de un préstamo.
+
+    Recibe el ID del préstamo como parámetro de ruta y el nuevo estado
+    en el cuerpo de la petición como JSON.
+
+    Args:
+        loan_id (int): Identificador único del préstamo a actualizar.
+
+    Returns:
+        tuple: JSON con el préstamo actualizado y el código HTTP correspondiente.
+
+    """
     if valid_id(loan_id) is None:
         return jsonify({"error": MSG_BAD_REQUEST}), HTTP_BAD_REQUEST
 
