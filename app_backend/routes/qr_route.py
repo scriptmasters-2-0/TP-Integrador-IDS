@@ -62,7 +62,7 @@ def construir_contenido_qr(reserva):
 
     """
     datos_qr = {
-        "id_reserva": reserva["id_reserva"],
+        "id_reserva": reserva["id"],
         "id_articulo": reserva["id_reservado"],
         "fecha_retiro": str(reserva["fecha_retiro"]),
         "fecha_regreso": str(reserva["fecha_regreso"]),

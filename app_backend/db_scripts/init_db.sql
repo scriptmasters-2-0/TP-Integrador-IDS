@@ -5,7 +5,8 @@ CREATE TABLE IF NOT EXISTS usuario (
     score INT DEFAULT 0,
     rol enum('alumno', 'profesor', 'bibliotecario', 'admin') NOT NULL DEFAULT 'alumno',
     carrera VARCHAR(50),
-    password_hash VARCHAR(255) DEFAULT ''
+    password_hash VARCHAR(255) DEFAULT '',
+    activo BOOLEAN DEFAULT TRUE
 );
 
 CREATE TABLE IF NOT EXISTS articulos (
