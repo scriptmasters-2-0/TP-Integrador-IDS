@@ -1,3 +1,9 @@
+"""Definición de constantes de códigos HTTP y mensajes de respuesta.
+
+Centraliza los códigos de estado HTTP y los mensajes asociados
+utilizados en las respuestas de la API.
+"""
+
 HTTP_OK = 200
 HTTP_CREATED = 201
 HTTP_NO_CONTENT = 204

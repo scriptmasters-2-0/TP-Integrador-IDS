@@ -1,4 +1,4 @@
-"""Backend Flask application entrypoint."""
+"""Punto de entrada de la aplicación Flask del backend."""
 
 import os
 
@@ -32,7 +32,12 @@ HERE = os.path.dirname(__file__)
 
 @app.route("/swagger.yaml")
 def swagger_spec():
-    """Serve the OpenAPI specification file."""
+    """Sirve el archivo de especificación OpenAPI.
+
+    Returns:
+        Response: El archivo swagger.yaml desde el directorio actual.
+
+    """
     return send_from_directory(HERE, "swagger.yaml")
 
 

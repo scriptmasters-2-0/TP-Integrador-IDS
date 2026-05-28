@@ -10,6 +10,7 @@ dependencies = [
     "flask-swagger-ui>=3.0.3",
     "bcrypt>=5.0.0",
     "pyjwt>=2.13.0",
+    "qrcode[pil]>=8.2",
 ]
 
 [tool.ruff]
@@ -21,7 +22,7 @@ line-length = 88
 select = ["F", "E", "W", "I", "PL", "D"]
 
 # Ignore specific rules if they get too noisy (e.g., missing docstrings)
-ignore = []
+ignore = ["D203", "D213"]
 
 [tool.ruff.format]
 # Use single quotes for non-docstrings if you prefer, otherwise defaults to double

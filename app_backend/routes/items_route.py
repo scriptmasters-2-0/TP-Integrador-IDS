@@ -1,4 +1,4 @@
-"""Routes for inventory item endpoints."""
+"""Rutas para los endpoints de artículos del inventario."""
 
 import mysql.connector
 from flask import Blueprint, jsonify, request
@@ -21,7 +21,16 @@ items_bp = Blueprint("items", __name__)
 
 
 def format_item(row):
-    """Format database item rows as API responses."""
+    """Formatea una fila de artículo de la base de datos como respuesta de la API.
+
+    Args:
+        row (dict): Diccionario con los datos del artículo obtenidos de la
+            base de datos.
+
+    Returns:
+        dict: Diccionario formateado con los campos del artículo para la respuesta.
+
+    """
     return {
         "id": row.get("id"),
         "nombre_art": row.get("nombre_art"),
@@ -35,7 +44,15 @@ def format_item(row):
 
 @items_bp.route("/api/items", methods=["GET"])
 def get_items():  # noqa: PLR0912
-    """Return inventory items, optionally filtered by query parameters."""
+    """Retorna artículos del inventario, opcionalmente filtrados por query.
+
+    Los filtros disponibles son: tipo, sección, disponibilidad y
+    necesidad de reparación. Se envían como query parameters.
+
+    Returns:
+        tuple: JSON con la lista de artículos y el código HTTP correspondiente.
+
+    """
     filters = {
         "tipo": request.args.get("tipo"),
         "seccion": request.args.get("seccion"),
@@ -118,7 +135,15 @@ def get_items():  # noqa: PLR0912
 
 @items_bp.route("/api/items", methods=["POST"])
 def create_item():
-    """Create a new inventory item."""
+    """Crea un nuevo artículo en el inventario.
+
+    Recibe los datos del artículo en el cuerpo de la petición como JSON,
+    lo valida, lo inserta en la base de datos y retorna el artículo creado.
+
+    Returns:
+        tuple: JSON con el artículo creado y el código HTTP 201, o un error.
+
+    """
     conn = obtener_conexion()
     if conn is None:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
@@ -203,7 +228,18 @@ def create_item():
 
 @items_bp.route("/api/items/<int:item_id>", methods=["PUT"])
 def update_item(item_id):  # noqa: PLR0911, PLR0912
-    """Update an existing inventory item."""
+    """Actualiza un artículo existente del inventario.
+
+    Recibe el ID del artículo como parámetro de ruta y los campos a
+    actualizar en el cuerpo de la petición como JSON.
+
+    Args:
+        item_id (int): Identificador único del artículo a actualizar.
+
+    Returns:
+        tuple: JSON con el artículo actualizado y el código HTTP correspondiente.
+
+    """
     conn = obtener_conexion()
     if conn is None:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR

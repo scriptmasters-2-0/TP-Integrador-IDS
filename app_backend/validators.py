@@ -1,10 +1,22 @@
-"""Request payload validators."""
+"""Validadores de datos de entrada para las solicitudes de la API.
+
+Contiene funciones de validación para los payloads de creación,
+actualización y filtrado de usuarios, ítems, préstamos y penalidades.
+"""
 
 MIN_USERNAME_LENGTH = 3
 
 
 def valid_id(value):
-    """Validate positive integer identifiers."""
+    """Valida identificadores enteros positivos.
+
+    Args:
+        value: Valor a validar como identificador.
+
+    Returns:
+        int: El valor convertido a entero si es válido, o None en caso contrario.
+
+    """
     if value is None:
         return None
 
@@ -23,7 +35,19 @@ def valid_id(value):
 
 
 def valid_user(data):  # noqa: PLR0911
-    """Validate user creation payload."""
+    """Valida el payload de creación de usuario.
+
+    Verifica que los campos requeridos (nombre, mail, carrera) estén
+    presentes y que los campos opcionales (rol, score) tengan valores válidos.
+
+    Args:
+        data (dict): Diccionario con los datos del usuario a crear.
+
+    Returns:
+        tuple: (True, None) si es válido, (False, str) con mensaje de error
+            si no lo es.
+
+    """
     if not isinstance(data, dict):
         return False, "payload_must_be_object"
 
@@ -61,7 +85,19 @@ def valid_user(data):  # noqa: PLR0911
 
 
 def valid_user_update(data):  # noqa: PLR0911, PLR0912
-    """Validate user update payload."""
+    """Valida el payload de actualización de usuario.
+
+    Verifica que al menos un campo actualizable esté presente y que
+    los valores proporcionados sean válidos.
+
+    Args:
+        data (dict): Diccionario con los campos a actualizar.
+
+    Returns:
+        tuple: (True, None) si es válido, (False, str) con mensaje de error
+            si no lo es.
+
+    """
     if not isinstance(data, dict):
         return False, "payload_must_be_object"
 
@@ -120,7 +156,19 @@ def valid_user_update(data):  # noqa: PLR0911, PLR0912
 
 
 def valid_login(data):  # noqa: PLR0911
-    """Validate login payload."""
+    """Valida el payload de inicio de sesión.
+
+    Verifica que los campos username y password estén presentes,
+    sean cadenas no vacías y que username cumpla con la longitud mínima.
+
+    Args:
+        data (dict): Diccionario con las credenciales de inicio de sesión.
+
+    Returns:
+        tuple: (True, None) si es válido, (False, str) con mensaje de error
+            si no lo es.
+
+    """
     if not isinstance(data, dict):
         return False, "payload_must_be_object"
 
@@ -144,6 +192,17 @@ def valid_login(data):  # noqa: PLR0911
 
 
 def _valid_required_string(data, field):
+    """Valida que un campo de texto requerido esté presente y no vacío.
+
+    Args:
+        data (dict): Diccionario con los datos a validar.
+        field (str): Nombre del campo a verificar.
+
+    Returns:
+        tuple: (True, None) si es válido, (False, str) con mensaje de error
+            si no lo es.
+
+    """
     value = data.get(field)
     if value is None:
         return False, f"missing:{field}"
@@ -156,6 +215,20 @@ def _valid_required_string(data, field):
 
 
 def _valid_optional_string(data, field):
+    """Valida que un campo de texto opcional, si está presente, sea válido.
+
+    Si el campo no está presente en el diccionario, se considera válido.
+    Si está presente, debe ser una cadena no nula y no vacía.
+
+    Args:
+        data (dict): Diccionario con los datos a validar.
+        field (str): Nombre del campo a verificar.
+
+    Returns:
+        tuple: (True, None) si es válido, (False, str) con mensaje de error
+            si no lo es.
+
+    """
     if field not in data:
         return True, None
     if data.get(field) is None:
@@ -169,6 +242,20 @@ def _valid_optional_string(data, field):
 
 
 def _valid_optional_positive_int(data, field):
+    """Valida que un campo entero positivo opcional, si está presente, sea válido.
+
+    Si el campo no está presente en el diccionario, se considera válido.
+    Si está presente, debe ser un entero estrictamente mayor que cero.
+
+    Args:
+        data (dict): Diccionario con los datos a validar.
+        field (str): Nombre del campo a verificar.
+
+    Returns:
+        tuple: (True, None) si es válido, (False, str) con mensaje de error
+            si no lo es.
+
+    """
     if field not in data:
         return True, None
     if data.get(field) is None:
@@ -184,6 +271,20 @@ def _valid_optional_positive_int(data, field):
 
 
 def _valid_optional_non_negative_int(data, field):
+    """Valida que un campo entero no negativo opcional, si está presente, sea válido.
+
+    Si el campo no está presente en el diccionario, se considera válido.
+    Si está presente, debe ser un entero mayor o igual a cero.
+
+    Args:
+        data (dict): Diccionario con los datos a validar.
+        field (str): Nombre del campo a verificar.
+
+    Returns:
+        tuple: (True, None) si es válido, (False, str) con mensaje de error
+            si no lo es.
+
+    """
     if field not in data:
         return True, None
     if data.get(field) is None:
@@ -199,6 +300,20 @@ def _valid_optional_non_negative_int(data, field):
 
 
 def _valid_optional_bool(data, field):
+    """Valida que un campo booleano opcional, si está presente, sea válido.
+
+    Si el campo no está presente en el diccionario, se considera válido.
+    Si está presente, debe ser de tipo booleano.
+
+    Args:
+        data (dict): Diccionario con los datos a validar.
+        field (str): Nombre del campo a verificar.
+
+    Returns:
+        tuple: (True, None) si es válido, (False, str) con mensaje de error
+            si no lo es.
+
+    """
     if field not in data:
         return True, None
     if not isinstance(data.get(field), bool):
@@ -208,7 +323,20 @@ def _valid_optional_bool(data, field):
 
 
 def valid_item(data):  # noqa: PLR0911
-    """Validate item creation payload."""
+    """Valida el payload de creación de un ítem.
+
+    Verifica que los campos requeridos (nombre_art, tipo, seccion,
+    prestacion_maxima) estén presentes y que los opcionales (stock,
+    necesita_reparacion) tengan valores válidos.
+
+    Args:
+        data (dict): Diccionario con los datos del ítem a crear.
+
+    Returns:
+        tuple: (True, None) si es válido, (False, str) con mensaje de error
+            si no lo es.
+
+    """
     if not isinstance(data, dict):
         return False, "payload_must_be_object"
 
@@ -236,7 +364,19 @@ def valid_item(data):  # noqa: PLR0911
 
 
 def valid_item_update(data):  # noqa: PLR0911
-    """Validate item update payload."""
+    """Valida el payload de actualización de un ítem.
+
+    Verifica que al menos un campo actualizable esté presente,
+    que no haya campos no permitidos y que los valores sean válidos.
+
+    Args:
+        data (dict): Diccionario con los campos a actualizar.
+
+    Returns:
+        tuple: (True, None) si es válido, (False, str) con mensaje de error
+            si no lo es.
+
+    """
     if not isinstance(data, dict):
         return False, "payload_must_be_object"
 
@@ -277,7 +417,19 @@ def valid_item_update(data):  # noqa: PLR0911
 
 
 def valid_item_filters(filters):
-    """Validate and parse item query filters."""
+    """Valida y parsea los filtros de consulta de ítems.
+
+    Procesa los filtros de tipo, sección, disponibilidad y
+    necesidad de reparación proporcionados como query parameters.
+
+    Args:
+        filters: Objeto con los parámetros de consulta a validar.
+
+    Returns:
+        tuple: (True, None, dict) con los filtros parseados si son válidos,
+            o (False, str, None) con mensaje de error si no lo son.
+
+    """
     parsed_filters = {
         "tipo": None,
         "seccion": None,
@@ -307,7 +459,19 @@ def valid_item_filters(filters):
 
 
 def valid_penalty_patch(data):  # noqa: PLR0911, PLR0912
-    """Validate penalty partial update payload."""
+    """Valida el payload de actualización parcial de una penalidad.
+
+    Verifica que al menos un campo actualizable (status, severity, notes)
+    esté presente y que los valores proporcionados sean válidos.
+
+    Args:
+        data (dict): Diccionario con los campos a actualizar.
+
+    Returns:
+        tuple: (True, None) si es válido, (False, str) con mensaje de error
+            si no lo es.
+
+    """
     if not isinstance(data, dict):
         return False, "payload_must_be_object"
 
@@ -343,7 +507,19 @@ def valid_penalty_patch(data):  # noqa: PLR0911, PLR0912
 
 
 def valid_loan_status_update(data):
-    """Validate loan status update payload."""
+    """Valida el payload de actualización de estado de un préstamo.
+
+    Verifica que el campo estado_reserva esté presente, sea una cadena
+    y contenga uno de los estados permitidos.
+
+    Args:
+        data (dict): Diccionario con el nuevo estado del préstamo.
+
+    Returns:
+        tuple: (True, None) si es válido, (False, str) con mensaje de error
+            si no lo es.
+
+    """
     if not isinstance(data, dict):
         return False, "payload_must_be_object"
 
