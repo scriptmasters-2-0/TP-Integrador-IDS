@@ -85,7 +85,7 @@ def obtener_reserva_por_id(id_reserva):
     cursor = conexion.cursor(dictionary=True)
     cursor.execute(
         """
-        SELECT id AS id_reserva,
+        SELECT id,
                id_reservado,
                fecha_retiro,
                fecha_regreso
