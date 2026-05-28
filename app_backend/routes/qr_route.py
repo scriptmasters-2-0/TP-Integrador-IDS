@@ -102,18 +102,16 @@ def obtener_reserva_por_id(id_reserva):
 
 @qr_bp.route("/api/qr/loans/<int:id_reserva>", methods=["GET"])
 def obtener_qr_reserva(id_reserva):
-    """Genera y devuelve el código QR de una reserva.
+    """Genera y devuelve el QR correspondiente a una reserva.
 
-    Requiere un JWT válido en el request. Busca la reserva por su
-    identificador, construye el contenido del QR y genera la imagen.
+    El request debe incluir un JWT válido en el header Authorization.
 
     Args:
-        id_reserva (int): Identificador de la reserva para la cual
-            generar el código QR.
+        id_reserva (int): Entero correspondiente a una reserva existente.
 
     Returns:
-        tuple: Respuesta JSON con 'id_reserva' y 'qrData' (imagen en
-            base64) y código HTTP 200. Retorna 404 si la reserva no existe.
+        tuple: JSON con id_reserva y qrData (imagen en base64) y código 200,
+               o error 404 si no existe la reserva.
 
     """
     reserva = obtener_reserva_por_id(id_reserva)

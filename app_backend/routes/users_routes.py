@@ -301,19 +301,16 @@ def update_user(user_id):  # noqa: PLR0911, PLR0912
 
 @users_bp.route("/api/usuarios/<int:id_usuario>", methods=["DELETE"])
 def eliminar_usuario(id_usuario):
-    """Elimina (baja lógica) un usuario del sistema.
+    """Da de baja lógica a un usuario por su id.
 
-    Requiere un JWT válido con rol admin. Marca al usuario como
-    inactivo en lugar de eliminarlo físicamente de la base de datos.
+    El request debe incluir un JWT válido con rol admin en el header Authorization.
 
     Args:
-        id_usuario (int): Identificador del usuario a eliminar.
-            Debe ser un entero positivo.
+        id_usuario (int): Entero positivo con el id del usuario a dar de baja.
 
     Returns:
-        tuple: Respuesta JSON con mensaje de éxito y código HTTP 200
-            si se dio de baja correctamente. Retorna 400 si el ID es
-            inválido, o 404 si el usuario no existe.
+        tuple: JSON con mensaje de éxito y código 200,
+               404 si el usuario no existe, 400 si el ID es inválido.
 
     """
     if id_usuario <= 0:
