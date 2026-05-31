@@ -1,8 +1,9 @@
 from flask import Blueprint, jsonify
-from http_codes_and_messages import HTTP_OK
-from database import obtener_conexion
 
-blueprint_salud = Blueprint("salud", __name__)
+from database import obtener_conexion
+from http_codes_and_messages import HTTP_OK
+
+salud_bp = Blueprint("salud", __name__)
 
 
 # pre: ninguna.
@@ -30,12 +31,12 @@ def verificar_backend_db():
 
 # pre: ninguna (Acceso público).
 # post: retorna un mensaje indicando si el backend está activo.
-@blueprint_salud.route("/ping", methods=["GET"])
+@salud_bp.route("/ping", methods=["GET"])
 def ping():
 
     resultado = verificar_backend_db()
 
-    if resultado != None:
+    if resultado is not None:
         estado_db = "Conectada"
         test_db = str(resultado)
 
@@ -43,6 +44,10 @@ def ping():
         estado_db = "Desconectada o en error"
         test_db = "Fallo de conexión"
 
-    respuesta = {"mensaje": "Backend activo y respondiendo", "base_de_datos": estado_db, "resultado_test": test_db}
+    respuesta = {
+        "mensaje": "Backend activo y respondiendo",
+        "base_de_datos": estado_db,
+        "resultado_test": test_db,
+    }
 
     return jsonify(respuesta), HTTP_OK

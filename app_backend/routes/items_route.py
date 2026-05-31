@@ -330,7 +330,9 @@ def actualizar_condicion(item_id):
     estados_validos = ["disponible", "dañado", "reparacion", "dado de baja"]
 
     if nuevo_estado not in estados_validos:
-        return jsonify({"error": MSG_BAD_REQUEST, "detail": "Estado no permitido"}), HTTP_BAD_REQUEST
+        return jsonify(
+            {"error": MSG_BAD_REQUEST, "detail": "Estado no permitido"}
+        ), HTTP_BAD_REQUEST
 
     conn = obtener_conexion()
     if conn is None:
@@ -342,13 +344,20 @@ def actualizar_condicion(item_id):
         cursor = conn.cursor(dictionary=True)
 
         if nuevo_estado in ["reparacion", "dañado"]:
-            cursor.execute("UPDATE articulos SET necesita_reparacion = 1 WHERE id = %s", (item_id,))
+            cursor.execute(
+                "UPDATE articulos SET necesita_reparacion = 1 WHERE id = %s", (item_id,)
+            )
 
         elif nuevo_estado == "dado de baja":
-            cursor.execute("UPDATE articulos SET stock = 0, necesita_reparacion = 1 WHERE id = %s", (item_id,))
+            cursor.execute(
+                "UPDATE articulos SET stock = 0, necesita_reparacion = 1 WHERE id = %s",
+                (item_id,),
+            )
 
         else:
-            cursor.execute("UPDATE articulos SET necesita_reparacion = 0 WHERE id = %s", (item_id,))
+            cursor.execute(
+                "UPDATE articulos SET necesita_reparacion = 0 WHERE id = %s", (item_id,)
+            )
 
         conn.commit()
 
@@ -391,8 +400,8 @@ def eliminar_item(item_id):
         cursor = conn.cursor()
 
         sql = """
-            UPDATE articulos 
-            SET stock = 0, necesita_reparacion = 1 
+            UPDATE articulos
+            SET stock = 0, necesita_reparacion = 1
             WHERE id = %s
         """
 

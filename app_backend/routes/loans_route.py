@@ -2,7 +2,6 @@
 
 import mysql.connector
 from flask import Blueprint, jsonify, request
-from flask_login import login_required
 
 from database import obtener_conexion
 from http_codes_and_messages import (
@@ -38,8 +37,12 @@ def format_loan(row):
         "id_usuario": row.get("id_usuario"),
         "id_reservado": row.get("id_reservado"),
         "estado_reserva": row.get("estado_reserva"),
-        "fecha_retiro": (row.get("fecha_retiro").isoformat() if row.get("fecha_retiro") else None),
-        "fecha_regreso": (row.get("fecha_regreso").isoformat() if row.get("fecha_regreso") else None),
+        "fecha_retiro": (
+            row.get("fecha_retiro").isoformat() if row.get("fecha_retiro") else None
+        ),
+        "fecha_regreso": (
+            row.get("fecha_regreso").isoformat() if row.get("fecha_regreso") else None
+        ),
     }
 
 
