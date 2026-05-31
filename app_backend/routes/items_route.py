@@ -313,3 +313,101 @@ def update_item(item_id):  # noqa: PLR0911, PLR0912
             conn.close()
         except Exception:
             pass
+
+
+@items_bp.route("/api/items/<int:item_id>/condition", methods=["PATCH"])
+def actualizar_condicion(item_id):
+    if item_id <= 0:
+        return jsonify({"error": MSG_BAD_REQUEST}), HTTP_BAD_REQUEST
+
+    try:
+        data = request.get_json()
+        nuevo_estado = data.get("estado")
+
+    except Exception:
+        return jsonify({"error": MSG_BAD_REQUEST}), HTTP_BAD_REQUEST
+
+    estados_validos = ["disponible", "dañado", "reparacion", "dado de baja"]
+
+    if nuevo_estado not in estados_validos:
+        return jsonify({"error": MSG_BAD_REQUEST, "detail": "Estado no permitido"}), HTTP_BAD_REQUEST
+
+    conn = obtener_conexion()
+    if conn is None:
+        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
+
+    cursor = None
+
+    try:
+        cursor = conn.cursor(dictionary=True)
+
+        if nuevo_estado in ["reparacion", "dañado"]:
+            cursor.execute("UPDATE articulos SET necesita_reparacion = 1 WHERE id = %s", (item_id,))
+
+        elif nuevo_estado == "dado de baja":
+            cursor.execute("UPDATE articulos SET stock = 0, necesita_reparacion = 1 WHERE id = %s", (item_id,))
+
+        else:
+            cursor.execute("UPDATE articulos SET necesita_reparacion = 0 WHERE id = %s", (item_id,))
+
+        conn.commit()
+
+        if cursor.rowcount == 0:
+            return jsonify({"message": MSG_NOT_FOUND}), HTTP_NOT_FOUND
+
+        cursor.execute(
+            """
+            SELECT id, nombre_art, tipo, seccion, prestacion_maxima, stock, necesita_reparacion
+            FROM articulos
+            WHERE id = %s
+        """,
+            (item_id,),
+        )
+
+        item = cursor.fetchone()
+        return jsonify(format_item(item)), HTTP_OK
+
+    except Exception:
+        return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
+
+    finally:
+        if cursor:
+            cursor.close()
+        conn.close()
+
+
+@items_bp.route("/api/items/<int:item_id>", methods=["DELETE"])
+def eliminar_item(item_id):
+    if item_id <= 0:
+        return jsonify({"error": MSG_BAD_REQUEST}), HTTP_BAD_REQUEST
+
+    conn = obtener_conexion()
+    if conn is None:
+        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
+
+    cursor = None
+
+    try:
+        cursor = conn.cursor()
+
+        sql = """
+            UPDATE articulos 
+            SET stock = 0, necesita_reparacion = 1 
+            WHERE id = %s
+        """
+
+        cursor.execute(sql, (item_id,))
+        conn.commit()
+
+        if cursor.rowcount == 0:
+            return jsonify({"message": MSG_NOT_FOUND}), HTTP_NOT_FOUND
+
+        return jsonify({"mensaje": "Artículo dado de baja con éxito"}), HTTP_OK
+
+    except Exception:
+        return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
+
+    finally:
+        if cursor:
+            cursor.close()
+        conn.close()

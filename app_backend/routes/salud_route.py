@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify
-from constants import HTTP_OK
+from http_codes_and_messages import HTTP_OK
 from database import obtener_conexion
 
 blueprint_salud = Blueprint("salud", __name__)

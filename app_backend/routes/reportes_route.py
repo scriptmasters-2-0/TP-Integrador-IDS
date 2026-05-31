@@ -1,6 +1,9 @@
 from flask import Blueprint, jsonify, request
 from flask_login import login_required
-from constants import HTTP_OK, HTTP_BAD_REQUEST
+from http_codes_and_messages import (
+    HTTP_OK,
+    HTTP_BAD_REQUEST,
+)
 from database import obtener_conexion
 
 blueprint_reportes = Blueprint("reportes", __name__)

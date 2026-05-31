@@ -1,22 +1,22 @@
-# Compilados / caché
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
+    # Compilados / caché
+    __pycache__/
+    *.pyc
+    *.pyo
+    *.pyd
 
-# Entornos virtuales
-.venv
-venv
-env
+    # Entornos virtuales
+    .venv
+    venv
+    env
 
-# Archivos de entorno
-.env
-.env.*
+    # Archivos de entorno
+    .env
+    .env.*
 
-# Control de versiones y varios
-.git
-.gitignore
-README.md
-Dockerfile
+    # Control de versiones y varios
+    .git
+    .gitignore
+    README.md
+    Dockerfile
 
-# No incluir templates (ninguno en esta app) ni otros archivos no Python
+    # No incluir templates (ninguno en esta app) ni otros archivos no Python
