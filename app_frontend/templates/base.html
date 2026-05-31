@@ -1,19 +1,59 @@
-<!-- base.html -->
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>{% block title %}Titulo{% endblock %}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biblioteca FIUBA</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;800&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
-    <h1>Sitio web</h1>
-   
+    <header class="navbar">
+        <div class="navbar-top">
+            <div class="navbar-logo">
+                <a href="https://www.fi.uba.ar/" target="_blank">
+                    <img src="{{ url_for('static', filename='images/logo-fiuba.png') }}" alt="Logo FIUBA" class="navbar-logo-img">
+                </a>
+            </div>
+            <div class="navbar-social">
+                <a href="https://www.facebook.com/ingenieriauba/" target="_blank" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                <a href="https://x.com/ingenieriauba" target="_blank" title="X (Twitter)"><i class="fa-brands fa-x-twitter"></i></a>
+                <a href="https://www.instagram.com/ingenieriauba/" target="_blank" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                <a href="https://www.youtube.com/user/FIUBAoficial" target="_blank" title="YouTube"><i class="fa-brands fa-youtube"></i></a>
+                <a href="https://www.linkedin.com/company/facultad-de-ingenier-a---uba/" target="_blank" title="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+            </div>
+        </div>
+        <div class="navbar-bottom">
+            <nav class="nav-links">
+                <a href="{{ url_for('home') }}#como-funciona">Información general</a>
+                <a href="#">Normas</a>
+                <a href="#">Catálogo</a>
+            </nav>
+            <div class="auth-buttons">
+                <button onclick="window.location.href='#'" class="login-btn">INICIA SESIÓN</button>
+                <button onclick="window.location.href='#'" class="register-btn-nav">REGISTRARSE</button>
+            </div>
+        </div>
+    </header>
 
-    <p>Este párrafo se muestra siempre</p>
+    {% block content %}
+    {% endblock %}
 
-    {% block content %}{% endblock %}
-
-    <footer>
-        <p>2026 Scriptmasters</p>
+    <footer class="footer">
+        <div class="footer-info">
+            <strong>Facultad de Ingeniería de la Universidad de Buenos Aires</strong>
+            <p>Av. Paseo Colón 850 - C1063ACV - Buenos Aires - Argentina</p>
+            <p>Website desarrollado por los estudiantes de Ingeniería Informática, grupo ScriptMasters de la materia IDS.</p>
+        </div>
+        <div class="footer-logo">
+            <img src="{{ url_for('static', filename='images/logo_FIUBA_bco_e004995ae8.png') }}" alt="Logo FIUBA Blanco">
+        </div>
     </footer>
+
+    <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
