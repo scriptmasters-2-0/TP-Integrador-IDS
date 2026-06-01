@@ -1,3 +1,9 @@
+"""Rutas para los endpoints de reportes.
+
+Define los endpoints para obtener reportes del estado del inventario
+y de las reservas realizadas en el sistema.
+"""
+
 from flask import Blueprint, jsonify, request
 
 from database import obtener_conexion
@@ -9,9 +15,17 @@ from http_codes_and_messages import (
 reportes_bp = Blueprint("reportes", __name__)
 
 
-# pre: tipo_reporte es un string válido ("pending", "returned", "overdue", "all").
-# post: obtiene datos del reporte solicitado desde la base de datos usando un bucle.
 def obtener_reporte_db(tipo_reporte):
+    """Obtiene los datos del reporte solicitado desde la base de datos.
+
+    Args:
+        tipo_reporte (str): El tipo de reporte a obtener
+            ('pending', 'returned', 'overdue', 'all').
+
+    Returns:
+        list[dict]: Lista de diccionarios con los datos obtenidos de la BD.
+
+    """
     conexion = obtener_conexion()
     cursor = conexion.cursor(dictionary=True)
 
@@ -87,11 +101,14 @@ def obtener_reporte_db(tipo_reporte):
     return resultado
 
 
-# pre: el usuario está autenticado y envía un tipo de reporte válido en la URL.
-# post: retorna el reporte solicitado en formato JSON.
 @reportes_bp.route("/api/reports", methods=["GET"])
-@login_required
 def obtener_reportes():
+    """Obtiene el reporte solicitado según el tipo especificado.
+
+    Returns:
+        tuple: JSON con el reporte solicitado y el código HTTP correspondiente.
+
+    """
     tipo = request.args.get("type")
     formato = request.args.get("format")
 

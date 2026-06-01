@@ -1,3 +1,9 @@
+"""Rutas para verificar el estado del sistema.
+
+Define el endpoint de salud (ping) para verificar la conectividad
+entre el backend y la base de datos.
+"""
+
 from flask import Blueprint, jsonify
 
 from database import obtener_conexion
@@ -6,9 +12,14 @@ from http_codes_and_messages import HTTP_OK
 salud_bp = Blueprint("salud", __name__)
 
 
-# pre: ninguna.
-# post: verifica que el backend y la base de datos estén funcionando correctamente.
 def verificar_backend_db():
+    """Verifica que la conexión con la base de datos esté activa.
+
+    Returns:
+        tuple | None: Resultado de la consulta de prueba si tiene éxito,
+            None si ocurre un error.
+
+    """
     try:
         conexion = obtener_conexion()
         cursor = conexion.cursor()
@@ -29,11 +40,14 @@ def verificar_backend_db():
         return None
 
 
-# pre: ninguna (Acceso público).
-# post: retorna un mensaje indicando si el backend está activo.
 @salud_bp.route("/ping", methods=["GET"])
 def ping():
+    """Verifica que el backend y la base de datos estén funcionando.
 
+    Returns:
+        tuple: JSON con el estado de los servicios y el código HTTP correspondiente.
+
+    """
     resultado = verificar_backend_db()
 
     if resultado is not None:

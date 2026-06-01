@@ -317,6 +317,17 @@ def update_item(item_id):  # noqa: PLR0911, PLR0912
 
 @items_bp.route("/api/items/<int:item_id>/condition", methods=["PATCH"])
 def actualizar_condicion(item_id):
+    """Actualiza la condición o estado de un artículo.
+
+    Recibe el ID del artículo y un JSON con el nuevo estado ('disponible', 'dañado', 'reparacion', 'dado de baja').
+
+    Args:
+        item_id (int): ID único del artículo a actualizar.
+
+    Returns:
+        tuple: JSON con el artículo actualizado y el código HTTP correspondiente.
+
+    """
     if item_id <= 0:
         return jsonify({"error": MSG_BAD_REQUEST}), HTTP_BAD_REQUEST
 
@@ -330,9 +341,7 @@ def actualizar_condicion(item_id):
     estados_validos = ["disponible", "dañado", "reparacion", "dado de baja"]
 
     if nuevo_estado not in estados_validos:
-        return jsonify(
-            {"error": MSG_BAD_REQUEST, "detail": "Estado no permitido"}
-        ), HTTP_BAD_REQUEST
+        return jsonify({"error": MSG_BAD_REQUEST, "detail": "Estado no permitido"}), HTTP_BAD_REQUEST
 
     conn = obtener_conexion()
     if conn is None:
@@ -344,9 +353,7 @@ def actualizar_condicion(item_id):
         cursor = conn.cursor(dictionary=True)
 
         if nuevo_estado in ["reparacion", "dañado"]:
-            cursor.execute(
-                "UPDATE articulos SET necesita_reparacion = 1 WHERE id = %s", (item_id,)
-            )
+            cursor.execute("UPDATE articulos SET necesita_reparacion = 1 WHERE id = %s", (item_id,))
 
         elif nuevo_estado == "dado de baja":
             cursor.execute(
@@ -355,9 +362,7 @@ def actualizar_condicion(item_id):
             )
 
         else:
-            cursor.execute(
-                "UPDATE articulos SET necesita_reparacion = 0 WHERE id = %s", (item_id,)
-            )
+            cursor.execute("UPDATE articulos SET necesita_reparacion = 0 WHERE id = %s", (item_id,))
 
         conn.commit()
 
@@ -387,6 +392,15 @@ def actualizar_condicion(item_id):
 
 @items_bp.route("/api/items/<int:item_id>", methods=["DELETE"])
 def eliminar_item(item_id):
+    """Realiza la baja lógica de un artículo en el inventario.
+
+    Args:
+        item_id (int): Identificador único del artículo a dar de baja.
+
+    Returns:
+        tuple: JSON con mensaje de éxito o error y el código HTTP correspondiente.
+
+    """
     if item_id <= 0:
         return jsonify({"error": MSG_BAD_REQUEST}), HTTP_BAD_REQUEST
 
