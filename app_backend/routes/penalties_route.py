@@ -19,6 +19,7 @@ from http_codes_and_messages import (
     MSG_INTERNAL_SERVER_ERROR,
     MSG_NOT_FOUND,
 )
+from routes.auth_route import requiere_auth
 from validators import valid_id, valid_penalty_patch
 
 penalties_bp = Blueprint("penalties", __name__)
@@ -208,6 +209,7 @@ def get_penalty(penalty_id):
 
 
 @penalties_bp.route("/api/penalties/<int:penalty_id>", methods=["PATCH"])
+@requiere_auth(roles=["admin", "bibliotecario", "profesor"])
 def patch_penalty(penalty_id):  # noqa: PLR0911, PLR0912
     """Actualiza parcialmente una penalización existente.
 
@@ -328,6 +330,7 @@ def listar_penalizaciones():
 
 
 @penalties_bp.route("/api/penalties", methods=["POST"])
+@requiere_auth(roles=["admin", "bibliotecario", "profesor"])
 def crear_penalizacion():
     """Crea una nueva penalización para un usuario.
 
