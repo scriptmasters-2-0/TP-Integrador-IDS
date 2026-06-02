@@ -5,6 +5,8 @@ decodificación de tokens JWT, y un decorador para proteger rutas que
 requieren autenticación.
 """
 
+from functools import wraps
+
 import bcrypt
 import jwt
 from flask import Blueprint, jsonify, request
@@ -14,11 +16,13 @@ from database import obtener_conexion
 from http_codes_and_messages import (
     HTTP_BAD_REQUEST,
     HTTP_INTERNAL_SERVER_ERROR,
+    HTTP_NOT_FOUND,
     HTTP_OK,
     HTTP_UNAUTHORIZED,
     MSG_BAD_REQUEST,
     MSG_DB_CONNECTION_FAILED,
     MSG_INTERNAL_SERVER_ERROR,
+    MSG_NOT_FOUND,
     MSG_UNAUTHORIZED,
 )
 from validators import valid_login
@@ -41,7 +45,7 @@ def hashear_password(password):
     return hash_bytes.decode("utf-8")
 
 
-def valid_password(password, password_hash):
+def validar_password(password, password_hash):
     """Verifica si una contraseña coincide con su hash.
 
     Args:
@@ -56,6 +60,7 @@ def valid_password(password, password_hash):
         return bcrypt.checkpw(password.encode("utf-8"), password_hash.encode("utf-8"))
 
     except (ValueError, TypeError):
+        print("Error al verificar la contraseña")
         return False
 
 
@@ -120,14 +125,15 @@ def extraer_token_del_header():
     return header[len("Bearer ") :].strip(), "Ok"
 
 
-def requiere_auth(rol):
+# decorator
+def requiere_auth(roles):
     """Decorador que protege una ruta requiriendo autenticación y un rol específico.
 
     Verifica que la petición incluya un token JWT válido en el header
     Authorization y que el rol del usuario coincida con el rol requerido.
 
     Args:
-        rol (str): Rol requerido para acceder a la ruta protegida.
+        roles (str): Roles requeridos para acceder a la ruta protegida.
 
     Returns:
         function: Decorador que envuelve la función de ruta con la
@@ -137,6 +143,7 @@ def requiere_auth(rol):
 
     def wrapperGenerator(route):
 
+        @wraps(route)
         def wrapper(*args, **kwargs):
             token, tokenError = extraer_token_del_header()
 
@@ -148,8 +155,11 @@ def requiere_auth(rol):
             if payload is None:
                 return jsonify({"error": payloadError}), HTTP_UNAUTHORIZED
 
-            if payload.get("rol") != rol:
+            if payload.get("rol") not in roles:
                 return jsonify({"error": MSG_UNAUTHORIZED}), HTTP_UNAUTHORIZED
+
+            request.user_id = payload.get("user_id")
+            request.user_rol = payload.get("rol")
 
             return route(*args, **kwargs)
 
@@ -213,7 +223,13 @@ def login():
 
         password_hash = user.get("password_hash", "")
 
-        if not valid_password(password, password_hash) and password_hash != "":
+        if not validar_password(password, password_hash) and password_hash != "":
+            print(
+                validar_password(
+                    "password",
+                    "$2b$12$KIXe8T3G/R/y1P.4yHxz/e/N.t.C79.A8aZ3vA.j1gX.oDkM3p6X2",
+                )
+            )
             return (
                 jsonify({"error": MSG_UNAUTHORIZED, "detail": "invalid_credentials"}),
                 HTTP_UNAUTHORIZED,
@@ -251,30 +267,8 @@ def login():
             pass
 
 
-def buscar_usuario_por_mail(mail):
-    """Busca un usuario en la base de datos por su dirección de correo electrónico.
-
-    Args:
-        mail (str): Dirección de correo electrónico con formato válido.
-
-    Returns:
-        dict or None: Diccionario con los datos del usuario (id, nombre, mail,
-            contrasenia_hash, rol) si existe, None si no se encuentra.
-
-    """
-    conexion = obtener_conexion()
-    cursor = conexion.cursor(dictionary=True)
-    cursor.execute(
-        "SELECT id, nombre, mail, contrasenia_hash, rol FROM usuario WHERE mail = %s",
-        (mail,),
-    )
-    usuario = cursor.fetchone()
-    cursor.close()
-    conexion.close()
-    return usuario
-
-
-@auth_bp.route("/auth/logout", methods=["POST"])
+@auth_bp.route("/api/auth/logout", methods=["POST"])
+@requiere_auth(roles=["admin"])
 def logout():
     """Cierra la sesión del usuario autenticado.
 
@@ -286,3 +280,71 @@ def logout():
 
     """
     return jsonify({"mensaje": "Sesión cerrada con éxito"}), HTTP_OK
+
+
+@auth_bp.route("/api/auth/me", methods=["GET"])
+@requiere_auth(roles=["admin", "alumno", "profesor", "bibliotecario"])
+def obtener_perfil():
+    """Obtiene el perfil del usuario autenticado.
+
+    El request debe incluir un JWT válido en el header Authorization.
+    Retorna los datos del usuario extraídos del token.
+
+    Returns:
+        tuple: JSON con los datos del usuario (id, rol) y código 200,
+            o mensaje de error con código 401 si el token es inválido.
+
+    """
+    conn = obtener_conexion()
+
+    if conn is None:
+        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
+
+    cursor = None
+
+    try:
+        cursor = conn.cursor(dictionary=True)
+
+        sql_query = """
+            SELECT id, nombre, mail, score, rol, carrera, password_hash
+            FROM usuario
+            WHERE id = %(user_id)s
+            LIMIT 1
+        """
+        value = {"user_id": request.user_id}
+
+        cursor.execute(sql_query, value)
+
+        user = cursor.fetchone()
+        if not user:
+            return (
+                jsonify({"error": MSG_NOT_FOUND}),
+                HTTP_NOT_FOUND,
+            )
+
+        user_profile = {
+            "id": user.get("id"),
+            "nombre": user.get("nombre"),
+            "mail": user.get("mail"),
+            "score": user.get("score"),
+            "rol": user.get("rol"),
+            "carrera": user.get("carrera"),
+        }
+
+        return jsonify({"user": user_profile}), HTTP_OK
+
+    except Exception:
+        return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
+
+    finally:
+        try:
+            cursor.close()
+
+        except Exception:
+            pass
+
+        try:
+            conn.close()
+
+        except Exception:
+            pass

@@ -21,6 +21,7 @@ from http_codes_and_messages import (
     MSG_INTERNAL_SERVER_ERROR,
     MSG_NOT_FOUND,
 )
+from routes.auth_route import requiere_auth
 from validators import valid_id, valid_user, valid_user_update
 
 users_bp = Blueprint("users", __name__)
@@ -50,6 +51,7 @@ def desactivar_usuario_db(id_usuario):
 
 
 @users_bp.route("/api/users/<int:user_id>/loans", methods=["GET"])
+@requiere_auth(roles=["admin", "profesor", "bibliotecario", "alumno"])
 def get_user_loans(user_id):
     """Obtiene los préstamos (reservas) de un usuario específico.
 
@@ -116,7 +118,8 @@ def get_user_loans(user_id):
 
 
 @users_bp.route("/api/users", methods=["POST"])
-def create_user():  # noqa: PLR0911, PLR0912
+@requiere_auth(roles=["admin"])
+def create_user():
     """Crea un nuevo usuario en el sistema.
 
     Espera un cuerpo JSON con los datos del usuario: nombre, mail,
@@ -206,7 +209,8 @@ def create_user():  # noqa: PLR0911, PLR0912
 
 
 @users_bp.route("/api/users/<int:user_id>", methods=["PUT"])
-def update_user(user_id):  # noqa: PLR0911, PLR0912
+@requiere_auth(roles=["admin"])
+def update_user(user_id):
     """Actualiza los datos de un usuario existente.
 
     Permite modificar cualquier campo del usuario mediante un cuerpo
@@ -300,6 +304,7 @@ def update_user(user_id):  # noqa: PLR0911, PLR0912
 
 
 @users_bp.route("/api/usuarios/<int:id_usuario>", methods=["DELETE"])
+@requiere_auth(roles=["admin"])
 def eliminar_usuario(id_usuario):
     """Da de baja lógica a un usuario por su id.
 

@@ -15,6 +15,7 @@ from http_codes_and_messages import (
     MSG_INTERNAL_SERVER_ERROR,
     MSG_NOT_FOUND,
 )
+from routes.auth_route import requiere_auth
 from validators import valid_id, valid_item, valid_item_filters, valid_item_update
 
 items_bp = Blueprint("items", __name__)
@@ -134,6 +135,7 @@ def get_items():  # noqa: PLR0912
 
 
 @items_bp.route("/api/items", methods=["POST"])
+@requiere_auth(roles=["admin", "bibliotecario", "profesor"])
 def create_item():
     """Crea un nuevo artículo en el inventario.
 
@@ -227,6 +229,7 @@ def create_item():
 
 
 @items_bp.route("/api/items/<int:item_id>", methods=["PUT"])
+@requiere_auth(roles=["admin", "bibliotecario", "profesor"])
 def update_item(item_id):  # noqa: PLR0911, PLR0912
     """Actualiza un artículo existente del inventario.
 
@@ -316,6 +319,7 @@ def update_item(item_id):  # noqa: PLR0911, PLR0912
 
 
 @items_bp.route("/api/items/<int:item_id>/condition", methods=["PATCH"])
+@requiere_auth(roles=["admin", "bibliotecario", "profesor"])
 def actualizar_condicion(item_id):
     """Actualiza la condición o estado de un artículo.
 
@@ -341,7 +345,9 @@ def actualizar_condicion(item_id):
     estados_validos = ["disponible", "dañado", "reparacion", "dado de baja"]
 
     if nuevo_estado not in estados_validos:
-        return jsonify({"error": MSG_BAD_REQUEST, "detail": "Estado no permitido"}), HTTP_BAD_REQUEST
+        return jsonify(
+            {"error": MSG_BAD_REQUEST, "detail": "Estado no permitido"}
+        ), HTTP_BAD_REQUEST
 
     conn = obtener_conexion()
     if conn is None:
@@ -353,7 +359,9 @@ def actualizar_condicion(item_id):
         cursor = conn.cursor(dictionary=True)
 
         if nuevo_estado in ["reparacion", "dañado"]:
-            cursor.execute("UPDATE articulos SET necesita_reparacion = 1 WHERE id = %s", (item_id,))
+            cursor.execute(
+                "UPDATE articulos SET necesita_reparacion = 1 WHERE id = %s", (item_id,)
+            )
 
         elif nuevo_estado == "dado de baja":
             cursor.execute(
@@ -362,7 +370,9 @@ def actualizar_condicion(item_id):
             )
 
         else:
-            cursor.execute("UPDATE articulos SET necesita_reparacion = 0 WHERE id = %s", (item_id,))
+            cursor.execute(
+                "UPDATE articulos SET necesita_reparacion = 0 WHERE id = %s", (item_id,)
+            )
 
         conn.commit()
 
@@ -391,6 +401,7 @@ def actualizar_condicion(item_id):
 
 
 @items_bp.route("/api/items/<int:item_id>", methods=["DELETE"])
+@requiere_auth(roles=["admin", "bibliotecario", "profesor"])
 def eliminar_item(item_id):
     """Realiza la baja lógica de un artículo en el inventario.
 

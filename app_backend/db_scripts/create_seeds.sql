@@ -1,285 +1,1765 @@
 USE sistema_prestamos;
 
-INSERT INTO usuario (nombre, mail, score, rol, carrera) VALUES
-('Usuario 1', 'usuario1@example.com', 10, 'alumno', 'Ingenieria'),
-('Usuario 2', 'usuario2@example.com', 12, 'alumno', 'Arquitectura'),
-('Usuario 3', 'usuario3@example.com', 5, 'alumno', 'Medicina'),
-('Usuario 4', 'usuario4@example.com', 20, 'alumno', 'Derecho'),
-('Usuario 5', 'usuario5@example.com', 7, 'alumno', 'Economia'),
-('Usuario 6', 'usuario6@example.com', 3, 'alumno', 'Psicologia'),
-('Usuario 7', 'usuario7@example.com', 15, 'alumno', 'Quimica'),
-('Usuario 8', 'usuario8@example.com', 8, 'alumno', 'Fisica'),
-('Usuario 9', 'usuario9@example.com', 11, 'alumno', 'Biologia'),
-('Usuario 10', 'usuario10@example.com', 9, 'alumno', 'Matematica'),
-('Usuario 11', 'usuario11@example.com', 14, 'alumno', 'Ingenieria'),
-('Usuario 12', 'usuario12@example.com', 6, 'alumno', 'Arquitectura'),
-('Usuario 13', 'usuario13@example.com', 4, 'alumno', 'Medicina'),
-('Usuario 14', 'usuario14@example.com', 18, 'alumno', 'Derecho'),
-('Usuario 15', 'usuario15@example.com', 2, 'alumno', 'Economia'),
-('Usuario 16', 'usuario16@example.com', 1, 'alumno', 'Psicologia'),
-('Usuario 17', 'usuario17@example.com', 16, 'alumno', 'Quimica'),
-('Usuario 18', 'usuario18@example.com', 13, 'alumno', 'Fisica'),
-('Usuario 19', 'usuario19@example.com', 17, 'alumno', 'Biologia'),
-('Usuario 20', 'usuario20@example.com', 19, 'alumno', 'Matematica'),
-('Usuario 21', 'usuario21@example.com', 0, 'alumno', 'Ingenieria'),
-('Usuario 22', 'usuario22@example.com', 21, 'alumno', 'Arquitectura'),
-('Usuario 23', 'usuario23@example.com', 22, 'alumno', 'Medicina'),
-('Usuario 24', 'usuario24@example.com', 23, 'alumno', 'Derecho'),
-('Usuario 25', 'usuario25@example.com', 24, 'alumno', 'Economia'),
-('Usuario 26', 'usuario26@example.com', 25, 'alumno', 'Psicologia'),
-('Usuario 27', 'usuario27@example.com', 26, 'alumno', 'Quimica'),
-('Usuario 28', 'usuario28@example.com', 27, 'alumno', 'Fisica'),
-('Usuario 29', 'usuario29@example.com', 28, 'alumno', 'Biologia'),
-('Usuario 30', 'usuario30@example.com', 29, 'alumno', 'Matematica'),
-('Usuario 31', 'usuario31@example.com', 30, 'alumno', 'Ingenieria'),
-('Usuario 32', 'usuario32@example.com', 31, 'alumno', 'Arquitectura'),
-('Usuario 33', 'usuario33@example.com', 32, 'alumno', 'Medicina'),
-('Usuario 34', 'usuario34@example.com', 33, 'alumno', 'Derecho'),
-('Usuario 35', 'usuario35@example.com', 34, 'alumno', 'Economia'),
-('Usuario 36', 'usuario36@example.com', 35, 'alumno', 'Psicologia'),
-('Usuario 37', 'usuario37@example.com', 36, 'alumno', 'Quimica'),
-('Usuario 38', 'usuario38@example.com', 37, 'alumno', 'Fisica'),
-('Usuario 39', 'usuario39@example.com', 38, 'alumno', 'Biologia'),
-('Usuario 40', 'usuario40@example.com', 39, 'alumno', 'Matematica'),
-('Usuario 41', 'usuario41@example.com', 40, 'alumno', 'Ingenieria'),
-('Usuario 42', 'usuario42@example.com', 41, 'alumno', 'Arquitectura'),
-('Usuario 43', 'usuario43@example.com', 42, 'alumno', 'Medicina'),
-('Usuario 44', 'usuario44@example.com', 43, 'alumno', 'Derecho'),
-('Usuario 45', 'usuario45@example.com', 44, 'alumno', 'Economia'),
-('Usuario 46', 'usuario46@example.com', 45, 'alumno', 'Psicologia'),
-('Usuario 47', 'usuario47@example.com', 46, 'alumno', 'Quimica'),
-('Usuario 48', 'usuario48@example.com', 47, 'alumno', 'Fisica'),
-('Usuario 49', 'usuario49@example.com', 48, 'alumno', 'Biologia'),
-('Usuario 50', 'usuario50@example.com', 49, 'alumno', 'Matematica');
+-- ==============================================================================
+-- 0. PREPARACIÓN (Limpieza de tablas y reseteo de AUTO_INCREMENT)
+-- ==============================================================================
+SET
+  FOREIGN_KEY_CHECKS = 0;
 
-INSERT INTO articulos (nombre_art, tipo, seccion, prestacion_maxima, stock, necesita_reparacion) VALUES
-('Articulo 1','Herramienta','Taller',10,5,0),
-('Articulo 2','Equipo','Laboratorio',20,2,0),
-('Articulo 3','Equipo','Laboratorio',15,1,1),
-('Articulo 4','Material','Biblioteca',5,10,0),
-('Articulo 5','Instrumento','Musica',8,3,0),
-('Articulo 6','Herramienta','Taller',12,4,0),
-('Articulo 7','Equipo','Laboratorio',30,2,0),
-('Articulo 8','Material','Biblioteca',6,7,0),
-('Articulo 9','Instrumento','Musica',9,2,0),
-('Articulo 10','Herramienta','Taller',11,1,1),
-('Articulo 11','Equipo','Laboratorio',14,3,0),
-('Articulo 12','Material','Biblioteca',4,12,0),
-('Articulo 13','Instrumento','Musica',7,2,0),
-('Articulo 14','Herramienta','Taller',13,6,0),
-('Articulo 15','Equipo','Laboratorio',22,2,0),
-('Articulo 16','Material','Biblioteca',3,20,0),
-('Articulo 17','Instrumento','Musica',10,4,0),
-('Articulo 18','Herramienta','Taller',9,5,0),
-('Articulo 19','Equipo','Laboratorio',18,2,1),
-('Articulo 20','Material','Biblioteca',2,15,0),
-('Articulo 21','Instrumento','Musica',16,1,0),
-('Articulo 22','Herramienta','Taller',17,3,0),
-('Articulo 23','Equipo','Laboratorio',21,2,0),
-('Articulo 24','Material','Biblioteca',5,8,0),
-('Articulo 25','Instrumento','Musica',6,2,0),
-('Articulo 26','Herramienta','Taller',8,9,0),
-('Articulo 27','Equipo','Laboratorio',19,2,0),
-('Articulo 28','Material','Biblioteca',7,11,0),
-('Articulo 29','Instrumento','Musica',14,3,0),
-('Articulo 30','Herramienta','Taller',20,2,1),
-('Articulo 31','Equipo','Laboratorio',25,2,0),
-('Articulo 32','Material','Biblioteca',5,9,0),
-('Articulo 33','Instrumento','Musica',11,2,0),
-('Articulo 34','Herramienta','Taller',13,4,0),
-('Articulo 35','Equipo','Laboratorio',17,2,0),
-('Articulo 36','Material','Biblioteca',6,6,0),
-('Articulo 37','Instrumento','Musica',12,3,0),
-('Articulo 38','Herramienta','Taller',9,5,0),
-('Articulo 39','Equipo','Laboratorio',23,2,0),
-('Articulo 40','Material','Biblioteca',4,14,0),
-('Articulo 41','Instrumento','Musica',15,2,0),
-('Articulo 42','Herramienta','Taller',10,7,0),
-('Articulo 43','Equipo','Laboratorio',16,2,0),
-('Articulo 44','Material','Biblioteca',3,18,0),
-('Articulo 45','Instrumento','Musica',8,2,0),
-('Articulo 46','Herramienta','Taller',21,3,0),
-('Articulo 47','Equipo','Laboratorio',24,2,0),
-('Articulo 48','Material','Biblioteca',2,25,0),
-('Articulo 49','Instrumento','Musica',13,4,0),
-('Articulo 50','Herramienta','Taller',18,2,0);
+TRUNCATE TABLE qr;
 
-INSERT INTO reserva (id_usuario, id_reservado, estado_reserva, fecha_retiro, fecha_regreso) VALUES
-(1,1,'pendiente', DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 1 DAY), INTERVAL 7 DAY)),
-(2,2,'aprobado', DATE_SUB(NOW(), INTERVAL 2 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 2 DAY), INTERVAL 5 DAY)),
-(3,3,'devuelto', DATE_SUB(NOW(), INTERVAL 3 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 3 DAY), INTERVAL 3 DAY)),
-(4,4,'cancelado', DATE_SUB(NOW(), INTERVAL 4 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 4 DAY), INTERVAL 10 DAY)),
-(5,5,'pendiente', DATE_SUB(NOW(), INTERVAL 5 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 5 DAY), INTERVAL 7 DAY)),
-(6,6,'aprobado', DATE_SUB(NOW(), INTERVAL 6 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 6 DAY), INTERVAL 5 DAY)),
-(7,7,'devuelto', DATE_SUB(NOW(), INTERVAL 7 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 7 DAY), INTERVAL 3 DAY)),
-(8,8,'pendiente', DATE_SUB(NOW(), INTERVAL 8 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 8 DAY), INTERVAL 7 DAY)),
-(9,9,'aprobado', DATE_SUB(NOW(), INTERVAL 9 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 9 DAY), INTERVAL 5 DAY)),
-(10,10,'devuelto', DATE_SUB(NOW(), INTERVAL 10 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 10 DAY), INTERVAL 3 DAY)),
-(11,11,'pendiente', DATE_SUB(NOW(), INTERVAL 11 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 11 DAY), INTERVAL 7 DAY)),
-(12,12,'aprobado', DATE_SUB(NOW(), INTERVAL 12 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 12 DAY), INTERVAL 5 DAY)),
-(13,13,'devuelto', DATE_SUB(NOW(), INTERVAL 13 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 13 DAY), INTERVAL 3 DAY)),
-(14,14,'cancelado', DATE_SUB(NOW(), INTERVAL 14 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 14 DAY), INTERVAL 10 DAY)),
-(15,15,'pendiente', DATE_SUB(NOW(), INTERVAL 15 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 15 DAY), INTERVAL 7 DAY)),
-(16,16,'aprobado', DATE_SUB(NOW(), INTERVAL 16 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 16 DAY), INTERVAL 5 DAY)),
-(17,17,'devuelto', DATE_SUB(NOW(), INTERVAL 17 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 17 DAY), INTERVAL 3 DAY)),
-(18,18,'pendiente', DATE_SUB(NOW(), INTERVAL 18 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 18 DAY), INTERVAL 7 DAY)),
-(19,19,'aprobado', DATE_SUB(NOW(), INTERVAL 19 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 19 DAY), INTERVAL 5 DAY)),
-(20,20,'devuelto', DATE_SUB(NOW(), INTERVAL 20 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 20 DAY), INTERVAL 3 DAY)),
-(21,21,'pendiente', DATE_SUB(NOW(), INTERVAL 21 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 21 DAY), INTERVAL 7 DAY)),
-(22,22,'aprobado', DATE_SUB(NOW(), INTERVAL 22 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 22 DAY), INTERVAL 5 DAY)),
-(23,23,'devuelto', DATE_SUB(NOW(), INTERVAL 23 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 23 DAY), INTERVAL 3 DAY)),
-(24,24,'cancelado', DATE_SUB(NOW(), INTERVAL 24 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 24 DAY), INTERVAL 10 DAY)),
-(25,25,'pendiente', DATE_SUB(NOW(), INTERVAL 25 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 25 DAY), INTERVAL 7 DAY)),
-(26,26,'aprobado', DATE_SUB(NOW(), INTERVAL 26 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 26 DAY), INTERVAL 5 DAY)),
-(27,27,'devuelto', DATE_SUB(NOW(), INTERVAL 27 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 27 DAY), INTERVAL 3 DAY)),
-(28,28,'pendiente', DATE_SUB(NOW(), INTERVAL 28 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 28 DAY), INTERVAL 7 DAY)),
-(29,29,'aprobado', DATE_SUB(NOW(), INTERVAL 29 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 29 DAY), INTERVAL 5 DAY)),
-(30,30,'devuelto', DATE_SUB(NOW(), INTERVAL 30 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 30 DAY), INTERVAL 3 DAY)),
-(31,31,'pendiente', DATE_SUB(NOW(), INTERVAL 31 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 31 DAY), INTERVAL 7 DAY)),
-(32,32,'aprobado', DATE_SUB(NOW(), INTERVAL 32 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 32 DAY), INTERVAL 5 DAY)),
-(33,33,'devuelto', DATE_SUB(NOW(), INTERVAL 33 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 33 DAY), INTERVAL 3 DAY)),
-(34,34,'cancelado', DATE_SUB(NOW(), INTERVAL 34 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 34 DAY), INTERVAL 10 DAY)),
-(35,35,'pendiente', DATE_SUB(NOW(), INTERVAL 35 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 35 DAY), INTERVAL 7 DAY)),
-(36,36,'aprobado', DATE_SUB(NOW(), INTERVAL 36 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 36 DAY), INTERVAL 5 DAY)),
-(37,37,'devuelto', DATE_SUB(NOW(), INTERVAL 37 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 37 DAY), INTERVAL 3 DAY)),
-(38,38,'pendiente', DATE_SUB(NOW(), INTERVAL 38 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 38 DAY), INTERVAL 7 DAY)),
-(39,39,'aprobado', DATE_SUB(NOW(), INTERVAL 39 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 39 DAY), INTERVAL 5 DAY)),
-(40,40,'devuelto', DATE_SUB(NOW(), INTERVAL 40 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 40 DAY), INTERVAL 3 DAY)),
-(41,41,'pendiente', DATE_SUB(NOW(), INTERVAL 41 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 41 DAY), INTERVAL 7 DAY)),
-(42,42,'aprobado', DATE_SUB(NOW(), INTERVAL 42 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 42 DAY), INTERVAL 5 DAY)),
-(43,43,'devuelto', DATE_SUB(NOW(), INTERVAL 43 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 43 DAY), INTERVAL 3 DAY)),
-(44,44,'cancelado', DATE_SUB(NOW(), INTERVAL 44 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 44 DAY), INTERVAL 10 DAY)),
-(45,45,'pendiente', DATE_SUB(NOW(), INTERVAL 45 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 45 DAY), INTERVAL 7 DAY)),
-(46,46,'aprobado', DATE_SUB(NOW(), INTERVAL 46 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 46 DAY), INTERVAL 5 DAY)),
-(47,47,'devuelto', DATE_SUB(NOW(), INTERVAL 47 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 47 DAY), INTERVAL 3 DAY)),
-(48,48,'pendiente', DATE_SUB(NOW(), INTERVAL 48 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 48 DAY), INTERVAL 7 DAY)),
-(49,49,'aprobado', DATE_SUB(NOW(), INTERVAL 49 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 49 DAY), INTERVAL 5 DAY)),
-(50,50,'devuelto', DATE_SUB(NOW(), INTERVAL 50 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 50 DAY), INTERVAL 3 DAY));
+TRUNCATE TABLE estado_devuelto;
 
-INSERT INTO estado_devuelto (id_reserva, dias_retraso, condiciones) VALUES
-(1,0,'OK'),(2,2,'Leve desgaste'),(3,0,'OK'),(4,5,'Reparacion necesaria'),(5,1,'Pequeños daños'),
-(6,0,'OK'),(7,0,'OK'),(8,3,'Manchas'),(9,0,'OK'),(10,0,'OK'),
-(11,0,'OK'),(12,0,'OK'),(13,4,'Rasguños'),(14,0,'OK'),(15,2,'Atraso menor'),
-(16,0,'OK'),(17,0,'OK'),(18,0,'OK'),(19,1,'Suciedad'),(20,0,'OK'),
-(21,0,'OK'),(22,0,'OK'),(23,0,'OK'),(24,6,'Dañado'),(25,0,'OK'),
-(26,0,'OK'),(27,0,'OK'),(28,0,'OK'),(29,2,'Atraso'),(30,0,'OK'),
-(31,0,'OK'),(32,0,'OK'),(33,0,'OK'),(34,0,'OK'),(35,1,'Atraso menor'),
-(36,0,'OK'),(37,0,'OK'),(38,0,'OK'),(39,0,'OK'),(40,3,'Suciedad'),
-(41,0,'OK'),(42,0,'OK'),(43,0,'OK'),(44,0,'OK'),(45,0,'OK'),
-(46,0,'OK'),(47,0,'OK'),(48,0,'OK'),(49,0,'OK'),(50,0,'OK');
+TRUNCATE TABLE penalizacion;
 
-INSERT INTO penalizacion (id_usuario, motivo, fecha_inicio, fecha_fin, activa) VALUES
-(1,'Retraso en la entrega', DATE_SUB(NOW(), INTERVAL 40 DAY), DATE_SUB(NOW(), INTERVAL 30 DAY), 0),
-(2,'Daño en equipo', DATE_SUB(NOW(), INTERVAL 20 DAY), DATE_SUB(NOW(), INTERVAL 10 DAY), 0),
-(3,'Pérdida de material', DATE_SUB(NOW(), INTERVAL 15 DAY), DATE_SUB(NOW(), INTERVAL 5 DAY), 0),
-(4,'Comportamiento indebido', DATE_SUB(NOW(), INTERVAL 10 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 10 DAY), INTERVAL 5 DAY), 1),
-(5,'Retraso en la entrega', DATE_SUB(NOW(), INTERVAL 9 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 9 DAY), INTERVAL 1 DAY), 1),
-(6,'Daño en equipo', DATE_SUB(NOW(), INTERVAL 8 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 8 DAY), INTERVAL 2 DAY), 1),
-(7,'Pérdida de material', DATE_SUB(NOW(), INTERVAL 7 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 7 DAY), INTERVAL 3 DAY), 1),
-(8,'Retraso en la entrega', DATE_SUB(NOW(), INTERVAL 6 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 6 DAY), INTERVAL 2 DAY), 1),
-(9,'Daño en equipo', DATE_SUB(NOW(), INTERVAL 5 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 5 DAY), INTERVAL 1 DAY), 1),
-(10,'Pérdida de material', DATE_SUB(NOW(), INTERVAL 4 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 4 DAY), INTERVAL 1 DAY), 1),
-(11,'Retraso en la entrega', DATE_SUB(NOW(), INTERVAL 3 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 3 DAY), INTERVAL 2 DAY), 1),
-(12,'Daño en equipo', DATE_SUB(NOW(), INTERVAL 2 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 2 DAY), INTERVAL 2 DAY), 1),
-(13,'Pérdida de material', DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_ADD(DATE_SUB(NOW(), INTERVAL 1 DAY), INTERVAL 1 DAY), 1),
-(14,'Comportamiento indebido', NOW(), DATE_ADD(NOW(), INTERVAL 7 DAY), 1),
-(15,'Retraso en la entrega', NOW(), DATE_ADD(NOW(), INTERVAL 3 DAY), 1),
-(16,'Daño en equipo', NOW(), DATE_ADD(NOW(), INTERVAL 4 DAY), 1),
-(17,'Pérdida de material', NOW(), DATE_ADD(NOW(), INTERVAL 5 DAY), 1),
-(18,'Retraso en la entrega', NOW(), DATE_ADD(NOW(), INTERVAL 1 DAY), 1),
-(19,'Daño en equipo', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(20,'Pérdida de material', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(21,'Retraso en la entrega', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(22,'Daño en equipo', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(23,'Pérdida de material', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(24,'Comportamiento indebido', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(25,'Retraso en la entrega', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(26,'Daño en equipo', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(27,'Pérdida de material', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(28,'Retraso en la entrega', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(29,'Daño en equipo', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(30,'Pérdida de material', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(31,'Retraso en la entrega', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(32,'Daño en equipo', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(33,'Pérdida de material', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(34,'Retraso en la entrega', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(35,'Daño en equipo', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(36,'Pérdida de material', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(37,'Retraso en la entrega', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(38,'Daño en equipo', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(39,'Pérdida de material', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(40,'Retraso en la entrega', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(41,'Daño en equipo', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(42,'Pérdida de material', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(43,'Retraso en la entrega', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(44,'Daño en equipo', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(45,'Pérdida de material', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(46,'Retraso en la entrega', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(47,'Daño en equipo', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(48,'Pérdida de material', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(49,'Retraso en la entrega', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1),
-(50,'Daño en equipo', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 1);
+TRUNCATE TABLE reserva;
 
-INSERT INTO qr (id_reserva, fecha_generado, codigo, escaneado) VALUES
-(1, DATE_SUB(NOW(), INTERVAL 1 DAY), 'QR0001', 0),(2, DATE_SUB(NOW(), INTERVAL 2 DAY), 'QR0002', 0),(3, DATE_SUB(NOW(), INTERVAL 3 DAY), 'QR0003', 1),(4, DATE_SUB(NOW(), INTERVAL 4 DAY), 'QR0004', 0),(5, DATE_SUB(NOW(), INTERVAL 5 DAY), 'QR0005', 0),
-(6, DATE_SUB(NOW(), INTERVAL 6 DAY), 'QR0006', 0),(7, DATE_SUB(NOW(), INTERVAL 7 DAY), 'QR0007', 1),(8, DATE_SUB(NOW(), INTERVAL 8 DAY), 'QR0008', 0),(9, DATE_SUB(NOW(), INTERVAL 9 DAY), 'QR0009', 0),(10, DATE_SUB(NOW(), INTERVAL 10 DAY), 'QR0010', 0),
-(11, DATE_SUB(NOW(), INTERVAL 11 DAY), 'QR0011', 0),(12, DATE_SUB(NOW(), INTERVAL 12 DAY), 'QR0012', 0),(13, DATE_SUB(NOW(), INTERVAL 13 DAY), 'QR0013', 1),(14, DATE_SUB(NOW(), INTERVAL 14 DAY), 'QR0014', 0),(15, DATE_SUB(NOW(), INTERVAL 15 DAY), 'QR0015', 0),
-(16, DATE_SUB(NOW(), INTERVAL 16 DAY), 'QR0016', 0),(17, DATE_SUB(NOW(), INTERVAL 17 DAY), 'QR0017', 0),(18, DATE_SUB(NOW(), INTERVAL 18 DAY), 'QR0018', 0),(19, DATE_SUB(NOW(), INTERVAL 19 DAY), 'QR0019', 0),(20, DATE_SUB(NOW(), INTERVAL 20 DAY), 'QR0020', 0),
-(21, DATE_SUB(NOW(), INTERVAL 21 DAY), 'QR0021', 0),(22, DATE_SUB(NOW(), INTERVAL 22 DAY), 'QR0022', 0),(23, DATE_SUB(NOW(), INTERVAL 23 DAY), 'QR0023', 0),(24, DATE_SUB(NOW(), INTERVAL 24 DAY), 'QR0024', 1),(25, DATE_SUB(NOW(), INTERVAL 25 DAY), 'QR0025', 0),
-(26, DATE_SUB(NOW(), INTERVAL 26 DAY), 'QR0026', 0),(27, DATE_SUB(NOW(), INTERVAL 27 DAY), 'QR0027', 0),(28, DATE_SUB(NOW(), INTERVAL 28 DAY), 'QR0028', 0),(29, DATE_SUB(NOW(), INTERVAL 29 DAY), 'QR0029', 0),(30, DATE_SUB(NOW(), INTERVAL 30 DAY), 'QR0030', 0),
-(31, DATE_SUB(NOW(), INTERVAL 31 DAY), 'QR0031', 0),(32, DATE_SUB(NOW(), INTERVAL 32 DAY), 'QR0032', 0),(33, DATE_SUB(NOW(), INTERVAL 33 DAY), 'QR0033', 0),(34, DATE_SUB(NOW(), INTERVAL 34 DAY), 'QR0034', 0),(35, DATE_SUB(NOW(), INTERVAL 35 DAY), 'QR0035', 1),
-(36, DATE_SUB(NOW(), INTERVAL 36 DAY), 'QR0036', 0),(37, DATE_SUB(NOW(), INTERVAL 37 DAY), 'QR0037', 0),(38, DATE_SUB(NOW(), INTERVAL 38 DAY), 'QR0038', 0),(39, DATE_SUB(NOW(), INTERVAL 39 DAY), 'QR0039', 0),(40, DATE_SUB(NOW(), INTERVAL 40 DAY), 'QR0040', 0),
-(41, DATE_SUB(NOW(), INTERVAL 41 DAY), 'QR0041', 0),(42, DATE_SUB(NOW(), INTERVAL 42 DAY), 'QR0042', 0),(43, DATE_SUB(NOW(), INTERVAL 43 DAY), 'QR0043', 0),(44, DATE_SUB(NOW(), INTERVAL 44 DAY), 'QR0044', 0),(45, DATE_SUB(NOW(), INTERVAL 45 DAY), 'QR0045', 0),
-(46, DATE_SUB(NOW(), INTERVAL 46 DAY), 'QR0046', 0),(47, DATE_SUB(NOW(), INTERVAL 47 DAY), 'QR0047', 0),(48, DATE_SUB(NOW(), INTERVAL 48 DAY), 'QR0048', 0),(49, DATE_SUB(NOW(), INTERVAL 49 DAY), 'QR0049', 0),(50, DATE_SUB(NOW(), INTERVAL 50 DAY), 'QR0050', 0);
+TRUNCATE TABLE articulos;
 
-INSERT INTO normativa (titulo, descripcion, fecha) VALUES
-('Normativa 1','Descripcion de normativa 1', DATE_SUB(NOW(), INTERVAL 400 DAY)),
-('Normativa 2','Descripcion de normativa 2', DATE_SUB(NOW(), INTERVAL 390 DAY)),
-('Normativa 3','Descripcion de normativa 3', DATE_SUB(NOW(), INTERVAL 380 DAY)),
-('Normativa 4','Descripcion de normativa 4', DATE_SUB(NOW(), INTERVAL 370 DAY)),
-('Normativa 5','Descripcion de normativa 5', DATE_SUB(NOW(), INTERVAL 360 DAY)),
-('Normativa 6','Descripcion de normativa 6', DATE_SUB(NOW(), INTERVAL 350 DAY)),
-('Normativa 7','Descripcion de normativa 7', DATE_SUB(NOW(), INTERVAL 340 DAY)),
-('Normativa 8','Descripcion de normativa 8', DATE_SUB(NOW(), INTERVAL 330 DAY)),
-('Normativa 9','Descripcion de normativa 9', DATE_SUB(NOW(), INTERVAL 320 DAY)),
-('Normativa 10','Descripcion de normativa 10', DATE_SUB(NOW(), INTERVAL 310 DAY)),
-('Normativa 11','Descripcion de normativa 11', DATE_SUB(NOW(), INTERVAL 300 DAY)),
-('Normativa 12','Descripcion de normativa 12', DATE_SUB(NOW(), INTERVAL 290 DAY)),
-('Normativa 13','Descripcion de normativa 13', DATE_SUB(NOW(), INTERVAL 280 DAY)),
-('Normativa 14','Descripcion de normativa 14', DATE_SUB(NOW(), INTERVAL 270 DAY)),
-('Normativa 15','Descripcion de normativa 15', DATE_SUB(NOW(), INTERVAL 260 DAY)),
-('Normativa 16','Descripcion de normativa 16', DATE_SUB(NOW(), INTERVAL 250 DAY)),
-('Normativa 17','Descripcion de normativa 17', DATE_SUB(NOW(), INTERVAL 240 DAY)),
-('Normativa 18','Descripcion de normativa 18', DATE_SUB(NOW(), INTERVAL 230 DAY)),
-('Normativa 19','Descripcion de normativa 19', DATE_SUB(NOW(), INTERVAL 220 DAY)),
-('Normativa 20','Descripcion de normativa 20', DATE_SUB(NOW(), INTERVAL 210 DAY)),
-('Normativa 21','Descripcion de normativa 21', DATE_SUB(NOW(), INTERVAL 200 DAY)),
-('Normativa 22','Descripcion de normativa 22', DATE_SUB(NOW(), INTERVAL 190 DAY)),
-('Normativa 23','Descripcion de normativa 23', DATE_SUB(NOW(), INTERVAL 180 DAY)),
-('Normativa 24','Descripcion de normativa 24', DATE_SUB(NOW(), INTERVAL 170 DAY)),
-('Normativa 25','Descripcion de normativa 25', DATE_SUB(NOW(), INTERVAL 160 DAY)),
-('Normativa 26','Descripcion de normativa 26', DATE_SUB(NOW(), INTERVAL 150 DAY)),
-('Normativa 27','Descripcion de normativa 27', DATE_SUB(NOW(), INTERVAL 140 DAY)),
-('Normativa 28','Descripcion de normativa 28', DATE_SUB(NOW(), INTERVAL 130 DAY)),
-('Normativa 29','Descripcion de normativa 29', DATE_SUB(NOW(), INTERVAL 120 DAY)),
-('Normativa 30','Descripcion de normativa 30', DATE_SUB(NOW(), INTERVAL 110 DAY)),
-('Normativa 31','Descripcion de normativa 31', DATE_SUB(NOW(), INTERVAL 100 DAY)),
-('Normativa 32','Descripcion de normativa 32', DATE_SUB(NOW(), INTERVAL 90 DAY)),
-('Normativa 33','Descripcion de normativa 33', DATE_SUB(NOW(), INTERVAL 80 DAY)),
-('Normativa 34','Descripcion de normativa 34', DATE_SUB(NOW(), INTERVAL 70 DAY)),
-('Normativa 35','Descripcion de normativa 35', DATE_SUB(NOW(), INTERVAL 60 DAY)),
-('Normativa 36','Descripcion de normativa 36', DATE_SUB(NOW(), INTERVAL 50 DAY)),
-('Normativa 37','Descripcion de normativa 37', DATE_SUB(NOW(), INTERVAL 40 DAY)),
-('Normativa 38','Descripcion de normativa 38', DATE_SUB(NOW(), INTERVAL 30 DAY)),
-('Normativa 39','Descripcion de normativa 39', DATE_SUB(NOW(), INTERVAL 20 DAY)),
-('Normativa 40','Descripcion de normativa 40', DATE_SUB(NOW(), INTERVAL 10 DAY)),
-('Normativa 41','Descripcion de normativa 41', NOW()),
-('Normativa 42','Descripcion de normativa 42', DATE_ADD(NOW(), INTERVAL 10 DAY)),
-('Normativa 43','Descripcion de normativa 43', DATE_ADD(NOW(), INTERVAL 20 DAY)),
-('Normativa 44','Descripcion de normativa 44', DATE_ADD(NOW(), INTERVAL 30 DAY)),
-('Normativa 45','Descripcion de normativa 45', DATE_ADD(NOW(), INTERVAL 40 DAY)),
-('Normativa 46','Descripcion de normativa 46', DATE_ADD(NOW(), INTERVAL 50 DAY)),
-('Normativa 47','Descripcion de normativa 47', DATE_ADD(NOW(), INTERVAL 60 DAY)),
-('Normativa 48','Descripcion de normativa 48', DATE_ADD(NOW(), INTERVAL 70 DAY)),
-('Normativa 49','Descripcion de normativa 49', DATE_ADD(NOW(), INTERVAL 80 DAY)),
-('Normativa 50','Descripcion de normativa 50', DATE_ADD(NOW(), INTERVAL 90 DAY));
+TRUNCATE TABLE usuario;
+
+TRUNCATE TABLE normativa;
+
+SET
+  FOREIGN_KEY_CHECKS = 1;
+
+-- ==============================================================================
+-- 1. USUARIOS (Roles distribuidos, contraseñas dummy, estados activos/inactivos)
+-- ==============================================================================
+-- Hash para la contraseña "password"
+SET
+  @dummy_hash = '$2b$12$.yNicNI/5TBWFR.cxzZyculiuEX/6lsgU/4V8um308AtCNfpDasm2';
+
+INSERT INTO
+  usuario (
+    nombre,
+    mail,
+    score,
+    rol,
+    carrera,
+    password_hash,
+    activo
+  )
+VALUES
+  -- Administración y Staff (IDs 1 al 5)
+  (
+    'Admin Sistema',
+    'admin@instituto.edu.ar',
+    100,
+    'admin',
+    NULL,
+    @dummy_hash,
+    1
+  ),
+  (
+    'Biblio Principal',
+    'biblioteca@instituto.edu.ar',
+    100,
+    'bibliotecario',
+    NULL,
+    @dummy_hash,
+    1
+  ),
+  (
+    'Profesor Laboratorio',
+    'proflab@instituto.edu.ar',
+    100,
+    'profesor',
+    'Ingenieria Electronica',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Profesor Taller',
+    'proftaller@instituto.edu.ar',
+    100,
+    'profesor',
+    'Ingenieria Mecanica',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Profesor Sistemas',
+    'profsis@instituto.edu.ar',
+    100,
+    'profesor',
+    'Ingenieria en Sistemas',
+    @dummy_hash,
+    1
+  ),
+  -- Alumnos (IDs 6 al 50)
+  (
+    'Ana Martinez',
+    'amartinez@instituto.edu.ar',
+    85,
+    'alumno',
+    'Ingenieria en Sistemas',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Carlos Ruiz',
+    'cruiz@instituto.edu.ar',
+    92,
+    'alumno',
+    'Ingenieria Electronica',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Laura Gomez',
+    'lgomez@instituto.edu.ar',
+    45,
+    'alumno',
+    'Arquitectura',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Diego Fernandez',
+    'dfernandez@instituto.edu.ar',
+    100,
+    'alumno',
+    'Derecho',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Sofia Silva',
+    'ssilva@instituto.edu.ar',
+    78,
+    'alumno',
+    'Medicina',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Martin Castro',
+    'mcastro@instituto.edu.ar',
+    30,
+    'alumno',
+    'Ingenieria Civil',
+    @dummy_hash,
+    0
+  ),  -- Inactivo
+  (
+    'Lucia Torres',
+    'ltorres@instituto.edu.ar',
+    88,
+    'alumno',
+    'Quimica',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Javier Lopez',
+    'jlopez@instituto.edu.ar',
+    55,
+    'alumno',
+    'Fisica',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Camila Diaz',
+    'cdiaz@instituto.edu.ar',
+    95,
+    'alumno',
+    'Biologia',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Facundo Morales',
+    'fmorales@instituto.edu.ar',
+    20,
+    'alumno',
+    'Matematica',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Valentina Herrera',
+    'vherrera@instituto.edu.ar',
+    70,
+    'alumno',
+    'Ingenieria en Sistemas',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Matias Romero',
+    'mromero@instituto.edu.ar',
+    82,
+    'alumno',
+    'Ingenieria Electronica',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Florencia Suarez',
+    'fsuarez@instituto.edu.ar',
+    40,
+    'alumno',
+    'Arquitectura',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Ezequiel Dominguez',
+    'edominguez@instituto.edu.ar',
+    65,
+    'alumno',
+    'Derecho',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Julieta Gimenez',
+    'jgimenez@instituto.edu.ar',
+    91,
+    'alumno',
+    'Psicologia',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Tomas Alonso',
+    'talonso@instituto.edu.ar',
+    10,
+    'alumno',
+    'Ingenieria en Sistemas',
+    @dummy_hash,
+    0
+  ),  -- Inactivo
+  (
+    'Rocio Blanco',
+    'rblanco@instituto.edu.ar',
+    89,
+    'alumno',
+    'Quimica',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Nicolas Medina',
+    'nmedina@instituto.edu.ar',
+    76,
+    'alumno',
+    'Fisica',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Micaela Vega',
+    'mvega@instituto.edu.ar',
+    99,
+    'alumno',
+    'Biologia',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Gaston Navarro',
+    'gnavarro@instituto.edu.ar',
+    34,
+    'alumno',
+    'Matematica',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Paula Iglesias',
+    'piglesias@instituto.edu.ar',
+    50,
+    'alumno',
+    'Ingenieria Industrial',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Agustin Cabrera',
+    'acabrera@instituto.edu.ar',
+    66,
+    'alumno',
+    'Arquitectura',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Carolina Vidal',
+    'cvidal@instituto.edu.ar',
+    87,
+    'alumno',
+    'Medicina',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Julian Mendoza',
+    'jmendoza@instituto.edu.ar',
+    15,
+    'alumno',
+    'Derecho',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Emilia Ortiz',
+    'eortiz@instituto.edu.ar',
+    74,
+    'alumno',
+    'Economia',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Lucas Rios',
+    'lrios@instituto.edu.ar',
+    93,
+    'alumno',
+    'Psicologia',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Agostina Castillo',
+    'acastillo@instituto.edu.ar',
+    60,
+    'alumno',
+    'Quimica',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Franco Acosta',
+    'facosta@instituto.edu.ar',
+    81,
+    'alumno',
+    'Fisica',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Daniela Peralta',
+    'dperalta@instituto.edu.ar',
+    22,
+    'alumno',
+    'Biologia',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Ignacio Paz',
+    'ipaz@instituto.edu.ar',
+    79,
+    'alumno',
+    'Matematica',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Martina Nuñez',
+    'mnunez@instituto.edu.ar',
+    90,
+    'alumno',
+    'Ingenieria en Sistemas',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Pablo Aguilar',
+    'paguilar@instituto.edu.ar',
+    48,
+    'alumno',
+    'Arquitectura',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Victoria Mendez',
+    'vmendez@instituto.edu.ar',
+    84,
+    'alumno',
+    'Medicina',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Rodrigo Cruz',
+    'rcruz@instituto.edu.ar',
+    33,
+    'alumno',
+    'Derecho',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Belen Arias',
+    'barias@instituto.edu.ar',
+    97,
+    'alumno',
+    'Economia',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Joaquin Cabrera',
+    'jcabrera@instituto.edu.ar',
+    56,
+    'alumno',
+    'Psicologia',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Candela Molina',
+    'cmolina@instituto.edu.ar',
+    71,
+    'alumno',
+    'Quimica',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Alejandro Rojas',
+    'arojas@instituto.edu.ar',
+    83,
+    'alumno',
+    'Fisica',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Renata Luna',
+    'rluna@instituto.edu.ar',
+    12,
+    'alumno',
+    'Biologia',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Esteban Miranda',
+    'emiranda@instituto.edu.ar',
+    68,
+    'alumno',
+    'Matematica',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Josefina Soto',
+    'jsoto@instituto.edu.ar',
+    96,
+    'alumno',
+    'Ingenieria en Sistemas',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Marcos Bravo',
+    'mbravo@instituto.edu.ar',
+    41,
+    'alumno',
+    'Arquitectura',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Antonella Gallardo',
+    'agallardo@instituto.edu.ar',
+    75,
+    'alumno',
+    'Medicina',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Leandro Marquez',
+    'lmarquez@instituto.edu.ar',
+    86,
+    'alumno',
+    'Derecho',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Solange Paredes',
+    'sparedes@instituto.edu.ar',
+    25,
+    'alumno',
+    'Economia',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Emanuel Rivas',
+    'erivas@instituto.edu.ar',
+    94,
+    'alumno',
+    'Psicologia',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Abril Ferreyra',
+    'aferreyra@instituto.edu.ar',
+    53,
+    'alumno',
+    'Quimica',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Guillermo Ponce',
+    'gponce@instituto.edu.ar',
+    80,
+    'alumno',
+    'Fisica',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Melina Correa',
+    'mcorrea@instituto.edu.ar',
+    62,
+    'alumno',
+    'Biologia',
+    @dummy_hash,
+    1
+  ),
+  (
+    'Hernan Varela',
+    'hvarela@instituto.edu.ar',
+    100,
+    'alumno',
+    'Matematica',
+    @dummy_hash,
+    1
+  );
+
+-- ==============================================================================
+-- 2. ARTICULOS (Equipamiento real de laboratorio, IT, herramientas manuales y libros)
+-- ==============================================================================
+INSERT INTO
+  articulos (
+    nombre_art,
+    tipo,
+    seccion,
+    prestacion_maxima,
+    stock,
+    necesita_reparacion
+  )
+VALUES
+  (
+    'Osciloscopio Digital Rigol DS1054Z',
+    'Equipo',
+    'Laboratorio Electronica',
+    3,
+    5,
+    0
+  ),
+  (
+    'Multímetro Fluke 117',
+    'Herramienta',
+    'Taller',
+    7,
+    12,
+    0
+  ),
+  (
+    'Estación de Soldado Hakko FX-888D',
+    'Equipo',
+    'Laboratorio Electronica',
+    5,
+    4,
+    1
+  ),
+  (
+    'Placa Arduino UNO R3',
+    'Material',
+    'Pañol Robotica',
+    15,
+    30,
+    0
+  ),
+  (
+    'Raspberry Pi 4 Model B (4GB)',
+    'Material',
+    'Pañol Robotica',
+    7,
+    15,
+    0
+  ),
+  (
+    'Taladro Inalámbrico Bosch 18V',
+    'Herramienta',
+    'Taller Mecanico',
+    3,
+    6,
+    0
+  ),
+  (
+    'Crimpeadora RJ45 Rj11 AMP',
+    'Herramienta',
+    'Redes',
+    5,
+    8,
+    0
+  ),
+  (
+    'Tester de Redes LAN',
+    'Equipo',
+    'Redes',
+    3,
+    4,
+    0
+  ),
+  (
+    'Router Cisco ISR 4321',
+    'Equipo',
+    'Laboratorio Redes',
+    14,
+    2,
+    0
+  ),
+  (
+    'Switch Catalyst 2960-X',
+    'Equipo',
+    'Laboratorio Redes',
+    14,
+    3,
+    1
+  ),
+  (
+    'Libro: Clean Code - Robert C. Martin',
+    'Material',
+    'Biblioteca CS',
+    21,
+    5,
+    0
+  ),
+  (
+    'Libro: Diseño Digital - Mano & Ciletti',
+    'Material',
+    'Biblioteca Electronica',
+    14,
+    3,
+    0
+  ),
+  (
+    'Fuente de Alimentacion Regulable 30V 5A',
+    'Equipo',
+    'Laboratorio Electronica',
+    5,
+    8,
+    0
+  ),
+  (
+    'Generador de Funciones 20MHz',
+    'Equipo',
+    'Laboratorio Electronica',
+    3,
+    4,
+    0
+  ),
+  (
+    'Protoboard 830 Puntos',
+    'Material',
+    'Pañol Robotica',
+    15,
+    50,
+    0
+  ),
+  (
+    'Set de Destornilladores de Precisión Wiha',
+    'Herramienta',
+    'Taller',
+    7,
+    10,
+    0
+  ),
+  (
+    'Kit de Componentes Pasivos (Res/Cap)',
+    'Material',
+    'Pañol Robotica',
+    15,
+    20,
+    0
+  ),
+  (
+    'Impresora 3D Creality Ender 3 V2',
+    'Equipo',
+    'Laboratorio Fabricacion',
+    2,
+    3,
+    0
+  ),
+  (
+    'Filamento PLA 1KG (Varios Colores)',
+    'Material',
+    'Laboratorio Fabricacion',
+    3,
+    15,
+    0
+  ),
+  (
+    'Cámara Térmica FLIR C5',
+    'Equipo',
+    'Taller',
+    2,
+    1,
+    0
+  ),
+  (
+    'Pinza Amperimétrica UNI-T UT204',
+    'Herramienta',
+    'Taller',
+    5,
+    6,
+    0
+  ),
+  (
+    'Calibre Digital Mitutoyo 150mm',
+    'Herramienta',
+    'Taller Mecanico',
+    5,
+    4,
+    0
+  ),
+  (
+    'Proyector Epson PowerLite E20',
+    'Equipo',
+    'Audiovisual',
+    1,
+    5,
+    0
+  ),
+  (
+    'Microfono Condensador Audio-Technica',
+    'Instrumento',
+    'Audiovisual',
+    3,
+    2,
+    0
+  ),
+  (
+    'Teclado Controlador MIDI M-Audio 49',
+    'Instrumento',
+    'Musica',
+    7,
+    3,
+    0
+  ),
+  (
+    'Guitarra Acústica Yamaha F310',
+    'Instrumento',
+    'Musica',
+    7,
+    4,
+    1
+  ),
+  (
+    'Bajo Eléctrico Squier Affinity',
+    'Instrumento',
+    'Musica',
+    7,
+    2,
+    0
+  ),
+  (
+    'Amplificador Fender Champion 20',
+    'Equipo',
+    'Musica',
+    3,
+    3,
+    0
+  ),
+  (
+    'Libro: Cálculo - James Stewart',
+    'Material',
+    'Biblioteca General',
+    21,
+    10,
+    0
+  ),
+  (
+    'Libro: Física Universitaria - Sears Zemansky',
+    'Material',
+    'Biblioteca General',
+    21,
+    12,
+    1
+  ),
+  (
+    'Módulo ESP32 NodeMCU',
+    'Material',
+    'Pañol Robotica',
+    15,
+    25,
+    0
+  ),
+  (
+    'Sensor Ultrasónico HC-SR04',
+    'Material',
+    'Pañol Robotica',
+    15,
+    40,
+    0
+  ),
+  (
+    'Amoladora Angular Makita 115mm',
+    'Herramienta',
+    'Taller Mecanico',
+    3,
+    4,
+    0
+  ),
+  (
+    'Sierra Circular DeWalt',
+    'Herramienta',
+    'Taller Mecanico',
+    3,
+    2,
+    0
+  ),
+  (
+    'Set de Llaves Combinadas Bahco',
+    'Herramienta',
+    'Taller',
+    7,
+    5,
+    0
+  ),
+  (
+    'Cautín Tipo Lapiz 40W',
+    'Herramienta',
+    'Laboratorio Electronica',
+    5,
+    15,
+    0
+  ),
+  (
+    'Malla Desoldadora',
+    'Material',
+    'Laboratorio Electronica',
+    15,
+    30,
+    0
+  ),
+  (
+    'Estaño 60/40 1mm (Rollo 250g)',
+    'Material',
+    'Laboratorio Electronica',
+    15,
+    20,
+    0
+  ),
+  (
+    'Lupa con Iluminación LED',
+    'Herramienta',
+    'Laboratorio Electronica',
+    5,
+    8,
+    0
+  ),
+  (
+    'Módulo de Relés 4 Canales 5V',
+    'Material',
+    'Pañol Robotica',
+    15,
+    15,
+    0
+  ),
+  (
+    'Servomotor SG90',
+    'Material',
+    'Pañol Robotica',
+    15,
+    30,
+    0
+  ),
+  (
+    'Microcontrolador PIC16F877A',
+    'Material',
+    'Pañol Robotica',
+    15,
+    20,
+    0
+  ),
+  (
+    'Programador PICkit 3',
+    'Equipo',
+    'Laboratorio Electronica',
+    5,
+    5,
+    0
+  ),
+  (
+    'Analizador Lógico 8 Canales 24MHz',
+    'Equipo',
+    'Laboratorio Electronica',
+    5,
+    4,
+    0
+  ),
+  (
+    'Cable HDMI 3 Metros',
+    'Material',
+    'Audiovisual',
+    7,
+    15,
+    0
+  ),
+  (
+    'Cámara Reflex Canon EOS Rebel T7',
+    'Equipo',
+    'Audiovisual',
+    2,
+    2,
+    0
+  ),
+  (
+    'Trípode Manfrotto',
+    'Herramienta',
+    'Audiovisual',
+    3,
+    3,
+    0
+  ),
+  (
+    'Libro: Redes de Computadoras - Tanenbaum',
+    'Material',
+    'Biblioteca CS',
+    14,
+    4,
+    0
+  ),
+  (
+    'Pizarra Blanca Magnética Móvil',
+    'Equipo',
+    'Aulas',
+    1,
+    5,
+    0
+  ),
+  (
+    'Kit de Limpieza de Contactos (Alcohol Iso)',
+    'Material',
+    'Taller',
+    3,
+    10,
+    0
+  );
+
+-- ==============================================================================
+-- 3. RESERVAS
+-- ==============================================================================
+INSERT INTO
+  reserva (
+    id_usuario,
+    id_reservado,
+    estado_reserva,
+    fecha_retiro,
+    fecha_regreso
+  )
+VALUES
+  (
+    1,
+    4,
+    'devuelto',
+    DATE_SUB(NOW(), INTERVAL 30 DAY),
+    DATE_SUB(NOW(), INTERVAL 28 DAY)
+  ),
+  (
+    2,
+    1,
+    'aprobado',
+    DATE_SUB(NOW(), INTERVAL 1 DAY),
+    DATE_ADD(NOW(), INTERVAL 2 DAY)
+  ),
+  (
+    3,
+    11,
+    'devuelto',
+    DATE_SUB(NOW(), INTERVAL 45 DAY),
+    DATE_SUB(NOW(), INTERVAL 30 DAY)
+  ),
+  (
+    4,
+    29,
+    'rechazado',
+    DATE_SUB(NOW(), INTERVAL 10 DAY),
+    DATE_SUB(NOW(), INTERVAL 5 DAY)
+  ),
+  (
+    5,
+    5,
+    'pendiente',
+    DATE_SUB(NOW(), INTERVAL 0 DAY),
+    DATE_ADD(NOW(), INTERVAL 5 DAY)
+  ),
+  (
+    6,
+    6,
+    'entregado',
+    DATE_SUB(NOW(), INTERVAL 2 DAY),
+    DATE_ADD(NOW(), INTERVAL 1 DAY)
+  ),
+  (
+    7,
+    30,
+    'devuelto',
+    DATE_SUB(NOW(), INTERVAL 15 DAY),
+    DATE_SUB(NOW(), INTERVAL 10 DAY)
+  ),
+  (
+    8,
+    2,
+    'pendiente',
+    DATE_SUB(NOW(), INTERVAL 1 DAY),
+    DATE_ADD(NOW(), INTERVAL 3 DAY)
+  ),
+  (
+    9,
+    15,
+    'entregado',
+    DATE_SUB(NOW(), INTERVAL 3 DAY),
+    DATE_ADD(NOW(), INTERVAL 2 DAY)
+  ),
+  (
+    10,
+    22,
+    'devuelto',
+    DATE_SUB(NOW(), INTERVAL 20 DAY),
+    DATE_SUB(NOW(), INTERVAL 18 DAY)
+  ),
+  (
+    11,
+    4,
+    'entregado',
+    DATE_SUB(NOW(), INTERVAL 1 DAY),
+    DATE_ADD(NOW(), INTERVAL 14 DAY)
+  ),
+  (
+    12,
+    13,
+    'aprobado',
+    DATE_SUB(NOW(), INTERVAL 0 DAY),
+    DATE_ADD(NOW(), INTERVAL 2 DAY)
+  ),
+  (
+    13,
+    26,
+    'devuelto',
+    DATE_SUB(NOW(), INTERVAL 60 DAY),
+    DATE_SUB(NOW(), INTERVAL 55 DAY)
+  ),
+  (
+    14,
+    48,
+    'rechazado',
+    DATE_SUB(NOW(), INTERVAL 5 DAY),
+    DATE_ADD(NOW(), INTERVAL 5 DAY)
+  ),
+  (
+    15,
+    31,
+    'pendiente',
+    DATE_SUB(NOW(), INTERVAL 1 DAY),
+    DATE_ADD(NOW(), INTERVAL 7 DAY)
+  ),
+  (
+    16,
+    8,
+    'entregado',
+    DATE_SUB(NOW(), INTERVAL 2 DAY),
+    DATE_ADD(NOW(), INTERVAL 1 DAY)
+  ),
+  (
+    17,
+    18,
+    'devuelto',
+    DATE_SUB(NOW(), INTERVAL 12 DAY),
+    DATE_SUB(NOW(), INTERVAL 10 DAY)
+  ),
+  (
+    18,
+    21,
+    'pendiente',
+    DATE_SUB(NOW(), INTERVAL 0 DAY),
+    DATE_ADD(NOW(), INTERVAL 4 DAY)
+  ),
+  (
+    19,
+    32,
+    'aprobado',
+    DATE_SUB(NOW(), INTERVAL 1 DAY),
+    DATE_ADD(NOW(), INTERVAL 6 DAY)
+  ),
+  (
+    20,
+    29,
+    'devuelto',
+    DATE_SUB(NOW(), INTERVAL 40 DAY),
+    DATE_SUB(NOW(), INTERVAL 35 DAY)
+  ),
+  (
+    21,
+    33,
+    'entregado',
+    DATE_SUB(NOW(), INTERVAL 2 DAY),
+    DATE_ADD(NOW(), INTERVAL 1 DAY)
+  ),
+  (
+    22,
+    16,
+    'aprobado',
+    DATE_SUB(NOW(), INTERVAL 0 DAY),
+    DATE_ADD(NOW(), INTERVAL 5 DAY)
+  ),
+  (
+    23,
+    44,
+    'devuelto',
+    DATE_SUB(NOW(), INTERVAL 18 DAY),
+    DATE_SUB(NOW(), INTERVAL 13 DAY)
+  ),
+  (
+    24,
+    7,
+    'rechazado',
+    DATE_SUB(NOW(), INTERVAL 3 DAY),
+    DATE_ADD(NOW(), INTERVAL 2 DAY)
+  ),
+  (
+    25,
+    49,
+    'pendiente',
+    DATE_SUB(NOW(), INTERVAL 1 DAY),
+    DATE_ADD(NOW(), INTERVAL 3 DAY)
+  ),
+  (
+    26,
+    25,
+    'entregado',
+    DATE_SUB(NOW(), INTERVAL 5 DAY),
+    DATE_SUB(NOW(), INTERVAL 1 DAY)
+  ),
+  (
+    27,
+    3,
+    'devuelto',
+    DATE_SUB(NOW(), INTERVAL 22 DAY),
+    DATE_SUB(NOW(), INTERVAL 20 DAY)
+  ),
+  (
+    28,
+    14,
+    'pendiente',
+    DATE_SUB(NOW(), INTERVAL 0 DAY),
+    DATE_ADD(NOW(), INTERVAL 2 DAY)
+  ),
+  (
+    29,
+    9,
+    'aprobado',
+    DATE_SUB(NOW(), INTERVAL 1 DAY),
+    DATE_ADD(NOW(), INTERVAL 4 DAY)
+  ),
+  (
+    30,
+    28,
+    'devuelto',
+    DATE_SUB(NOW(), INTERVAL 35 DAY),
+    DATE_SUB(NOW(), INTERVAL 30 DAY)
+  ),
+  (
+    31,
+    34,
+    'entregado',
+    DATE_SUB(NOW(), INTERVAL 2 DAY),
+    DATE_ADD(NOW(), INTERVAL 1 DAY)
+  ),
+  (
+    32,
+    10,
+    'aprobado',
+    DATE_SUB(NOW(), INTERVAL 0 DAY),
+    DATE_ADD(NOW(), INTERVAL 5 DAY)
+  ),
+  (
+    33,
+    42,
+    'devuelto',
+    DATE_SUB(NOW(), INTERVAL 14 DAY),
+    DATE_SUB(NOW(), INTERVAL 10 DAY)
+  ),
+  (
+    34,
+    12,
+    'rechazado',
+    DATE_SUB(NOW(), INTERVAL 6 DAY),
+    DATE_SUB(NOW(), INTERVAL 1 DAY)
+  ),
+  (
+    35,
+    17,
+    'pendiente',
+    DATE_SUB(NOW(), INTERVAL 1 DAY),
+    DATE_ADD(NOW(), INTERVAL 6 DAY)
+  ),
+  (
+    36,
+    19,
+    'entregado',
+    DATE_SUB(NOW(), INTERVAL 3 DAY),
+    DATE_ADD(NOW(), INTERVAL 2 DAY)
+  ),
+  (
+    37,
+    37,
+    'devuelto',
+    DATE_SUB(NOW(), INTERVAL 25 DAY),
+    DATE_SUB(NOW(), INTERVAL 20 DAY)
+  ),
+  (
+    38,
+    41,
+    'pendiente',
+    DATE_SUB(NOW(), INTERVAL 0 DAY),
+    DATE_ADD(NOW(), INTERVAL 7 DAY)
+  ),
+  (
+    39,
+    45,
+    'aprobado',
+    DATE_SUB(NOW(), INTERVAL 1 DAY),
+    DATE_ADD(NOW(), INTERVAL 6 DAY)
+  ),
+  (
+    40,
+    50,
+    'devuelto',
+    DATE_SUB(NOW(), INTERVAL 50 DAY),
+    DATE_SUB(NOW(), INTERVAL 40 DAY)
+  ),
+  (
+    41,
+    20,
+    'entregado',
+    DATE_SUB(NOW(), INTERVAL 4 DAY),
+    DATE_SUB(NOW(), INTERVAL 2 DAY)
+  ),
+  (
+    42,
+    23,
+    'aprobado',
+    DATE_SUB(NOW(), INTERVAL 0 DAY),
+    DATE_ADD(NOW(), INTERVAL 2 DAY)
+  ),
+  (
+    43,
+    27,
+    'devuelto',
+    DATE_SUB(NOW(), INTERVAL 16 DAY),
+    DATE_SUB(NOW(), INTERVAL 14 DAY)
+  ),
+  (
+    44,
+    35,
+    'rechazado',
+    DATE_SUB(NOW(), INTERVAL 8 DAY),
+    DATE_SUB(NOW(), INTERVAL 3 DAY)
+  ),
+  (
+    45,
+    36,
+    'pendiente',
+    DATE_SUB(NOW(), INTERVAL 1 DAY),
+    DATE_ADD(NOW(), INTERVAL 4 DAY)
+  ),
+  (
+    46,
+    38,
+    'entregado',
+    DATE_SUB(NOW(), INTERVAL 2 DAY),
+    DATE_ADD(NOW(), INTERVAL 1 DAY)
+  ),
+  (
+    47,
+    39,
+    'devuelto',
+    DATE_SUB(NOW(), INTERVAL 28 DAY),
+    DATE_SUB(NOW(), INTERVAL 26 DAY)
+  ),
+  (
+    48,
+    43,
+    'pendiente',
+    DATE_SUB(NOW(), INTERVAL 0 DAY),
+    DATE_ADD(NOW(), INTERVAL 5 DAY)
+  ),
+  (
+    49,
+    46,
+    'aprobado',
+    DATE_SUB(NOW(), INTERVAL 1 DAY),
+    DATE_ADD(NOW(), INTERVAL 4 DAY)
+  ),
+  (
+    50,
+    47,
+    'devuelto',
+    DATE_SUB(NOW(), INTERVAL 33 DAY),
+    DATE_SUB(NOW(), INTERVAL 30 DAY)
+  );
+
+-- ==============================================================================
+-- 4. ESTADO DEVUELTO (Aprovechando el límite VARCHAR 255)
+-- ==============================================================================
+INSERT INTO
+  estado_devuelto (id_reserva, dias_retraso, condiciones)
+VALUES
+  (
+    1,
+    0,
+    'Óptimo estado, todos los pines de la placa se encuentran rectos y funcionales.'
+  ),
+  (
+    3,
+    0,
+    'Condición impecable, libro sin marcas ni hojas dobladas.'
+  ),
+  (
+    7,
+    2,
+    'Punta del cautín levemente desgastada por el uso. Atraso menor en la entrega.'
+  ),
+  (
+    10,
+    0,
+    'Cables del multímetro en perfecto estado, funcionando correctamente.'
+  ),
+  (
+    13,
+    0,
+    'Guitarra afinada y sin rayas en el barniz exterior.'
+  ),
+  (
+    17,
+    0,
+    'Limpieza profunda realizada por el usuario antes de devolver la impresora 3D.'
+  ),
+  (
+    20,
+    0,
+    'Tapa del libro levemente doblada, evidencia uso normal de lectura.'
+  ),
+  (
+    23,
+    5,
+    'Entregado con retraso significativo, falta caja original de la placa Arduino.'
+  ),
+  (
+    27,
+    0,
+    'Equipo de soldadura funcionando correctamente, esponja humedecida.'
+  ),
+  (
+    30,
+    0,
+    'Conector plug de audio sin ruidos estáticos, estado general muy bueno.'
+  ),
+  (
+    33,
+    0,
+    'Cuchilla de corte en condiciones de uso seguras y limpias.'
+  ),
+  (
+    37,
+    1,
+    'Falta un poco de malla desoldadora en el rollo pero dentro de lo esperado.'
+  ),
+  (
+    40,
+    0,
+    'Lente de cámara sin rayones ni polvo, tapa incluida.'
+  ),
+  (
+    43,
+    0,
+    'Patas de goma del trípode completas y perillas ajustadas.'
+  ),
+  (
+    47,
+    0,
+    'Filamento restante devuelto correctamente en su bolsa original sellada.'
+  ),
+  (
+    50,
+    3,
+    'Devuelto con manchas de grasa considerables en la carcasa exterior de la herramienta.'
+  );
+
+-- ==============================================================================
+-- 5. PENALIZACIONES (Alineadas y vinculadas con ID de Reserva específico y Severidad)
+-- ==============================================================================
+INSERT INTO
+  penalizacion (
+    id_usuario,
+    id_reserva,
+    motivo,
+    fecha_inicio,
+    fecha_fin,
+    activa,
+    severity
+  )
+VALUES
+  (
+    7,
+    7,
+    'Devolución fuera de término (2 días de retraso)',
+    DATE_SUB(NOW(), INTERVAL 10 DAY),
+    DATE_SUB(NOW(), INTERVAL 3 DAY),
+    0,
+    'baja'
+  ),
+  (
+    23,
+    23,
+    'Retraso crítico en devolución de equipo delicado (5 días)',
+    DATE_SUB(NOW(), INTERVAL 13 DAY),
+    DATE_ADD(NOW(), INTERVAL 2 DAY),
+    1,
+    'alta'
+  ),
+  (
+    50,
+    50,
+    'Entrega de material con suciedad/grasa',
+    DATE_SUB(NOW(), INTERVAL 30 DAY),
+    DATE_SUB(NOW(), INTERVAL 15 DAY),
+    0,
+    'media'
+  ),
+  (
+    26,
+    26,
+    'Retraso actual en devolución (pendiente de entrega)',
+    DATE_SUB(NOW(), INTERVAL 1 DAY),
+    DATE_ADD(NOW(), INTERVAL 6 DAY),
+    1,
+    'media'
+  ),
+  (
+    41,
+    41,
+    'Retraso actual en devolución de cámara térmica',
+    DATE_SUB(NOW(), INTERVAL 2 DAY),
+    DATE_ADD(NOW(), INTERVAL 5 DAY),
+    1,
+    'alta'
+  ),
+  (
+    4,
+    NULL,
+    'Maltrato verbal al personal de pañol',
+    DATE_SUB(NOW(), INTERVAL 5 DAY),
+    DATE_ADD(NOW(), INTERVAL 25 DAY),
+    1,
+    'alta'
+  ),
+  (
+    14,
+    NULL,
+    'Intentó retirar equipo sin autorización previa',
+    DATE_SUB(NOW(), INTERVAL 15 DAY),
+    DATE_SUB(NOW(), INTERVAL 1 DAY),
+    0,
+    'alta'
+  ),
+  (
+    24,
+    24,
+    'Pérdida de conector BNC del osciloscopio',
+    DATE_SUB(NOW(), INTERVAL 2 DAY),
+    DATE_ADD(NOW(), INTERVAL 28 DAY),
+    1,
+    'media'
+  );
+
+-- ==============================================================================
+-- 6. QR
+-- ==============================================================================
+INSERT INTO
+  qr (id_reserva, fecha_generado, codigo, escaneado)
+VALUES
+  (
+    1,
+    DATE_SUB(NOW(), INTERVAL 31 DAY),
+    'QR-MAT-0001-A',
+    1
+  ),
+  (
+    2,
+    DATE_SUB(NOW(), INTERVAL 1 DAY),
+    'QR-EQP-0002-B',
+    0
+  ),
+  (
+    3,
+    DATE_SUB(NOW(), INTERVAL 46 DAY),
+    'QR-BIB-0003-A',
+    1
+  ),
+  (
+    6,
+    DATE_SUB(NOW(), INTERVAL 2 DAY),
+    'QR-HER-0006-C',
+    1
+  ),
+  (
+    7,
+    DATE_SUB(NOW(), INTERVAL 16 DAY),
+    'QR-MAT-0007-A',
+    1
+  ),
+  (
+    9,
+    DATE_SUB(NOW(), INTERVAL 3 DAY),
+    'QR-MAT-0009-B',
+    1
+  ),
+  (
+    10,
+    DATE_SUB(NOW(), INTERVAL 21 DAY),
+    'QR-HER-0010-A',
+    1
+  ),
+  (
+    11,
+    DATE_SUB(NOW(), INTERVAL 1 DAY),
+    'QR-MAT-0011-B',
+    1
+  ),
+  (
+    12,
+    DATE_SUB(NOW(), INTERVAL 0 DAY),
+    'QR-EQP-0012-A',
+    0
+  ),
+  (
+    13,
+    DATE_SUB(NOW(), INTERVAL 61 DAY),
+    'QR-INS-0013-C',
+    1
+  ),
+  (
+    16,
+    DATE_SUB(NOW(), INTERVAL 2 DAY),
+    'QR-EQP-0016-A',
+    1
+  ),
+  (
+    17,
+    DATE_SUB(NOW(), INTERVAL 13 DAY),
+    'QR-EQP-0017-B',
+    1
+  ),
+  (
+    19,
+    DATE_SUB(NOW(), INTERVAL 1 DAY),
+    'QR-MAT-0019-A',
+    0
+  ),
+  (
+    20,
+    DATE_SUB(NOW(), INTERVAL 41 DAY),
+    'QR-BIB-0020-B',
+    1
+  ),
+  (
+    21,
+    DATE_SUB(NOW(), INTERVAL 2 DAY),
+    'QR-HER-0021-A',
+    1
+  ),
+  (
+    22,
+    DATE_SUB(NOW(), INTERVAL 0 DAY),
+    'QR-HER-0022-C',
+    0
+  ),
+  (
+    23,
+    DATE_SUB(NOW(), INTERVAL 19 DAY),
+    'QR-EQP-0023-A',
+    1
+  ),
+  (
+    26,
+    DATE_SUB(NOW(), INTERVAL 6 DAY),
+    'QR-INS-0026-B',
+    1
+  ),
+  (
+    27,
+    DATE_SUB(NOW(), INTERVAL 23 DAY),
+    'QR-EQP-0027-A',
+    1
+  ),
+  (
+    29,
+    DATE_SUB(NOW(), INTERVAL 1 DAY),
+    'QR-EQP-0029-C',
+    0
+  ),
+  (
+    30,
+    DATE_SUB(NOW(), INTERVAL 36 DAY),
+    'QR-EQP-0030-A',
+    1
+  ),
+  (
+    31,
+    DATE_SUB(NOW(), INTERVAL 2 DAY),
+    'QR-HER-0031-B',
+    1
+  ),
+  (
+    32,
+    DATE_SUB(NOW(), INTERVAL 0 DAY),
+    'QR-EQP-0032-A',
+    0
+  ),
+  (
+    33,
+    DATE_SUB(NOW(), INTERVAL 15 DAY),
+    'QR-MAT-0033-C',
+    1
+  ),
+  (
+    36,
+    DATE_SUB(NOW(), INTERVAL 4 DAY),
+    'QR-MAT-0036-A',
+    1
+  ),
+  (
+    37,
+    DATE_SUB(NOW(), INTERVAL 26 DAY),
+    'QR-MAT-0037-B',
+    1
+  ),
+  (
+    39,
+    DATE_SUB(NOW(), INTERVAL 1 DAY),
+    'QR-AUD-0039-A',
+    0
+  ),
+  (
+    40,
+    DATE_SUB(NOW(), INTERVAL 51 DAY),
+    'QR-MAT-0040-C',
+    1
+  ),
+  (
+    41,
+    DATE_SUB(NOW(), INTERVAL 5 DAY),
+    'QR-HER-0041-A',
+    1
+  ),
+  (
+    42,
+    DATE_SUB(NOW(), INTERVAL 0 DAY),
+    'QR-AUD-0042-B',
+    0
+  ),
+  (
+    43,
+    DATE_SUB(NOW(), INTERVAL 17 DAY),
+    'QR-EQP-0043-A',
+    1
+  ),
+  (
+    46,
+    DATE_SUB(NOW(), INTERVAL 3 DAY),
+    'QR-HER-0046-C',
+    1
+  ),
+  (
+    47,
+    DATE_SUB(NOW(), INTERVAL 29 DAY),
+    'QR-EQP-0047-A',
+    1
+  ),
+  (
+    49,
+    DATE_SUB(NOW(), INTERVAL 1 DAY),
+    'QR-AUD-0049-B',
+    0
+  ),
+  (
+    50,
+    DATE_SUB(NOW(), INTERVAL 34 DAY),
+    'QR-BIB-0050-A',
+    1
+  );
+
+-- ==============================================================================
+-- 7. NORMATIVA
+-- ==============================================================================
+INSERT INTO
+  normativa (titulo, descripcion, fecha)
+VALUES
+  (
+    'Reglamento General de Préstamos',
+    'Define las reglas básicas para el retiro, cuidado y devolución de cualquier activo perteneciente a la institución.',
+    DATE_SUB(NOW(), INTERVAL 400 DAY)
+  ),
+  (
+    'Política de Retrasos y Sanciones',
+    'Especifica el sistema de pérdida de puntos (score) y los tiempos de inhabilitación por entregas fuera de término.',
+    DATE_SUB(NOW(), INTERVAL 390 DAY)
+  ),
+  (
+    'Uso Adecuado de Estaciones de Soldado',
+    'Instrucciones obligatorias: uso de esponja vegetal húmeda, limpieza de punta y apagado preventivo.',
+    DATE_SUB(NOW(), INTERVAL 380 DAY)
+  ),
+  (
+    'Normas de Seguridad Eléctrica',
+    'Prohibición estricta de puentear fusibles o alterar conexiones de puesta a tierra en el instrumental.',
+    DATE_SUB(NOW(), INTERVAL 370 DAY)
+  ),
+  (
+    'Manejo de Instrumentos de Medición',
+    'Todo multímetro u osciloscopio debe ser devuelto con sus cables y puntas de prueba originales enrollados.',
+    DATE_SUB(NOW(), INTERVAL 360 DAY)
+  ),
+  (
+    'Cuidado del Material de Biblioteca',
+    'Prohibido subrayar, doblar o alterar de cualquier forma las hojas y cubiertas de los textos de consulta.',
+    DATE_SUB(NOW(), INTERVAL 350 DAY)
+  ),
+  (
+    'Préstamos Excepcionales de Fin de Semana',
+    'Los retiros de día viernes requieren aprobación de un docente responsable del proyecto.',
+    DATE_SUB(NOW(), INTERVAL 340 DAY)
+  ),
+  (
+    'Reposición por Pérdida o Daño',
+    'En caso de pérdida o daño total, el alumno o equipo de trabajo deberá reponer un ítem de iguales o superiores características.',
+    DATE_SUB(NOW(), INTERVAL 330 DAY)
+  ),
+  (
+    'Protocolo de Uso de Impresoras 3D',
+    'Obligatorio asistir al curso de nivelación antes de operar maquinarias de fabricación digital.',
+    DATE_SUB(NOW(), INTERVAL 320 DAY)
+  ),
+  (
+    'Limpieza Post-Operativa',
+    'Las herramientas mecánicas (taladros, amoladoras) deben devolverse libres de polvo y viruta metálica.',
+    DATE_SUB(NOW(), INTERVAL 310 DAY)
+  );
