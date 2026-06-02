@@ -37,12 +37,8 @@ def format_loan(row):
         "id_usuario": row.get("id_usuario"),
         "id_reservado": row.get("id_reservado"),
         "estado_reserva": row.get("estado_reserva"),
-        "fecha_retiro": (
-            row.get("fecha_retiro").isoformat() if row.get("fecha_retiro") else None
-        ),
-        "fecha_regreso": (
-            row.get("fecha_regreso").isoformat() if row.get("fecha_regreso") else None
-        ),
+        "fecha_retiro": (row.get("fecha_retiro").isoformat() if row.get("fecha_retiro") else None),
+        "fecha_regreso": (row.get("fecha_regreso").isoformat() if row.get("fecha_regreso") else None),
     }
 
 
@@ -129,3 +125,69 @@ def patch_loan_status(loan_id):  # noqa: PLR0911
             conn.close()
         except Exception:
             pass
+
+
+def obtener_detalle_prestamo_db(loan_id):
+    """Obtiene el detalle completo de un préstamo.
+
+    Args:
+        loan_id (int): Identificador único del préstamo a consultar.
+
+    Returns:
+        tuple: JSON con el detalle del préstamo y el código HTTP correspondiente.
+
+    """
+    conexion = obtener_conexion()
+    cursor = conexion.cursor(dictionary=True)
+
+    cursor.execute(
+        """
+        SELECT
+            reserva.id,
+            usuario.nombre,
+            articulos.nombre_art,
+            reserva.estado_reserva,
+            reserva.fecha_retiro,
+            reserva.fecha_regreso
+        FROM reserva
+        JOIN usuario
+            ON reserva.id_usuario = usuario.id
+        JOIN articulos
+            ON reserva.id_reservado = articulos.id
+        WHERE reserva.id = %s
+        """,
+        (loan_id,),
+    )
+
+    prestamo = None
+
+    for fila in cursor:
+        prestamo = fila
+
+    cursor.close()
+    conexion.close()
+
+    return prestamo
+
+
+@loans_bp.route("/api/loans/<int:loan_id>", methods=["GET"])
+def obtener_detalle_prestamo(loan_id):
+    """Obtiene el detalle completo de un préstamo.
+
+    Args:
+        loan_id (int): Identificador único del préstamo a consultar.
+
+    Returns:
+        tuple: JSON con el detalle del préstamo y el código HTTP correspondiente.
+
+    """
+    if loan_id <= 0:
+        return jsonify({"error": "ID inválido"}), HTTP_BAD_REQUEST
+
+    resultado = obtener_detalle_prestamo_db(loan_id)
+
+    if resultado is not None:
+        return jsonify(resultado), HTTP_OK
+
+    else:
+        return jsonify({"error": "Préstamo no encontrado"}), HTTP_NOT_FOUND
