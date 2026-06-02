@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Biblioteca FIUBA</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;800&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="dashboard-body">
+    <div class="dashboard-container">
+        <!-- SIDEBAR FIJA -->
+        <aside class="dashboard-sidebar-fixed">
+            <div class="sidebar-logo">
+                <img src="{{ url_for('static', filename='images/logo_FIUBA_bco_e004995ae8.png') }}" alt="Logo FIUBA" class="sidebar-logo-img">
+            </div>
+            
+            <ul class="quick-links">
+                {% block sidebar_links %}{% endblock %}
+            </ul>
+
+            <div class="sidebar-footer">
+                <a href="{{ url_for('public.home') }}" class="logout-link"><i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión</a>
+            </div>
+        </aside>
+
+        <!-- PANEL PRINCIPAL -->
+        <main class="dashboard-main-content">
+            <header class="dashboard-topbar">
+                <div>
+                    <h1 id="greeting">Panel de control</h1>
+                    <p id="current-date" style="color: var(--text-grey); font-size: 14px; margin-top: 5px;"></p>
+                </div>
+                <div class="user-info">
+                    <span class="user-name" id="dashboard-user-name">{% block user_name %}Usuario{% endblock %}</span>
+                    <div class="user-avatar"><i class="fa-solid fa-user-tie"></i></div>
+                </div>
+            </header>
+
+            <section class="dashboard-content-area">
+                {% block dashboard_content %}{% endblock %}
+            </section>
+        </main>
+    </div>
+    
+    <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

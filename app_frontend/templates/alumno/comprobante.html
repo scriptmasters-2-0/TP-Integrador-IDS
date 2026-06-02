@@ -1,0 +1,90 @@
+{% extends "layouts/base_dashboard.html" %}
+
+{% block user_name %}Alumno{% endblock %}
+
+{% block sidebar_links %}
+    <li><a href="{{ url_for('alumno.perfil') }}"><i class="fa-solid fa-user"></i> Perfil</a></li>
+    <li><a href="#"><i class="fa-solid fa-list-check"></i> Mis reservas</a></li>
+    <li><a href="#"><i class="fa-solid fa-plus"></i> Nueva reserva</a></li>
+    <li><a href="{{ url_for('alumno.historial') }}"><i class="fa-solid fa-clock-rotate-left"></i> Historial</a></li>
+    <li><a href="#"><i class="fa-solid fa-id-card-clip"></i> Mis préstamos</a></li>
+    <li><a href="#" class="active"><i class="fa-solid fa-file-invoice"></i> Mis comprobantes</a></li>
+{% endblock %}
+
+{% block dashboard_content %}
+    <div class="comprobante-header reveal">
+        <h2 style="margin-top: 0; margin-bottom: 5px;"><i class="fa-solid fa-ticket"></i> Ticket de Reserva</h2>
+        <p style="color: var(--text-grey);">Este es tu comprobante oficial. Preséntalo al retirar tu material.</p>
+    </div>
+
+    <div class="ticket-container reveal" style="transition-delay: 0.2s;">
+        <div class="ticket">
+            <!-- CABECERA DEL TICKET -->
+            <div class="ticket-top">
+                <div class="ticket-brand">
+                    <img src="{{ url_for('static', filename='images/logo-fiuba.png') }}" alt="FIUBA" class="ticket-logo">
+                    <span>Biblioteca Central</span>
+                </div>
+                <div class="ticket-title">Comprobante de Préstamo</div>
+            </div>
+            
+            <!-- CUERPO DEL TICKET (DATOS) -->
+            <div class="ticket-body">
+                <div class="ticket-info-grid">
+                    <div class="ticket-info-item">
+                        <span class="ticket-label">ID Reserva</span>
+                        <span class="ticket-value highlight">#RES-9042</span>
+                    </div>
+                    <div class="ticket-info-item text-right">
+                        <span class="ticket-label">Fecha de Solicitud</span>
+                        <span class="ticket-value">12 May 2026</span>
+                    </div>
+                    
+                    <div class="ticket-info-item full-width mt-3">
+                        <span class="ticket-label">Equipo / Material Reservado</span>
+                        <span class="ticket-value big-text">Proyector Epson WXGA</span>
+                    </div>
+                    
+                    <div class="ticket-info-item mt-3">
+                        <span class="ticket-label">Fecha de Retiro</span>
+                        <span class="ticket-value">15 May 2026<br>18:00 hs</span>
+                    </div>
+                    <div class="ticket-info-item text-right mt-3">
+                        <span class="ticket-label">Sede</span>
+                        <span class="ticket-value">Paseo Colón<br>Aula 204</span>
+                    </div>
+                    
+                    <div class="ticket-info-item full-width mt-3">
+                        <span class="ticket-label">Titular</span>
+                        <span class="ticket-value">Juan Pérez (Padrón: 102345)</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SEPARADOR PUNTEADO TIPO TICKET -->
+            <div class="ticket-divider"></div>
+            
+            <!-- SECCIÓN DE CÓDIGO QR -->
+            <div class="ticket-qr-section">
+                <p class="qr-instruction">Presenta este código desde tu celular al acercarte al mostrador de la biblioteca.</p>
+                
+                <div class="qr-code-box">
+                    {# Aquí usaremos la URL del QR generado en el backend (tabla qr). 
+                       Si no hay, usamos una imagen placeholder para que puedas ver el diseño ahora mismo #}
+                    {% if qr_image_url %}
+                        <img src="{{ qr_image_url }}" alt="Código QR de Reserva" width="180" height="180">
+                    {% else %}
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=FIUBA-RES-9042&color=0d6efd" alt="QR Placeholder temporal" width="180" height="180">
+                    {% endif %}
+                </div>
+                <span class="ticket-status"><i class="fa-solid fa-circle-check"></i> Reserva Confirmada</span>
+            </div>
+        </div>
+        
+        <!-- BOTONES DE ACCIÓN -->
+        <div class="ticket-actions mt-4">
+            <button class="res-btn btn-secondary" onclick="window.print()"><i class="fa-solid fa-print"></i> Imprimir</button>
+            <button class="res-btn btn-primary"><i class="fa-solid fa-download"></i> Descargar PDF</button>
+        </div>
+    </div>
+{% endblock %}

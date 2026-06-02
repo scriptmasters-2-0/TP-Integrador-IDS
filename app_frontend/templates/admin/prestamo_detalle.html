@@ -1,0 +1,92 @@
+{% extends "layouts/base_dashboard.html" %}
+
+{% block user_name %}Admin{% endblock %}
+
+{% block sidebar_links %}
+    <li><a href="#"><i class="fa-solid fa-chart-line"></i> Resumen General</a></li>
+    <li><a href="#"><i class="fa-solid fa-box-open"></i> Artículos</a></li>
+    <li><a href="#" class="active"><i class="fa-solid fa-hand-holding-hand"></i> Préstamos</a></li>
+    <li><a href="#"><i class="fa-solid fa-users"></i> Usuarios</a></li>
+    <li><a href="#"><i class="fa-solid fa-triangle-exclamation"></i> Penalizaciones</a></li>
+    <li><a href="#"><i class="fa-solid fa-scale-balanced"></i> Normativas</a></li>
+    <li><a href="#"><i class="fa-solid fa-file-contract"></i> Reportes</a></li>
+{% endblock %}
+
+{% block dashboard_content %}
+    <div class="breadcrumb reveal">
+        <a href="#">Préstamos</a> <i class="fa-solid fa-chevron-right"></i> <span>Préstamo #RES-9042</span>
+    </div>
+
+    <div class="admin-header reveal" style="transition-delay: 0.1s; display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px;">
+        <div>
+            <h2 style="margin-top: 10px; margin-bottom: 15px; font-size: 28px;">Detalle de Préstamo</h2>
+            <div class="ticket-status status-pending" style="display: inline-flex; font-size: 14px; padding: 6px 15px;">En curso (Retirado)</div>
+        </div>
+        <button class="res-btn btn-secondary"><i class="fa-solid fa-envelope"></i> Contactar Alumno</button>
+    </div>
+
+    <div class="admin-detail-layout reveal" style="transition-delay: 0.2s;">
+        
+        <!-- COLUMNA IZQUIERDA: DATOS DEL PRÉSTAMO -->
+        <div class="profile-card">
+            <h3>Información General</h3>
+            <div class="data-grid">
+                <div class="data-group full-width">
+                    <label>Equipo / Material</label>
+                    <div class="data-value highlight-value">Proyector Epson WXGA (ID: PRJ-012)</div>
+                </div>
+                
+                <div class="data-group">
+                    <label>Titular (Alumno)</label>
+                    <div class="data-value">Juan Pérez (102345)</div>
+                </div>
+                
+                <div class="data-group">
+                    <label>Carrera</label>
+                    <div class="data-value">Ingeniería Informática</div>
+                </div>
+
+                <div class="data-group">
+                    <label>Fecha de Retiro</label>
+                    <div class="data-value">15 May 2026 - 15:00 hs</div>
+                </div>
+
+                <div class="data-group">
+                    <label>Fecha Límite Devolución</label>
+                    <div class="data-value" style="color: #d32f2f; font-weight: 700;">15 May 2026 - 18:00 hs</div>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- COLUMNA DERECHA: ACCIONES DEL ADMINISTRADOR -->
+        <div class="admin-actions-card profile-card" style="height: fit-content; background: #fafbfc; border: 2px solid var(--border-color);">
+            <h3><i class="fa-solid fa-sliders"></i> Panel de Acciones</h3>
+            
+            <form action="#" method="POST" class="admin-form">
+                <div class="form-group mb-4">
+                    <label>Cambiar Estado General</label>
+                    <select class="form-control admin-select" name="nuevo_estado">
+                        <option value="pendiente">Pendiente de Retiro</option>
+                        <option value="en_curso" selected>En Curso (Retirado)</option>
+                        <option value="finalizado">Finalizado / Devuelto</option>
+                        <option value="cancelado">Cancelado</option>
+                    </select>
+                </div>
+                
+                <div class="form-group mb-4">
+                    <label>Estado Físico (Al Devolver)</label>
+                    <select class="form-control admin-select" name="estado_devuelto">
+                        <option value="no_aplica">No aplica aún</option>
+                        <option value="bueno">Buen estado (Sin daños)</option>
+                        <option value="danado">Dañado (Requiere revisión)</option>
+                        <option value="perdido">Extraviado / No devuelto</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="res-btn btn-primary mt-3" style="width: 100%; padding: 18px; font-size: 16px;"><i class="fa-solid fa-check-double"></i> Registrar Devolución</button>
+            </form>
+        </div>
+
+    </div>
+{% endblock %}

@@ -1,23 +1,19 @@
-"""Módulo principal de la aplicación frontend.
-
-Configura e inicializa la aplicación Flask del frontend y define
-la ruta principal para servir la página de inicio.
-"""
+"""Punto de entrada de la aplicacion frontend."""
 
 import config
-from flask import Flask, render_template
+from flask import Flask
+
+from routes.admin_routes import admin_bp
+from routes.alumno_routes import alumno_bp
+from routes.profesor_routes import profesor_bp
+from routes.public_routes import public_bp
+
 
 app = Flask(__name__)
-
-
-@app.route("/")
-def home():
-    """Renderiza la página de inicio del frontend.
-
-    Returns:
-        str: Contenido HTML de la plantilla 'index.html'.
-    """
-    return render_template("index.html")
+app.register_blueprint(public_bp)
+app.register_blueprint(alumno_bp)
+app.register_blueprint(profesor_bp)
+app.register_blueprint(admin_bp)
 
 
 if __name__ == "__main__":
