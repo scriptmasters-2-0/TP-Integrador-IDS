@@ -4,13 +4,16 @@
 
 {% block sidebar_links %}
     <li><a href="{{ url_for('alumno.perfil') }}" class="active"><i class="fa-solid fa-user"></i> Perfil</a></li>
-    <li><a href="#"><i class="fa-solid fa-list-check"></i> Mis reservas</a></li>
-    <li><a href="#"><i class="fa-solid fa-plus"></i> Nueva reserva</a></li>
-    <li><a href="{{ url_for('alumno.historial') }}"><i class="fa-solid fa-clock-rotate-left"></i> Historial</a></li>
-    <li><a href="#"><i class="fa-solid fa-id-card-clip"></i> Mis préstamos</a></li>
+    <li><a href="{{ url_for('alumno.historial') }}"><i class="fa-solid fa-list-check"></i> Mis reservas</a></li>
+    <li><a href="{{ url_for('alumno.nueva_reserva') }}"><i class="fa-solid fa-plus"></i> Nueva reserva</a></li>
+    <li><a href="{{ url_for('alumno.comprobante') }}"><i class="fa-solid fa-file-invoice"></i> Comprobante</a></li>
 {% endblock %}
 
 {% block dashboard_content %}
+    <div class="breadcrumb reveal">
+        <a href="{{ url_for('alumno.perfil') }}">Alumno</a> <i class="fa-solid fa-chevron-right"></i> <span>Perfil</span>
+    </div>
+
     <div class="profile-header reveal">
         <h2 style="margin-top: 0; margin-bottom: 5px;">Mi Perfil</h2>
         <p style="color: var(--text-grey);">Consulta y gestiona tu información personal en el sistema.</p>
@@ -24,7 +27,7 @@
             </div>
             
             {# Aquí irían las variables de Jinja ej: usuario.nombre #}
-            <h3 class="user-card-name">Juan Pérez</h3>
+            <h3 class="user-card-name">{{ perfil.nombre if perfil and perfil.nombre else 'Alumno' }}</h3>
             <span class="badge badge-success mb-3">Alumno Regular</span>
         </div>
 
@@ -35,22 +38,22 @@
             <div class="data-grid">
                 <div class="data-group">
                     <label>Nombre Completo</label>
-                    <div class="data-value">Juan Pérez</div>
+                    <div class="data-value">{{ perfil.nombre if perfil and perfil.nombre else '-' }}</div>
                 </div>
                 
                 <div class="data-group">
                     <label>Padrón / Legajo</label>
-                    <div class="data-value">102345</div>
+                    <div class="data-value">{{ perfil.id if perfil and perfil.id else '-' }}</div>
                 </div>
 
                 <div class="data-group">
                     <label>Correo Electrónico</label>
-                    <div class="data-value">jperez@fi.uba.ar</div>
+                    <div class="data-value">{{ perfil.mail if perfil and perfil.mail else '-' }}</div>
                 </div>
                 
                 <div class="data-group">
                     <label>Carrera</label>
-                    <div class="data-value">Ingeniería Informática</div>
+                    <div class="data-value">{{ perfil.carrera if perfil and perfil.carrera else '-' }}</div>
                 </div>
             </div>
             

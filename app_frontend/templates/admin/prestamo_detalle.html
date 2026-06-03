@@ -3,18 +3,16 @@
 {% block user_name %}Admin{% endblock %}
 
 {% block sidebar_links %}
-    <li><a href="#"><i class="fa-solid fa-chart-line"></i> Resumen General</a></li>
-    <li><a href="#"><i class="fa-solid fa-box-open"></i> Artículos</a></li>
-    <li><a href="#" class="active"><i class="fa-solid fa-hand-holding-hand"></i> Préstamos</a></li>
-    <li><a href="#"><i class="fa-solid fa-users"></i> Usuarios</a></li>
-    <li><a href="#"><i class="fa-solid fa-triangle-exclamation"></i> Penalizaciones</a></li>
-    <li><a href="#"><i class="fa-solid fa-scale-balanced"></i> Normativas</a></li>
-    <li><a href="#"><i class="fa-solid fa-file-contract"></i> Reportes</a></li>
+    <li><a href="/admin/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a></li>
+    <li><a href="/admin/articulos"><i class="fa-solid fa-box"></i> Artículos</a></li>
+    <li><a href="/admin/prestamos/id" class="active"><i class="fa-solid fa-clipboard-list"></i> Préstamos</a></li>
+    <li><a href="/admin/usuarios"><i class="fa-solid fa-users"></i> Usuarios</a></li>
+    <li><a href="/admin/reportes/morosidad"><i class="fa-solid fa-chart-column"></i> Morosidad</a></li>
 {% endblock %}
 
 {% block dashboard_content %}
     <div class="breadcrumb reveal">
-        <a href="#">Préstamos</a> <i class="fa-solid fa-chevron-right"></i> <span>Préstamo #RES-9042</span>
+        <a href="/admin/dashboard">Admin</a> <i class="fa-solid fa-chevron-right"></i> <a href="/admin/prestamos/id">Préstamos</a> <i class="fa-solid fa-chevron-right"></i> <span>Detalle #RES-9042</span>
     </div>
 
     <div class="admin-header reveal" style="transition-delay: 0.1s; display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px;">
@@ -63,7 +61,7 @@
         <div class="admin-actions-card profile-card" style="height: fit-content; background: #fafbfc; border: 2px solid var(--border-color);">
             <h3><i class="fa-solid fa-sliders"></i> Panel de Acciones</h3>
             
-            <form action="#" method="POST" class="admin-form">
+            <form action="/admin/prestamos/id" method="POST" class="admin-form">
                 <div class="form-group mb-4">
                     <label>Cambiar Estado General</label>
                     <select class="form-control admin-select" name="nuevo_estado">

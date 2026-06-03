@@ -4,14 +4,16 @@
 
 {% block sidebar_links %}
     <li><a href="{{ url_for('alumno.perfil') }}"><i class="fa-solid fa-user"></i> Perfil</a></li>
-    <li><a href="#"><i class="fa-solid fa-list-check"></i> Mis reservas</a></li>
-    <li><a href="#"><i class="fa-solid fa-plus"></i> Nueva reserva</a></li>
-    <li><a href="{{ url_for('alumno.historial') }}"><i class="fa-solid fa-clock-rotate-left"></i> Historial</a></li>
-    <li><a href="#"><i class="fa-solid fa-id-card-clip"></i> Mis préstamos</a></li>
-    <li><a href="#" class="active"><i class="fa-solid fa-file-invoice"></i> Mis comprobantes</a></li>
+    <li><a href="{{ url_for('alumno.historial') }}"><i class="fa-solid fa-list-check"></i> Mis reservas</a></li>
+    <li><a href="{{ url_for('alumno.nueva_reserva') }}"><i class="fa-solid fa-plus"></i> Nueva reserva</a></li>
+    <li><a href="{{ url_for('alumno.comprobante') }}" class="active"><i class="fa-solid fa-file-invoice"></i> Comprobante</a></li>
 {% endblock %}
 
 {% block dashboard_content %}
+    <div class="breadcrumb reveal">
+        <a href="{{ url_for('alumno.perfil') }}">Alumno</a> <i class="fa-solid fa-chevron-right"></i> <span>Comprobante</span>
+    </div>
+
     <div class="comprobante-header reveal">
         <h2 style="margin-top: 0; margin-bottom: 5px;"><i class="fa-solid fa-ticket"></i> Ticket de Reserva</h2>
         <p style="color: var(--text-grey);">Este es tu comprobante oficial. Preséntalo al retirar tu material.</p>

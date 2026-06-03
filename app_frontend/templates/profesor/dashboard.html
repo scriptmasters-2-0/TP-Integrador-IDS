@@ -3,42 +3,33 @@
 {% block user_name %}Profesor{% endblock %}
 
 {% block sidebar_links %}
-    <li><a href="#"><i class="fa-solid fa-user"></i> Perfil</a></li>
-    <li><a href="#" class="active"><i class="fa-solid fa-list-check"></i> Mis reservas</a></li>
+    <li><a href="/profesor/perfil"><i class="fa-solid fa-user"></i> Perfil</a></li>
+    <li><a href="/profesor/mis-reservas" class="active"><i class="fa-solid fa-list-check"></i> Mis reservas</a></li>
     <li><a href="/profesor/nueva"><i class="fa-solid fa-plus"></i> Nueva reserva</a></li>
-    <li><a href="#"><i class="fa-solid fa-clock-rotate-left"></i> Historial</a></li>
-    <li><a href="#"><i class="fa-solid fa-id-card-clip"></i> Mis préstamos</a></li>
-    <li><a href="#"><i class="fa-solid fa-file-invoice"></i> Mis comprobantes</a></li>
+    <li><a href="/profesor/historial"><i class="fa-solid fa-clock-rotate-left"></i> Historial</a></li>
 {% endblock %}
 
 {% block dashboard_content %}
+    <div class="breadcrumb reveal">
+        <a href="/profesor/perfil">Profesor</a> <i class="fa-solid fa-chevron-right"></i> <span>Mis reservas</span>
+    </div>
+
     <h2 class="reveal">Mis reservas</h2>
     
     {% if reservas %}
     <div class="active-reservations-grid">
-        <!-- TARJETA 1 -->
+        {% for reserva in reservas[:2] %}
         <div class="reservation-card reveal">
-            <span class="res-status status-active">Lista para retiro</span>
-            <h3>Proyector Epson WXGA</h3>
-            <p class="res-detail"><i class="fa-regular fa-calendar"></i> Hoy, 18:00 - 20:00 hs</p>
-            <p class="res-detail"><i class="fa-solid fa-location-dot"></i> Sede Paseo Colón - Aula 204</p>
+            <span class="res-status status-active">{{ reserva.estado_reserva }}</span>
+            <h3>{{ reserva.nombre_articulo if reserva.nombre_articulo else ('Artículo #' ~ reserva.id_reservado) }}</h3>
+            <p class="res-detail"><i class="fa-regular fa-calendar"></i> Retiro: {{ reserva.fecha_retiro if reserva.fecha_retiro else '-' }}</p>
+            <p class="res-detail"><i class="fa-solid fa-location-dot"></i> Devolución: {{ reserva.fecha_regreso if reserva.fecha_regreso else '-' }}</p>
             <div class="res-actions">
-                <button class="res-btn btn-secondary">Cancelar</button>
+                <button class="res-btn btn-secondary">Gestionar</button>
                 <button class="res-btn btn-primary"><i class="fa-solid fa-qrcode"></i> Ver QR</button>
             </div>
         </div>
-
-        <!-- TARJETA 2 -->
-        <div class="reservation-card reveal" style="transition-delay: 0.1s;">
-            <span class="res-status status-pending">En curso</span>
-            <h3>Notebook Dell Latitude</h3>
-            <p class="res-detail"><i class="fa-regular fa-calendar"></i> Hoy, 15:00 - 18:00 hs</p>
-            <p class="res-detail"><i class="fa-solid fa-location-dot"></i> Retirado (En posesión)</p>
-            <div class="res-actions">
-                <button class="res-btn btn-secondary">Reportar Fallo</button>
-                <button class="res-btn btn-primary" style="background-color: #20c997;">Extender Plazo</button>
-            </div>
-        </div>
+        {% endfor %}
     </div>
     {% else %}
     <!-- ESTADO VACÍO (EMPTY STATE) -->
@@ -46,8 +37,12 @@
         <i class="fa-solid fa-box-open empty-icon"></i>
         <h3>Aún no tienes reservas activas</h3>
         <p>Parece que tu historial está limpio. ¿Necesitas un proyector o algún equipo para tu próxima clase?</p>
-        <a href="#" class="res-btn btn-primary mt-3" style="display: inline-flex; width: auto; padding: 12px 25px;"><i class="fa-solid fa-plus"></i> Crear mi primera reserva</a>
+        <a href="/profesor/nueva" class="res-btn btn-primary mt-3" style="display: inline-flex; width: auto; padding: 12px 25px;"><i class="fa-solid fa-plus"></i> Crear mi primera reserva</a>
     </div>
+    {% endif %}
+
+    {% if fetch_error %}
+    <p style="color: #c0392b; font-weight: 700; margin: 10px 0 20px 0;">{{ fetch_error }}</p>
     {% endif %}
 
     <h2 class="reveal" style="transition-delay: 0.2s;">Resumen general</h2>

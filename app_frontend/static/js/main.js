@@ -1,4 +1,119 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const attachSimpleFormValidations = () => {
+        const forms = document.querySelectorAll('form[data-validate]');
+
+        forms.forEach((form) => {
+            form.addEventListener('submit', (event) => {
+                const mode = form.dataset.validate;
+
+                if (mode === 'login') {
+                    const email = form.querySelector('#email');
+                    const password = form.querySelector('#password');
+                    const emailValue = email ? email.value.trim() : '';
+                    const passwordValue = password ? password.value : '';
+
+                    if (!emailValue || !emailValue.includes('@') || !emailValue.includes('.')) {
+                        event.preventDefault();
+                        alert('Ingresa un correo institucional valido.');
+                        return;
+                    }
+
+                    if (passwordValue.length < 2) {
+                        event.preventDefault();
+                        alert('La contrasena debe tener al menos 2 caracteres.');
+                        return;
+                    }
+                }
+
+                if (mode === 'register') {
+                    const nombre = form.querySelector('#nombre');
+                    const email = form.querySelector('#email');
+                    const password = form.querySelector('#password');
+                    const nombreValue = nombre ? nombre.value.trim() : '';
+                    const emailValue = email ? email.value.trim() : '';
+                    const passwordValue = password ? password.value : '';
+
+                    if (nombreValue.length < 3) {
+                        event.preventDefault();
+                        alert('El nombre debe tener al menos 3 caracteres.');
+                        return;
+                    }
+
+                    if (!emailValue || !emailValue.includes('@')) {
+                        event.preventDefault();
+                        alert('Ingresa un correo electronico valido.');
+                        return;
+                    }
+
+                    if (passwordValue.length < 8) {
+                        event.preventDefault();
+                        alert('La contrasena debe tener al menos 8 caracteres.');
+                        return;
+                    }
+                }
+
+                if (mode === 'alumno-reserva') {
+                    const articulo = form.querySelector('#articulo');
+                    const fecha = form.querySelector('#fecha');
+                    const desde = form.querySelector('#desde');
+                    const hasta = form.querySelector('#hasta');
+
+                    const articuloValue = articulo ? articulo.value.trim() : '';
+                    const fechaValue = fecha ? fecha.value : '';
+                    const desdeValue = desde ? desde.value : '';
+                    const hastaValue = hasta ? hasta.value : '';
+
+                    if (!articuloValue) {
+                        event.preventDefault();
+                        alert('Selecciona un articulo.');
+                        return;
+                    }
+
+                    if (!fechaValue || !desdeValue || !hastaValue) {
+                        event.preventDefault();
+                        alert('Completa fecha y rango horario.');
+                        return;
+                    }
+
+                    if (desdeValue >= hastaValue) {
+                        event.preventDefault();
+                        alert('La hora de inicio debe ser menor a la hora de fin.');
+                        return;
+                    }
+                }
+
+                if (mode === 'profesor-reserva') {
+                    const articulo = form.querySelector('#articulo_id');
+                    const inicio = form.querySelector('#fecha_inicio');
+                    const fin = form.querySelector('#fecha_fin');
+
+                    const articuloValue = articulo ? articulo.value.trim() : '';
+                    const inicioValue = inicio ? inicio.value : '';
+                    const finValue = fin ? fin.value : '';
+
+                    if (!articuloValue) {
+                        event.preventDefault();
+                        alert('Selecciona un articulo para reservar.');
+                        return;
+                    }
+
+                    if (!inicioValue || !finValue) {
+                        event.preventDefault();
+                        alert('Completa fecha de inicio y devolucion.');
+                        return;
+                    }
+
+                    if (inicioValue > finValue) {
+                        event.preventDefault();
+                        alert('La fecha de inicio no puede ser posterior a la fecha de devolucion.');
+                    }
+                }
+            });
+        });
+    };
+
+    attachSimpleFormValidations();
+
     const faqItems = document.querySelectorAll('.faq-item');
 
     // Default to open for the demo as shown in screenshots
