@@ -1,113 +1,110 @@
-{% extends "layouts/base_dashboard.html" %}
+{% extends "layouts/base_dashboard.html" %} {% block user_name %}Alumno{%
+endblock %} {% block sidebar_links %}
+<li>
+  <a href="{{ url_for('alumno.perfil') }}"
+    ><i class="fa-solid fa-user"></i> Perfil</a
+  >
+</li>
+<li>
+  <a href="#"><i class="fa-solid fa-list-check"></i> Mis reservas</a>
+</li>
+<li>
+  <a href="#"><i class="fa-solid fa-plus"></i> Nueva reserva</a>
+</li>
+<li>
+  <a href="{{ url_for('alumno.historial') }}" class="active"
+    ><i class="fa-solid fa-clock-rotate-left"></i> Historial</a
+  >
+</li>
+<li>
+  <a href="#"><i class="fa-solid fa-id-card-clip"></i> Mis préstamos</a>
+</li>
+{% endblock %} {% block dashboard_content %}
+<div class="history-header reveal">
+  <h2 class="mt-0 mb-1">Historial de Reservas</h2>
+  <p class="text-muted">
+    Consulta el registro completo de tus préstamos anteriores.
+  </p>
+</div>
 
-{% block user_name %}Alumno{% endblock %}
-
-{% block sidebar_links %}
-    <li><a href="{{ url_for('alumno.perfil') }}"><i class="fa-solid fa-user"></i> Perfil</a></li>
-    <li><a href="#"><i class="fa-solid fa-list-check"></i> Mis reservas</a></li>
-    <li><a href="#"><i class="fa-solid fa-plus"></i> Nueva reserva</a></li>
-    <li><a href="{{ url_for('alumno.historial') }}" class="active"><i class="fa-solid fa-clock-rotate-left"></i> Historial</a></li>
-    <li><a href="#"><i class="fa-solid fa-id-card-clip"></i> Mis préstamos</a></li>
-{% endblock %}
-
-{% block dashboard_content %}
-    <div class="history-header reveal">
-        <h2 style="margin-top: 0; margin-bottom: 5px;">Historial de Reservas</h2>
-        <p style="color: var(--text-grey);">Consulta el registro completo de tus préstamos anteriores.</p>
-    </div>
-
-    <section class="history-list reveal" style="transition-delay: 0.2s;">
-        {% if True %}            <div class="history-table-wrapper" style="background: white; border-radius: 15px; border: 1px solid var(--border-color); box-shadow: 0 5px 15px rgba(0,0,0,0.02);">
-                <table class="history-table">
-                    <thead>
-                        <tr>
-                            <th>Fecha del préstamo</th>
-                            <th>Equipo / Material</th>
-                            <th>Sede de retiro</th>
-                            <th>Estado de devolución</th>
-                            <th class="text-center">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- EJEMPLO 1 -->
-                        <tr>
-                            <td>
-                                <div class="date-cell">
-                                    <i class="fa-regular fa-calendar"></i>
-                                    <span>15 May 2026</span>
-                                </div>
-                            </td>
-                            <td>
-                                <strong>Osciloscopio Digital Tektronix</strong>
-                                <br><span class="text-sm text-grey">ID: OSC-004</span>
-                            </td>
-                            <td>Paseo Colón</td>
-                            <td><span class="badge badge-success">Devuelto a tiempo</span></td>
-                            <td class="action-cell text-center">
-                                <button class="btn-icon" title="Volver a reservar"><i class="fa-solid fa-rotate-right"></i></button>
-                            </td>
-                        </tr>
-                        
-                        <!-- EJEMPLO 2 -->
-                        <tr>
-                            <td>
-                                <div class="date-cell">
-                                    <i class="fa-regular fa-calendar"></i>
-                                    <span>02 May 2026</span>
-                                </div>
-                            </td>
-                            <td>
-                                <strong>Libro: Física Universitaria Vol. 2</strong>
-                                <br><span class="text-sm text-grey">Sears Zemansky</span>
-                            </td>
-                            <td>Las Heras</td>
-                            <td><span class="badge badge-warning">Devuelto con demora</span></td>
-                            <td class="action-cell text-center">
-                                <button class="btn-icon" title="Volver a reservar"><i class="fa-solid fa-rotate-right"></i></button>
-                            </td>
-                        </tr>
-
-                        <!-- EJEMPLO 3 -->
-                        <tr>
-                            <td>
-                                <div class="date-cell">
-                                    <i class="fa-regular fa-calendar"></i>
-                                    <span>10 Abr 2026</span>
-                                </div>
-                            </td>
-                            <td>
-                                <strong>Calculadora Científica Casio</strong>
-                                <br><span class="text-sm text-grey">ID: CALC-08</span>
-                            </td>
-                            <td>Paseo Colón</td>
-                            <td><span class="badge badge-success">Devuelto a tiempo</span></td>
-                            <td class="action-cell text-center">
-                                <button class="btn-icon" title="Volver a reservar"><i class="fa-solid fa-rotate-right"></i></button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+<section class="history-list reveal delay-2">
+  {% if historial %}
+  <div class="history-table-wrapper table-card">
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>Fecha del préstamo</th>
+          <th>Equipo / Material</th>
+          <th>Sede de retiro</th>
+          <th>Estado de devolución</th>
+          <th class="text-center">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for prestamo in historial %}
+        <tr>
+          <td>
+            <div class="date-cell">
+              <i class="fa-regular fa-calendar"></i>
+              <span>{{ prestamo.fecha | default('Fecha desconocida') }}</span>
             </div>
+          </td>
+          <td>
+            <strong
+              >{{ prestamo.nombre_equipo | default('Material no especificado')
+              }}</strong
+            >
+            <br /><span class="text-sm text-grey"
+              >ID: {{ prestamo.id_equipo | default('N/A') }}</span
+            >
+          </td>
+          <td>{{ prestamo.sede | default('Sede principal') }}</td>
+          <td>
+            <span
+              class="badge {{ prestamo.estado_clase | default('badge-warning') }}"
+              >{{ prestamo.estado_texto | default('Pendiente') }}</span
+            >
+          </td>
+          <td class="action-cell text-center">
+            <button class="btn-icon" title="Volver a reservar">
+              <i class="fa-solid fa-rotate-right"></i>
+            </button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 
-            <!-- PAGINACIÓN -->
-            <div class="pagination-container reveal" style="transition-delay: 0.3s;">
-                <ul class="pagination">
-                    <li><a href="#" class="page-link disabled"><i class="fa-solid fa-chevron-left"></i></a></li>
-                    <li><a href="#" class="page-link active">1</a></li>
-                    <li><a href="#" class="page-link">2</a></li>
-                    <li><a href="#" class="page-link">3</a></li>
-                    <li><span class="page-dots">...</span></li>
-                    <li><a href="#" class="page-link">12</a></li>
-                    <li><a href="#" class="page-link"><i class="fa-solid fa-chevron-right"></i></a></li>
-                </ul>
-            </div>
-        {% else %}
-            <div class="empty-state">
-                <i class="fa-solid fa-clock-rotate-left empty-icon"></i>
-                <h3>Aún no tienes historial</h3>
-                <p>No se encontraron registros de reservas pasadas en tu cuenta.</p>
-                <a href="#" class="res-btn btn-primary mt-3" style="display: inline-flex; width: auto; padding: 12px 25px;">Explorar catálogo</a>
-            </div>
-        {% endif %}
-    </section>
+  <!-- PAGINACIÓN -->
+  <div class="pagination-container reveal delay-3">
+    <ul class="pagination">
+      <li>
+        <a href="#" class="page-link disabled"
+          ><i class="fa-solid fa-chevron-left"></i
+        ></a>
+      </li>
+      <li><a href="#" class="page-link active">1</a></li>
+      <li><a href="#" class="page-link">2</a></li>
+      <li><a href="#" class="page-link">3</a></li>
+      <li><span class="page-dots">...</span></li>
+      <li><a href="#" class="page-link">12</a></li>
+      <li>
+        <a href="#" class="page-link"
+          ><i class="fa-solid fa-chevron-right"></i
+        ></a>
+      </li>
+    </ul>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="fa-solid fa-clock-rotate-left empty-icon"></i>
+    <h3>Aún no tienes historial</h3>
+    <p>No se encontraron registros de reservas pasadas en tu cuenta.</p>
+    <a href="#" class="res-btn btn-primary mt-3 btn-inline"
+      >Explorar catálogo</a
+    >
+  </div>
+  {% endif %}
+</section>
 {% endblock %}
