@@ -17,7 +17,8 @@
     </div>
 
     <section class="history-list reveal" style="transition-delay: 0.2s;">
-        {% if True %}            <div class="history-table-wrapper" style="background: white; border-radius: 15px; border: 1px solid var(--border-color); box-shadow: 0 5px 15px rgba(0,0,0,0.02);">
+        {% if historial %}
+            <div class="history-table-wrapper" style="background: white; border-radius: 15px; border: 1px solid var(--border-color); box-shadow: 0 5px 15px rgba(0,0,0,0.02);">
                 <table class="history-table">
                     <thead>
                         <tr>
@@ -29,62 +30,25 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- EJEMPLO 1 -->
+                        {% for prestamo in historial %}
                         <tr>
                             <td>
                                 <div class="date-cell">
                                     <i class="fa-regular fa-calendar"></i>
-                                    <span>15 May 2026</span>
+                                    <span>{{ prestamo.fecha | default('Fecha desconocida') }}</span>
                                 </div>
                             </td>
                             <td>
-                                <strong>Osciloscopio Digital Tektronix</strong>
-                                <br><span class="text-sm text-grey">ID: OSC-004</span>
+                                <strong>{{ prestamo.nombre_equipo | default('Material no especificado') }}</strong>
+                                <br><span class="text-sm text-grey">ID: {{ prestamo.id_equipo | default('N/A') }}</span>
                             </td>
-                            <td>Paseo Colón</td>
-                            <td><span class="badge badge-success">Devuelto a tiempo</span></td>
+                            <td>{{ prestamo.sede | default('Sede principal') }}</td>
+                            <td><span class="badge {{ prestamo.estado_clase | default('badge-warning') }}">{{ prestamo.estado_texto | default('Pendiente') }}</span></td>
                             <td class="action-cell text-center">
                                 <button class="btn-icon" title="Volver a reservar"><i class="fa-solid fa-rotate-right"></i></button>
                             </td>
                         </tr>
-                        
-                        <!-- EJEMPLO 2 -->
-                        <tr>
-                            <td>
-                                <div class="date-cell">
-                                    <i class="fa-regular fa-calendar"></i>
-                                    <span>02 May 2026</span>
-                                </div>
-                            </td>
-                            <td>
-                                <strong>Libro: Física Universitaria Vol. 2</strong>
-                                <br><span class="text-sm text-grey">Sears Zemansky</span>
-                            </td>
-                            <td>Las Heras</td>
-                            <td><span class="badge badge-warning">Devuelto con demora</span></td>
-                            <td class="action-cell text-center">
-                                <button class="btn-icon" title="Volver a reservar"><i class="fa-solid fa-rotate-right"></i></button>
-                            </td>
-                        </tr>
-
-                        <!-- EJEMPLO 3 -->
-                        <tr>
-                            <td>
-                                <div class="date-cell">
-                                    <i class="fa-regular fa-calendar"></i>
-                                    <span>10 Abr 2026</span>
-                                </div>
-                            </td>
-                            <td>
-                                <strong>Calculadora Científica Casio</strong>
-                                <br><span class="text-sm text-grey">ID: CALC-08</span>
-                            </td>
-                            <td>Paseo Colón</td>
-                            <td><span class="badge badge-success">Devuelto a tiempo</span></td>
-                            <td class="action-cell text-center">
-                                <button class="btn-icon" title="Volver a reservar"><i class="fa-solid fa-rotate-right"></i></button>
-                            </td>
-                        </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>

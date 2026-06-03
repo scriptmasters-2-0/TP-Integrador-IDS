@@ -30,12 +30,12 @@
         <div class="navbar-bottom">
             <nav class="nav-links">
                 <a href="{{ url_for('public.home') }}#como-funciona">Información general</a>
-                <a href="#">Normas</a>
+                <a href="{{ url_for('public.normas') }}">Normas</a>
                 <a href="#">Catálogo</a>
             </nav>
             <div class="auth-buttons">
                 <button onclick="window.location.href='#'" class="login-btn">INICIA SESIÓN</button>
-                <button onclick="window.location.href='/registro'" class="register-btn-nav">REGISTRARSE</button>
+                <button onclick="window.location.href='{{ url_for('public.registro') }}'" class="register-btn-nav">REGISTRARSE</button>
             </div>
         </div>
     </header>

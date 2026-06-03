@@ -1,6 +1,6 @@
 {% extends "layouts/base_dashboard.html" %}
 
-{% block user_name %}Alumno{% endblock %}
+{% block user_name %}{{ usuario.nombre | default('Alumno') }}{% endblock %}
 
 {% block sidebar_links %}
     <li><a href="{{ url_for('alumno.perfil') }}" class="active"><i class="fa-solid fa-user"></i> Perfil</a></li>
@@ -24,7 +24,7 @@
             </div>
             
             {# Aquí irían las variables de Jinja ej: usuario.nombre #}
-            <h3 class="user-card-name">Juan Pérez</h3>
+            <h3 class="user-card-name">{{ usuario.nombre | default('Juan Pérez') }}</h3>
             <span class="badge badge-success mb-3">Alumno Regular</span>
         </div>
 
@@ -35,22 +35,22 @@
             <div class="data-grid">
                 <div class="data-group">
                     <label>Nombre Completo</label>
-                    <div class="data-value">Juan Pérez</div>
+                    <div class="data-value">{{ usuario.nombre | default('Juan Pérez') }}</div>
                 </div>
                 
                 <div class="data-group">
                     <label>Padrón / Legajo</label>
-                    <div class="data-value">102345</div>
+                    <div class="data-value">{{ usuario.legajo | default('102345') }}</div>
                 </div>
 
                 <div class="data-group">
                     <label>Correo Electrónico</label>
-                    <div class="data-value">jperez@fi.uba.ar</div>
+                    <div class="data-value">{{ usuario.email | default('jperez@fi.uba.ar') }}</div>
                 </div>
                 
                 <div class="data-group">
                     <label>Carrera</label>
-                    <div class="data-value">Ingeniería Informática</div>
+                    <div class="data-value">{{ usuario.carrera | default('Ingeniería Informática') }}</div>
                 </div>
             </div>
             
