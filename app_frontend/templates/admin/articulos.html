@@ -1,0 +1,78 @@
+{% extends "layouts/base_dashboard.html" %} {% block sidebar_links %}
+<li>
+  <a href="/admin/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+</li>
+<li>
+  <a href="#" class="active"><i class="fa-solid fa-box"></i> Artículos</a>
+</li>
+<li>
+  <a href="#"><i class="fa-solid fa-clipboard-list"></i> Préstamos</a>
+</li>
+{% endblock %} {% block dashboard_content %}
+<div class="history-container">
+  <div
+    class="history-header"
+    style="display: flex; justify-content: space-between; align-items: center"
+  >
+    <div>
+      <h1>Gestión de Artículos</h1>
+      <p>Administra el inventario de la biblioteca.</p>
+    </div>
+    <button
+      class="register-btn-nav"
+      onclick="window.location.href = '/admin/articulos/nuevo'"
+    >
+      <i class="fa-solid fa-plus"></i> Nuevo Artículo
+    </button>
+  </div>
+
+  <div class="data-grid" style="margin-bottom: 25px">
+    <div class="data-group">
+      <label>Tipo</label>
+      <select class="admin-select">
+        <option>Todos los tipos</option>
+        <option>Electrónica</option>
+        <option>Libros</option>
+      </select>
+    </div>
+    <div class="data-group">
+      <label>Sección</label>
+      <select class="admin-select">
+        <option>Todas las secciones</option>
+        <option>Biblioteca Central</option>
+        <option>Laboratorio</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="history-table-wrapper">
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Tipo</th>
+          <th>Stock</th>
+          <th>Estado</th>
+          <th class="text-center">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Multímetro Digital Fluke</td>
+          <td>Electrónica</td>
+          <td>12</td>
+          <td><span class="badge badge-success">Disponible</span></td>
+          <td class="text-center">
+            <button class="btn-icon" title="Editar">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button class="btn-icon" title="Eliminar" style="color: #ff4d4d">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
