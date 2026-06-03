@@ -1,0 +1,8 @@
+# .prettierignore
+node_modules
+static/images/
+dist/
+build/
+.git/
+__pycache__/
+*.pyc

@@ -53,3 +53,6 @@ Thumbs.db
 .tmp/
 tmp/
 temp/
+
+# Herramientas de node
+node_modules/
