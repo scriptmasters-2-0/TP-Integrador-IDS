@@ -8,7 +8,6 @@ from routes.alumno_routes import alumno_bp
 from routes.profesor_routes import profesor_bp
 from routes.public_routes import public_bp
 
-
 app = Flask(__name__)
 app.config["SECRET_KEY"] = config.SECRET_KEY
 app.register_blueprint(public_bp)

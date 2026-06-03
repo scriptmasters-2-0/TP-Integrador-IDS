@@ -1,0 +1,86 @@
+{% extends "layouts/base_dashboard.html" %} 
+
+{% block user_name %}Administrador{% endblock %} 
+
+{% block sidebar_links %}
+<li><a href="/admin/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a></li>
+<li><a href="/admin/articulos"><i class="fa-solid fa-box"></i> Artículos</a></li>
+<li><a href="{{ url_for('admin.lista_prestamos') }}" class="active"><i class="fa-solid fa-clipboard-list"></i> Préstamos</a></li>
+<li><a href="/admin/usuarios"><i class="fa-solid fa-users"></i> Usuarios</a></li>
+<li><a href="/admin/reportes/morosidad"><i class="fa-solid fa-chart-column"></i> Morosidad</a></li>
+{% endblock %} 
+
+{% block dashboard_content %}
+<div class="breadcrumb reveal">
+    <a href="/admin/dashboard">Admin</a> <i class="fa-solid fa-chevron-right"></i> <span>Préstamos</span>
+</div>
+
+<div class="history-container">
+    <div class="history-header">
+        <h1>Gestión de Préstamos</h1>
+        <p>Consulta y gestiona el historial de préstamos del sistema.</p>
+    </div>
+
+    <form method="GET" class="data-grid" style="margin-bottom: 25px;">
+        <div class="data-group">
+            <label>ID Usuario</label>
+            <input type="text" name="usuario" class="admin-input" placeholder="Buscar por usuario...">
+        </div>
+        <div class="data-group">
+            <label>Estado</label>
+            <select name="estado" class="admin-select">
+                <option value="">Todos</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="en_curso">En Curso</option>
+                <option value="finalizado">Finalizado</option>
+            </select>
+        </div>
+        <div class="data-group">
+            <label>Fecha</label>
+            <input type="date" name="fecha" class="admin-input">
+        </div>
+        <div class="data-group" style="align-self: flex-end;">
+            <button type="submit" class="register-btn-nav">Filtrar</button>
+        </div>
+    </form>
+
+    <div class="history-table-wrapper">
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Usuario</th>
+                    <th>Artículo</th>
+                    <th>Estado</th>
+                    <th>Fecha</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if prestamos %}
+                {% for p in prestamos %}
+                <tr>
+                    <td>{{ p.id }}</td>
+                    <td>{{ p.usuario_nombre }}</td>
+                    <td>{{ p.nombre_art }}</td>
+                    <td><span class="badge">{{ p.estado_reserva }}</span></td>
+                    <td>{{ p.fecha }}</td>
+                    <td class="text-center">
+                        <a href="{{ url_for('admin.prestamo_detalle', id=p.id) }}" class="btn-icon" title="Ver Detalle">
+                            <i class="fa-solid fa-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="6" style="text-align:center; color: var(--text-grey);">
+                        {{ fetch_error if fetch_error else 'No hay préstamos para mostrar.' }}
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

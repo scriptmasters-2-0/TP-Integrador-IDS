@@ -48,6 +48,9 @@
                             <td>{{ prestamo.sede }}</td>
                             <td><span class="badge badge-success">{{ prestamo.estado_texto }}</span></td>
                             <td class="action-cell text-center">
+                                <a href="{{ url_for('alumno.prestamo_detalle', id=prestamo.id) }}" class="btn-icon" title="Ver detalle">
+                                    <i class="fa-solid fa-eye"></i>
+                                </a>
                                 <button class="btn-icon" title="Volver a reservar" disabled><i class="fa-solid fa-rotate-right"></i></button>
                             </td>
                         </tr>
