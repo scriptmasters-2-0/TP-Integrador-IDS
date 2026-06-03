@@ -31,24 +31,10 @@ endblock %} {% block sidebar_links %}
   <span>Préstamo #RES-{{ prestamo.id }}</span>
 </div>
 
-<div
-  class="admin-header reveal"
-  style="
-    transition-delay: 0.1s;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-bottom: 30px;
-  "
->
+<div class="admin-header-flex reveal delay-1">
   <div>
-    <h2 style="margin-top: 10px; margin-bottom: 15px; font-size: 28px">
-      Detalle de Préstamo
-    </h2>
-    <div
-      class="ticket-status {{ prestamo.estado_clase }}"
-      style="display: inline-flex; font-size: 14px; padding: 6px 15px"
-    >
+    <h2 class="admin-title">Detalle de Préstamo</h2>
+    <div class="ticket-status {{ prestamo.estado_clase }} badge-lg">
       {{ prestamo.estado_texto }}
     </div>
   </div>
@@ -57,7 +43,7 @@ endblock %} {% block sidebar_links %}
   </button>
 </div>
 
-<div class="admin-detail-layout reveal" style="transition-delay: 0.2s">
+<div class="admin-detail-layout reveal delay-2">
   <!-- COLUMNA IZQUIERDA: DATOS DEL PRÉSTAMO -->
   <div class="profile-card">
     <h3>Información General</h3>
@@ -88,7 +74,7 @@ endblock %} {% block sidebar_links %}
 
       <div class="data-group">
         <label>Fecha Límite Devolución</label>
-        <div class="data-value" style="color: #d32f2f; font-weight: 700">
+        <div class="data-value text-danger fw-bold">
           {{ prestamo.fecha_limite }}
         </div>
       </div>
@@ -96,14 +82,7 @@ endblock %} {% block sidebar_links %}
   </div>
 
   <!-- COLUMNA DERECHA: ACCIONES DEL ADMINISTRADOR -->
-  <div
-    class="admin-actions-card profile-card"
-    style="
-      height: fit-content;
-      background: #fafbfc;
-      border: 2px solid var(--border-color);
-    "
-  >
+  <div class="admin-actions-card profile-card admin-actions-wrapper">
     <h3><i class="fa-solid fa-sliders"></i> Panel de Acciones</h3>
 
     <form
@@ -175,11 +154,7 @@ endblock %} {% block sidebar_links %}
         </select>
       </div>
 
-      <button
-        type="submit"
-        class="res-btn btn-primary mt-3"
-        style="width: 100%; padding: 18px; font-size: 16px"
-      >
+      <button type="submit" class="res-btn btn-primary mt-3 btn-block btn-lg">
         <i class="fa-solid fa-check-double"></i> Actualizar Estado
       </button>
     </form>

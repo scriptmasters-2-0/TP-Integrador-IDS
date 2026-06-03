@@ -29,7 +29,7 @@ def dashboard():
             })
         estadisticas = {"actuales": len(reservas_api), "historicas": 14, "sanciones": 0}
     except Exception:
-        # Mock de fallback
+        # Mock Fallback
         reservas_api = [
             {
                 "id": 1,

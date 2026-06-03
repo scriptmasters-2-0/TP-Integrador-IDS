@@ -21,23 +21,15 @@ endblock %} {% block sidebar_links %}
 </li>
 {% endblock %} {% block dashboard_content %}
 <div class="history-header reveal">
-  <h2 style="margin-top: 0; margin-bottom: 5px">Historial de Reservas</h2>
-  <p style="color: var(--text-grey)">
+  <h2 class="mt-0 mb-1">Historial de Reservas</h2>
+  <p class="text-muted">
     Consulta el registro completo de tus préstamos anteriores.
   </p>
 </div>
 
-<section class="history-list reveal" style="transition-delay: 0.2s">
+<section class="history-list reveal delay-2">
   {% if historial %}
-  <div
-    class="history-table-wrapper"
-    style="
-      background: white;
-      border-radius: 15px;
-      border: 1px solid var(--border-color);
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.02);
-    "
-  >
+  <div class="history-table-wrapper table-card">
     <table class="history-table">
       <thead>
         <tr>
@@ -85,7 +77,7 @@ endblock %} {% block sidebar_links %}
   </div>
 
   <!-- PAGINACIÓN -->
-  <div class="pagination-container reveal" style="transition-delay: 0.3s">
+  <div class="pagination-container reveal delay-3">
     <ul class="pagination">
       <li>
         <a href="#" class="page-link disabled"
@@ -109,10 +101,7 @@ endblock %} {% block sidebar_links %}
     <i class="fa-solid fa-clock-rotate-left empty-icon"></i>
     <h3>Aún no tienes historial</h3>
     <p>No se encontraron registros de reservas pasadas en tu cuenta.</p>
-    <a
-      href="#"
-      class="res-btn btn-primary mt-3"
-      style="display: inline-flex; width: auto; padding: 12px 25px"
+    <a href="#" class="res-btn btn-primary mt-3 btn-inline"
       >Explorar catálogo</a
     >
   </div>

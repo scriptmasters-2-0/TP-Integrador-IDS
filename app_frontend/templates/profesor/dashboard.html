@@ -28,7 +28,7 @@ endblock %} {% block sidebar_links %}
 {% if reservas %}
 <div class="active-reservations-grid">
   {% for reserva in reservas %}
-  <div class="reservation-card reveal" style="transition-delay: 0.1s">
+  <div class="reservation-card reveal delay-1">
     <span class="res-status {{ reserva.estado_clase }}"
       >{{ reserva.estado_texto }}</span
     >
@@ -49,9 +49,7 @@ endblock %} {% block sidebar_links %}
       {% endif %} {% if 'Reportar Fallo' in reserva.acciones %}
       <button class="res-btn btn-secondary">Reportar Fallo</button>
       {% endif %} {% if 'Extender Plazo' in reserva.acciones %}
-      <button class="res-btn btn-primary" style="background-color: #20c997">
-        Extender Plazo
-      </button>
+      <button class="res-btn btn-success">Extender Plazo</button>
       {% endif %}
     </div>
   </div>
@@ -68,27 +66,24 @@ endblock %} {% block sidebar_links %}
   </p>
   <a
     href="{{ url_for('profesor.nueva_reserva') }}"
-    class="res-btn btn-primary mt-3"
-    style="display: inline-flex; width: auto; padding: 12px 25px"
+    class="res-btn btn-primary mt-3 btn-inline"
     ><i class="fa-solid fa-plus"></i> Crear mi primera reserva</a
   >
 </div>
 {% endif %}
 
-<h2 class="reveal" style="transition-delay: 0.2s">Resumen general</h2>
+<h2 class="reveal delay-2">Resumen general</h2>
 <div class="stats-grid">
-  <div class="stat-card reveal" style="transition-delay: 0.3s">
+  <div class="stat-card reveal delay-3">
     <div class="stat-value">{{ estadisticas.actuales }}</div>
     <div class="stat-label">Reservas Actuales</div>
   </div>
-  <div class="stat-card reveal" style="transition-delay: 0.4s">
+  <div class="stat-card reveal delay-4">
     <div class="stat-value">{{ estadisticas.historicas }}</div>
     <div class="stat-label">Reservas Históricas</div>
   </div>
-  <div class="stat-card reveal" style="transition-delay: 0.5s">
-    <div class="stat-value" style="color: #20c997">
-      {{ estadisticas.sanciones }}
-    </div>
+  <div class="stat-card reveal delay-5">
+    <div class="stat-value text-success">{{ estadisticas.sanciones }}</div>
     <div class="stat-label">Sanciones / Multas</div>
   </div>
 </div>

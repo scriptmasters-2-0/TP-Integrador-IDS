@@ -17,7 +17,7 @@ def perfil():
     try:
         usuario = obtener_perfil_usuario()
     except Exception as e:
-        # Mock fallback para cuando no haya token o el backend no responda
+        # Mock Fallback
         usuario = {
             "nombre": "Juan Pérez (Mock)",
             "email": "jperez@fi.uba.ar",
@@ -50,7 +50,7 @@ def historial():
                 "estado_clase": "badge-warning" if prestamo.get("estado_reserva") == "pendiente" else "badge-success"
             })
     except Exception:
-        # Mock fallback para cuando no haya token o el backend no responda
+        # Mock Fallback
         historial_datos = [
             {
                 "fecha": "15 May 2026",
