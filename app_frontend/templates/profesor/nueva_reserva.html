@@ -1,0 +1,78 @@
+{% extends "layouts/base_dashboard.html" %} {% block sidebar_links %}
+<li>
+  <a href="/profesor/dashboard"
+    ><i class="fa-solid fa-arrow-left"></i> Volver a mis reservas</a
+  >
+</li>
+{% endblock %} {% block dashboard_content %}
+<div class="history-container">
+  <div class="history-header">
+    <h1>Nueva Reserva</h1>
+    <p>Complete los detalles para solicitar el préstamo de un artículo.</p>
+  </div>
+
+  <form
+    action="/profesor/mis-reservas/guardar"
+    method="POST"
+    class="admin-form"
+  >
+    <div class="form-row">
+      <div class="data-group">
+        <label for="articulo_id">Seleccionar Artículo</label>
+        <select
+          id="articulo_id"
+          name="articulo_id"
+          class="admin-select"
+          required
+        >
+          <option value="">-- Seleccionar --</option>
+          <option value="1">Osciloscopio Rigol</option>
+          <option value="2">Multímetro Digital</option>
+        </select>
+      </div>
+    </div>
+
+    <div
+      class="form-row"
+      style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px"
+    >
+      <div class="data-group">
+        <label for="fecha_inicio">Fecha de inicio</label>
+        <input
+          type="date"
+          id="fecha_inicio"
+          name="fecha_inicio"
+          class="admin-input"
+          required
+        />
+      </div>
+      <div class="data-group">
+        <label for="fecha_fin">Fecha de devolución</label>
+        <input
+          type="date"
+          id="fecha_fin"
+          name="fecha_fin"
+          class="admin-input"
+          required
+        />
+      </div>
+    </div>
+
+    <div class="data-group">
+      <label for="observaciones">Observaciones</label>
+      <textarea
+        id="observaciones"
+        name="observaciones"
+        class="admin-input"
+        rows="3"
+        placeholder="Uso académico, laboratorio, etc."
+      ></textarea>
+    </div>
+
+    <div class="form-actions" style="margin-top: 25px; text-align: right">
+      <a href="/profesor/mis-reservas" class="btn-secondary">Cancelar</a>
+      <button type="submit" class="register-btn-nav">Solicitar Reserva</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
