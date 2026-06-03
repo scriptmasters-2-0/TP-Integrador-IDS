@@ -4,6 +4,7 @@ Define los endpoints para consultar, crear y actualizar penalizaciones
 de usuarios en el sistema.
 """
 
+import logging
 import mysql.connector
 from flask import Blueprint, jsonify, request
 
@@ -20,7 +21,8 @@ from http_codes_and_messages import (
     MSG_NOT_FOUND,
 )
 from routes.auth_route import requiere_auth
-from validators import valid_id, valid_penalty_patch
+from validators import valid_id, valid_penalty_patch, valid_user_id_query
+
 
 penalties_bp = Blueprint("penalties", __name__)
 
@@ -358,3 +360,59 @@ def crear_penalizacion():
     penalizacion = obtener_penalizacion_por_id(id_penalizacion)
 
     return jsonify(penalizacion), HTTP_CREATED
+
+logging.basicConfig(level=logging.ERROR)
+
+@penalties_bp.route('/api/penalties', methods=['GET'])
+def get_user_penalties():
+    """Obtiene penalizaciones asociadas a un usuario mediante query param.
+
+    Query Params:
+        user_id (str): Identificador del usuario a consultar.
+
+    Returns:
+        tuple: JSON con la lista de penalizaciones y código HTTP 200,
+            o un error con su código correspondiente.
+
+    """
+    is_valid, error, user_id = valid_user_id_query(request.args)
+    if not is_valid:
+        return jsonify({"error": "Invalid query params", "detail": error}), 400
+
+    conn = obtener_conexion()
+    if conn is None:
+        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
+
+    cursor = None
+
+    try:
+        cursor = conn.cursor(dictionary=True)
+        user_check_query = "SELECT id FROM users WHERE id = %s"
+        cursor.execute(user_check_query, (user_id,))
+        user_exists = cursor.fetchone()
+        
+        if not user_exists:
+            return jsonify({"error": f"User with ID {user_id} not found"}), 404
+
+        penalties_query = "SELECT * FROM penalties WHERE user_id = %s"
+        cursor.execute(penalties_query, (user_id,))
+        penalties = cursor.fetchall()
+
+        return jsonify(penalties), 200
+
+    except mysql.connector.Error as query_err:
+        logging.error(f"Database query execution error: {query_err}")
+
+        return jsonify({"error": "Internal server error: Database query failed"}), 500
+
+    finally:
+        try:
+            if cursor:
+                cursor.close()
+        except Exception:
+            pass
+        try:
+            conn.close()
+        except Exception:
+            pass
+

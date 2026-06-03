@@ -1,5 +1,6 @@
 """Rutas para los endpoints de préstamos."""
 
+import logging
 import mysql.connector
 from flask import Blueprint, jsonify, request
 
@@ -15,7 +16,7 @@ from http_codes_and_messages import (
     MSG_NOT_FOUND,
 )
 from routes.auth_route import requiere_auth
-from validators import valid_id, valid_loan_status_update
+from validators import valid_id, valid_loan_create, valid_loan_status_update
 
 loans_bp = Blueprint("loans", __name__)
 
@@ -197,3 +198,86 @@ def obtener_detalle_prestamo(loan_id):
 
     else:
         return jsonify({"error": "Préstamo no encontrado"}), HTTP_NOT_FOUND
+
+
+@loans_bp.route('/api/loans', methods=['POST'])
+def create_loan():
+    """Crea un nuevo préstamo para un usuario y un artículo.
+
+    Valida que el usuario y el artículo existan, verifica disponibilidad
+    del artículo y registra el préstamo junto con la actualización de estado.
+
+    Returns:
+        tuple: JSON con el préstamo creado y código HTTP 201,
+            o un error con su código correspondiente.
+
+    """
+    try:
+        data = request.get_json()
+    except Exception:
+        data = None
+
+    is_valid, error, parsed = valid_loan_create(data)
+    if not is_valid:
+        return jsonify({"error": "Invalid loan payload", "detail": error}), 400
+
+    user_id = parsed.get("user_id")
+    item_id = parsed.get("item_id")
+
+    conn = obtener_conexion()
+    if conn is None:
+        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
+
+    cursor = None
+
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT id FROM users WHERE id = %s", (user_id,))
+        if not cursor.fetchone():
+            return jsonify({"error": f"Cannot create loan. User with ID {user_id} does not exist"}), 404
+
+        cursor.execute("SELECT id, status FROM items WHERE id = %s", (item_id,))
+        item = cursor.fetchone()
+        if not item:
+            return jsonify({"error": f"Cannot create loan. Item with ID {item_id} does not exist"}), 404
+            
+        if item['status'] == 'borrowed':
+            return jsonify({"error": f"Item with ID {item_id} is already borrowed"}), 400
+
+        insert_query = "INSERT INTO loans (user_id, item_id, loan_date, status) VALUES (%s, %s, NOW(), 'active')"
+        cursor.execute(insert_query, (user_id, item_id))
+        
+        update_item_query = "UPDATE items SET status = 'borrowed' WHERE id = %s"
+        cursor.execute(update_item_query, (item_id,))
+   
+        conn.commit()
+
+        new_loan_id = cursor.lastrowid
+
+        return jsonify({
+            "message": "Loan created successfully",
+            "loan_id": new_loan_id,
+            "user_id": user_id,
+            "item_id": item_id
+        }), 201
+
+    except mysql.connector.Error as query_err:
+        logging.error(f"Database query error in create_loan: {query_err}")
+
+        try:
+            conn.rollback()
+        except Exception:
+            pass
+
+        return jsonify({"error": "Internal server error: Database transaction failed"}), 500
+
+    finally:
+        try:
+            if cursor:
+                cursor.close()
+        except Exception:
+            pass
+        try:
+            conn.close()
+        except Exception:
+            pass

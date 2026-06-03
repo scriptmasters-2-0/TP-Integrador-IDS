@@ -93,8 +93,6 @@ paths:
                   $ref: '#/components/schemas/UserDetail'
         '403':
           description: Prohibido. Permisos insuficientes.
-        '401':
-          description: No autorizado.
 
     post:
       tags:
@@ -120,6 +118,48 @@ paths:
           description: Datos inválidos o conflicto.
         '403':
           description: Prohibido. Permisos insuficientes.
+
+  /user:
+    get:
+      tags:
+        - Usuarios
+      summary: Lista usuarios (endpoint de compatibilidad)
+      description: Endpoint agregado por compatibilidad. Devuelve usuarios desde la tabla users.
+      responses:
+        '200':
+          description: Lista de usuarios obtenida.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserLegacyDetail'
+
+  /user/{user_id}:
+    parameters:
+      - name: user_id
+        in: path
+        required: true
+        description: Identificador único del usuario.
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags:
+        - Usuarios
+      summary: Obtiene un usuario por ID (endpoint de compatibilidad)
+      description: Endpoint agregado por compatibilidad. Consulta usuarios en la tabla users.
+      responses:
+        '200':
+          description: Usuario encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserLegacyDetail'
+        '400':
+          description: ID inválido.
+        '404':
+          description: Usuario no encontrado.
 
   /users/{id}:
     parameters:
@@ -336,14 +376,15 @@ paths:
     get:
       tags:
         - Inventario y Materiales
-      summary: Consulta el detalle, normativas específicas y estado de un ítem particular
+      summary: Consulta el detalle de un ítem por ID
+      description: Endpoint GET implementado en la variante de compatibilidad (tabla items).
       responses:
         '200':
           description: Detalle del ítem.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ItemDetail'
+                $ref: '#/components/schemas/ItemLegacyDetail'
         '404':
           description: Ítem no encontrado.
 
@@ -461,24 +502,24 @@ paths:
       tags:
         - Préstamos y Reservas
       summary: Crea una nueva solicitud de reserva
-      description: Valida disponibilidad, sanciones y límites.
-      security:
-        - BearerAuth: []
+      description: Endpoint de compatibilidad. Recibe user_id e item_id, valida disponibilidad y crea el préstamo.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LoanCreate'
+              $ref: '#/components/schemas/LoanCreateLegacyRequest'
       responses:
         '201':
           description: Reserva creada.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LoanDetail'
+                $ref: '#/components/schemas/LoanCreateLegacyResponse'
         '400':
           description: Validaciones fallidas.
+        '404':
+          description: Usuario o ítem no encontrado.
 
   /loans/{id}:
     parameters:
@@ -577,9 +618,15 @@ paths:
       tags:
         - Penalizaciones
       summary: Lista general de penalizaciones activas e históricas
-      description: (Solo Admin).
-      security:
-        - BearerAuth: []
+      description: Permite listar todas las penalizaciones o filtrar por usuario con query param user_id.
+      parameters:
+        - name: user_id
+          in: query
+          required: false
+          description: Identificador del usuario para filtrar penalizaciones.
+          schema:
+            type: integer
+            format: int64
       responses:
         '200':
           description: Listado obtenido.
@@ -589,8 +636,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/PenaltyDetail'
-        '403':
-          description: Prohibido.
+        '400':
+          description: Parámetros de consulta inválidos.
 
     post:
       tags:
@@ -823,6 +870,20 @@ components:
           type: string
           nullable: true
 
+    UserLegacyDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+
     UserCreate:
       type: object
       required:
@@ -885,6 +946,19 @@ components:
           type: integer
         necesita_reparacion:
           type: boolean
+
+    ItemLegacyDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
 
     ItemCreate:
       type: object
@@ -995,6 +1069,34 @@ components:
         estado_reserva:
           type: string
           enum: [pendiente, aprobado, entregado, devuelto, rechazado]
+
+    LoanCreateLegacyRequest:
+      type: object
+      required:
+        - user_id
+        - item_id
+      properties:
+        user_id:
+          type: integer
+          format: int64
+        item_id:
+          type: integer
+          format: int64
+
+    LoanCreateLegacyResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        loan_id:
+          type: integer
+          format: int64
+        user_id:
+          type: integer
+          format: int64
+        item_id:
+          type: integer
+          format: int64
 
     LoanStatusUpdate:
       type: object

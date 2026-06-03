@@ -26,6 +26,13 @@ Obtiene el historial personal de préstamos/pedidos de un alumno y sus estados.
 * **`GET /api/users/{id}/penalties`**
 Obtiene las penalizaciones vigentes e históricas de un alumno.
 
+### Compatibilidad de Endpoints (`/api/user`)
+
+* **`GET /api/user`**
+Lista usuarios desde la tabla `users` (endpoint agregado en cambios recientes).
+* **`GET /api/user/<int:user_id>`**
+Obtiene un usuario puntual desde la tabla `users` por su identificador.
+
 ### Inventario y Materiales (`/api/items`)
 
 * **`GET /api/items`**
@@ -69,6 +76,8 @@ Obtiene el detalle de una penalización específica.
 Modifica o levanta una penalización reemplazando el registro completo.
 * **`PATCH /api/penalties/{id}`**
 Actualiza parcialmente los datos de una penalización (ej. ajusta la severidad, agrega notas o la marca como resuelta).
+* **`GET /api/penalties?user_id={id}`**
+Retorna penalizaciones filtradas por usuario usando query param `user_id`.
 
 ### Reportes y Estadísticas (`/api/reports`)
 

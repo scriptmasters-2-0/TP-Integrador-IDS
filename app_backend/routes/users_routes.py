@@ -4,6 +4,7 @@ Define los endpoints para crear, actualizar, consultar préstamos
 y eliminar (baja lógica) usuarios del sistema.
 """
 
+import logging
 import mysql.connector
 from flask import Blueprint, jsonify, request
 
@@ -24,7 +25,98 @@ from http_codes_and_messages import (
 from routes.auth_route import requiere_auth
 from validators import valid_id, valid_user, valid_user_update
 
+logging.basicConfig(level=logging.ERROR)
+
 users_bp = Blueprint("users", __name__)
+
+@users_bp.route('/api/user', methods=['GET'])
+def get_all_users():
+    """Lista todos los usuarios registrados.
+
+    Returns:
+        tuple: JSON con la lista de usuarios y código HTTP 200,
+            o un error con su código correspondiente.
+
+    """
+    conn = obtener_conexion()
+    if conn is None:
+        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
+
+    cursor = None
+
+    try:
+        cursor = conn.cursor(dictionary=True)
+        query = "SELECT id, username, email, role FROM users"
+        cursor.execute(query)
+        users = cursor.fetchall()
+
+        return jsonify(users), 200
+
+    except mysql.connector.Error as query_err:
+        logging.error(f"Database query error in get_all_users: {query_err}")
+
+        return jsonify({"error": "Internal server error: Database query failed"}), 500
+
+    finally:
+        try:
+            if cursor:
+                cursor.close()
+        except Exception:
+            pass
+        try:
+            conn.close()
+        except Exception:
+            pass
+    
+
+@users_bp.route('/api/user/<int:user_id>', methods=['GET'])
+def get_user_by_id(user_id):
+    """Obtiene un usuario por su identificador.
+
+    Args:
+        user_id (int): Identificador único del usuario a consultar.
+
+    Returns:
+        tuple: JSON con el usuario y código HTTP 200,
+            o un error con su código correspondiente.
+
+    """
+    if valid_id(user_id) is None:
+        return jsonify({"error": "Invalid user ID format"}), 400
+
+    conn = obtener_conexion()
+    if conn is None:
+        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
+
+    cursor = None
+
+    try:
+        cursor = conn.cursor(dictionary=True)
+        query = "SELECT id, username, email, role FROM users WHERE id = %s"
+        cursor.execute(query, (user_id,))
+        user = cursor.fetchone()
+
+        if not user:
+            return jsonify({"error": f"User with ID {user_id} not found"}), 404
+
+        return jsonify(user), 200
+
+    except mysql.connector.Error as query_err:
+        logging.error(f"Database query error in get_user_by_id: {query_err}")
+
+        return jsonify({"error": "Internal server error: Database query failed"}), 500
+
+    finally:
+        try:
+            if cursor:
+                cursor.close()
+        except Exception:
+            pass
+        try:
+            conn.close()
+        except Exception:
+            pass
+
 DUPLICATE_ENTRY_ERRNO = 1062
 
 

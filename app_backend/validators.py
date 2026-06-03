@@ -533,3 +533,61 @@ def valid_loan_status_update(data):
         return False, "invalid_value:estado_reserva"
 
     return True, None
+
+
+def valid_loan_create(data):
+    """Valida el payload de creación de préstamo.
+
+    Verifica que los campos user_id e item_id estén presentes
+    y que sean identificadores enteros positivos.
+
+    Args:
+        data (dict): Diccionario con los campos del préstamo a crear.
+
+    Returns:
+        tuple: (True, None, dict) con valores parseados si es válido,
+            o (False, str, None) con detalle del error.
+
+    """
+    if not isinstance(data, dict):
+        return False, "payload_must_be_object", None
+
+    if data.get("user_id") is None:
+        return False, "missing:user_id", None
+    if data.get("item_id") is None:
+        return False, "missing:item_id", None
+
+    user_id = valid_id(data.get("user_id"))
+    if user_id is None:
+        return False, "invalid_value:user_id", None
+
+    item_id = valid_id(data.get("item_id"))
+    if item_id is None:
+        return False, "invalid_value:item_id", None
+
+    return True, None, {"user_id": user_id, "item_id": item_id}
+
+
+def valid_user_id_query(filters):
+    """Valida y parsea query params que requieren user_id.
+
+    Args:
+        filters: Objeto con query params (por ejemplo request.args).
+
+    Returns:
+        tuple: (True, None, int) con user_id parseado si es válido,
+            o (False, str, None) con detalle del error.
+
+    """
+    if filters is None:
+        return False, "missing:user_id", None
+
+    raw_user_id = filters.get("user_id")
+    if raw_user_id is None:
+        return False, "missing:user_id", None
+
+    user_id = valid_id(raw_user_id)
+    if user_id is None:
+        return False, "invalid_value:user_id", None
+
+    return True, None, user_id

@@ -1,5 +1,6 @@
 """Rutas para los endpoints de artículos del inventario."""
 
+import logging
 import mysql.connector
 from flask import Blueprint, jsonify, request
 
@@ -445,3 +446,52 @@ def eliminar_item(item_id):
         if cursor:
             cursor.close()
         conn.close()
+
+
+@items_bp.route('/api/items/<int:item_id>', methods=['GET'])
+def get_item_by_id(item_id):
+    """Obtiene los datos de un artículo por su identificador.
+
+    Args:
+        item_id (int): Identificador único del artículo a consultar.
+
+    Returns:
+        tuple: JSON con el artículo encontrado y código HTTP 200,
+            o un error con su código correspondiente.
+
+    """
+    if valid_id(item_id) is None:
+        return jsonify({"error": "Invalid item ID format"}), 400
+
+    conn = obtener_conexion()
+    if conn is None:
+        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
+
+    cursor = None
+
+    try:
+        cursor = conn.cursor(dictionary=True)
+        query = "SELECT id, name, description, status FROM items WHERE id = %s"
+        cursor.execute(query, (item_id,))
+        item = cursor.fetchone()
+
+        if not item:
+            return jsonify({"error": f"Item with ID {item_id} not found"}), 404
+
+        return jsonify(item), 200
+
+    except mysql.connector.Error as query_err:
+        logging.error(f"Database query error in get_item_by_id: {query_err}")
+
+        return jsonify({"error": "Internal server error: Database query failed"}), 500
+
+    finally:
+        try:
+            if cursor:
+                cursor.close()
+        except Exception:
+            pass
+        try:
+            conn.close()
+        except Exception:
+            pass
