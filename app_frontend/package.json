@@ -1,0 +1,16 @@
+{
+  "name": "app_frontend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "format": "prettier --write \"static/**/*.{html,css,js}\" \"templates/**/*.html\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "prettier": "^3.8.3"
+  }
+}
