@@ -72,3 +72,7 @@ def mostrar_catalogo():
         tipo_actual=tipo_actual,
         seccion_actual=seccion_actual
     )
+
+@public_bp.route("/faq", methods=["GET"])
+def mostrar_faq():
+    return render_template("public/faq.html")
