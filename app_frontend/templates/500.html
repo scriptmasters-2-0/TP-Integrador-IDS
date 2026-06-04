@@ -1,0 +1,9 @@
+{% extends "layouts/base.html" %}
+{% block content %}
+    <div class="error-container">
+        <i class="fa-solid fa-magnifying-glass error-icon"></i>
+        <h1>Error Interno del Servidor</h1>
+        <p>Lamentamos las molestias, ha ocurrido un error interno en el servidor.</p>
+        <a href="{{ url_for('public.home') }}" class="res-btn btn-primary">Volver a la página principal</a>
+    </div>
+{% endblock %}

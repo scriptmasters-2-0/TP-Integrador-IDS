@@ -1,0 +1,9 @@
+{% extends "layouts/base.html" %}
+{% block content %}
+    <div class="error-container">
+        <i class="fa-solid fa-magnifying-glass error-icon"></i>
+        <h1>Página no encontrada</h1>
+        <p>La página que estás buscando no existe.</p>
+        <a href="{{ url_for('public.home') }}" class="res-btn btn-primary">Volver a la página principal</a>
+    </div>  
+{% endblock %}

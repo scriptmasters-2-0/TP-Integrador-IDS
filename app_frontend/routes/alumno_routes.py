@@ -1,9 +1,16 @@
 """Rutas del area de alumnos."""
 
-import requests
-from flask import Blueprint, redirect, render_template, session
 import config
+import requests
+from flask import Blueprint, render_template, session, redirect, url_for, request
 from services.api_client import obtener_perfil_usuario, obtener_prestamos, obtener_detalle_prestamo
+from http_codes_and_messages import (
+    HTTP_OK,
+    HTTP_NOT_FOUND,
+    HTTP_INTERNAL_SERVER_ERROR,
+    MSG_NOT_FOUND,
+    MSG_INTERNAL_SERVER_ERROR,
+)
 
 alumno_bp = Blueprint("alumno", __name__, url_prefix="/alumno")
 
@@ -115,3 +122,52 @@ def comprobante(id):
         }
     
     return render_template("alumno/comprobante.html", prestamo=prestamo)
+
+
+@alumno_bp.route("/prestamos/id/comprobante")
+def comprobante_sin_id():
+    """Renderiza el comprobante de un prestamo especifico para el alumno (sin id)."""
+    return render_template("alumno/comprobante.html")
+
+
+# Rutas adicionales provenientes de la versión blueprint (ajustadas al url_prefix)
+@alumno_bp.route('/penalizaciones', methods=['GET'])
+def alumno_penalizaciones():
+    token = session.get('token')
+    if not token:
+        return redirect(url_for('login')) 
+    registro_penalizaciones = requests.get(f"http://localhost:5001/api/penalties", headers={"Authorization": f"Bearer {token}"})
+    if registro_penalizaciones.status_code == HTTP_OK:
+        return render_template('alumno/penalizaciones.html', penalizaciones=registro_penalizaciones.json())
+    elif registro_penalizaciones.status_code == HTTP_NOT_FOUND:
+        return render_template("404.html", error=MSG_NOT_FOUND), HTTP_NOT_FOUND
+    else:
+        return render_template("500.html", error=MSG_INTERNAL_SERVER_ERROR), HTTP_INTERNAL_SERVER_ERROR
+
+
+@alumno_bp.route('/mis-reservas/<id>/cancelar', methods=['POST'])
+def alumno_cancelar_reserva(id):
+    token = session.get('token')
+    if not token:
+        return redirect(url_for('login'))
+    cancelacion_reserva = requests.patch(f"http://localhost:5001/api/loans/{id}/status", json={"status": "cancelada"}, headers={"Authorization": f"Bearer {token}"})
+    if cancelacion_reserva.status_code == HTTP_OK:
+        return redirect(url_for('alumno.alumno_mis_reservas'))
+    elif cancelacion_reserva.status_code == HTTP_NOT_FOUND:
+        return render_template("404.html", error=MSG_NOT_FOUND), HTTP_NOT_FOUND
+    else:
+        return render_template("500.html", error=MSG_INTERNAL_SERVER_ERROR), HTTP_INTERNAL_SERVER_ERROR
+
+
+@alumno_bp.route('/mis-reservas', methods=['GET'])
+def alumno_mis_reservas():
+    token = session.get('token')
+    if not token:
+        return redirect(url_for('login'))
+    registro_reservas = requests.get(f"http://localhost:5001/api/loans", headers={"Authorization": f"Bearer {token}"})
+    if registro_reservas.status_code  == HTTP_OK:
+        return render_template('alumno/mis-reservas.html', reservas=registro_reservas.json())
+    elif registro_reservas.status_code == HTTP_NOT_FOUND:
+        return render_template("404.html", error=MSG_NOT_FOUND), HTTP_NOT_FOUND
+    else:
+        return render_template("500.html", error=MSG_INTERNAL_SERVER_ERROR), HTTP_INTERNAL_SERVER_ERROR

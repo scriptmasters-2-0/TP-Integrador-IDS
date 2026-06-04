@@ -1,9 +1,16 @@
 """Rutas del area de profesores."""
 
-import requests
-from flask import Blueprint, redirect, render_template, session
 import config
+import requests
+from flask import Blueprint, render_template, session, redirect, url_for, request
 from services.api_client import obtener_prestamos
+from http_codes_and_messages import (
+    HTTP_OK,
+    HTTP_NOT_FOUND,
+    HTTP_INTERNAL_SERVER_ERROR,
+    MSG_NOT_FOUND,
+    MSG_INTERNAL_SERVER_ERROR,
+)
 
 profesor_bp = Blueprint("profesor", __name__, url_prefix="/profesor")
 
@@ -73,3 +80,45 @@ def guardar_reserva():
         Response: Redirección al panel de control.
     """
     return redirect("/dashboard")
+
+
+# Rutas adicionales provenientes de la versión blueprint (ajustadas al url_prefix)
+@profesor_bp.route('/prestamos/<id>', methods=['GET'])
+def profesor_prestamos(id):
+    token = session.get('token')
+    if not token:
+        return redirect(url_for('login'))
+    prestamos = requests.get(f"http://localhost:5001/api/loans/{id}", headers={"Authorization": f"Bearer {token}"})
+    if prestamos.status_code == HTTP_OK:
+        return render_template('profesor/detalle_prestamo.html', prestamo=prestamos.json())
+    elif prestamos.status_code == HTTP_NOT_FOUND:
+        return render_template("404.html", error=MSG_NOT_FOUND), HTTP_NOT_FOUND
+    else:
+        return render_template("500.html", error=MSG_INTERNAL_SERVER_ERROR), HTTP_INTERNAL_SERVER_ERROR
+
+@profesor_bp.route('/mis-reservas/<id>/cancelar', methods=['POST'])
+def profesor_cancelar_reserva(id):
+    token = session.get('token')
+    if not token:
+        return redirect(url_for('login'))
+    cancelacion_reserva = requests.patch(f"http://localhost:5001/api/loans/{id}/status", json={"status": "cancelada"}, headers={"Authorization": f"Bearer {token}"})
+    if cancelacion_reserva.status_code == HTTP_OK:
+        return redirect(url_for('profesor.profesor_mis_reservas'))
+    elif cancelacion_reserva.status_code == HTTP_NOT_FOUND:
+        return render_template("404.html", error=MSG_NOT_FOUND), HTTP_NOT_FOUND
+    else:
+        return render_template("500.html", error=MSG_INTERNAL_SERVER_ERROR), HTTP_INTERNAL_SERVER_ERROR
+
+
+@profesor_bp.route('/mis-reservas', methods=['GET'])
+def profesor_mis_reservas():
+    token = session.get('token')
+    if not token:
+        return redirect(url_for('login'))
+    registro_reservas = requests.get(f"http://localhost:5001/api/loans", headers={"Authorization": f"Bearer {token}"})
+    if registro_reservas.status_code  == HTTP_OK:
+        return render_template('profesor/mis-reservas.html', reservas=registro_reservas.json())
+    elif registro_reservas.status_code == HTTP_NOT_FOUND:
+        return render_template("404.html", error=MSG_NOT_FOUND), HTTP_NOT_FOUND
+    else:
+        return render_template("500.html", error=MSG_INTERNAL_SERVER_ERROR), HTTP_INTERNAL_SERVER_ERROR

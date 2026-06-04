@@ -37,6 +37,7 @@ def format_loan(row):
         "id": row.get("id"),
         "id_usuario": row.get("id_usuario"),
         "id_reservado": row.get("id_reservado"),
+	"nombre_art": row.get("nombre_art"),
         "estado_reserva": row.get("estado_reserva"),
         "fecha_retiro": (
             row.get("fecha_retiro").isoformat() if row.get("fecha_retiro") else None
@@ -46,6 +47,37 @@ def format_loan(row):
         ),
     }
 
+@loans_bp.route("/api/loans", methods=["GET"])
+@requiere_auth(roles=["admin", "profesor", "bibliotecario", "alumno"])
+def listar_prestamos():
+    conn = obtener_conexion()
+    if conn is None:
+        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
+    cursor = None
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT r.id, r.id_usuario, r.id_reservado,
+                   a.nombre_art, r.estado_reserva,
+                   r.fecha_retiro, r.fecha_regreso
+            FROM reserva r
+            JOIN articulos a ON r.id_reservado = a.id
+            WHERE r.id_usuario = %(user_id)s
+            ORDER BY r.fecha_retiro DESC
+        """, {"user_id": request.user_id})
+        loans = [format_loan(row) for row in cursor.fetchall()]
+        return jsonify(loans), HTTP_OK
+    except Exception:
+        return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
+    finally:
+        try:
+            cursor.close()
+        except Exception:
+            pass
+        try:
+            conn.close()
+        except Exception:
+            pass
 
 def obtener_detalle_prestamo_db(loan_id):
     """Obtiene el detalle completo de un préstamo.
