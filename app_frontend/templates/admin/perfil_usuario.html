@@ -1,0 +1,66 @@
+{% extends 'layouts/base_dashboard.html' %}
+
+{% block user_name %}Admin{% endblock %}
+
+{% block sidebar_links %}
+    <li><a href="#" class="active"><i class="fa-solid fa-users"></i> Usuarios</a></li>
+    <li><a href="#"><i class="fa-solid fa-box-open"></i> Artículos</a></li>
+    <li><a href="#"><i class="fa-solid fa-triangle-exclamation"></i> Penalizaciones</a></li>
+    <li><a href="#"><i class="fa-solid fa-file-contract"></i> Reportes</a></li>
+{% endblock %}
+
+{% block dashboard_content %}
+    <h2 class="reveal">Perfil de Usuario</h2>
+
+    <div class="admin-detail-layout reveal" style="transition-delay: 0.1s;">
+        
+        <!-- COLUMNA IZQUIERDA: DATOS DEL USUARIO -->
+        <div class="profile-card">
+            <div class="user-card">
+                <div class="user-card-avatar">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <h3 class="user-card-name">{{ usuario.nombre }}</h3>
+                <span class="badge badge-success mb-3">{{ usuario.rol }}</span>
+            </div>
+            <div class="data-grid mt-data-grid">
+                <div class="data-group">
+                    <label>Email</label>
+                    <div class="data-value">{{ usuario.mail }}</div>
+                </div>
+                <div class="data-group">
+                    <label>Carrera</label>
+                    <div class="data-value">{{ usuario.carrera }}</div>
+                </div>
+                <div class="data-group">
+                    <label>Score</label>
+                    <div class="data-value highlight-value">{{ usuario.score }}</div>
+                </div>
+                <div class="data-group">
+                    <label>Rol actual</label>
+                    <div class="data-value">{{ usuario.rol }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUMNA DERECHA: FORMULARIO DE EDICIÓN -->
+        <div class="profile-card card-fit-height">
+            <h3>Modificar datos</h3>
+            <form action="{{ url_for('admin.editar_usuario', id=usuario.id) }}" method="POST" class="admin-form">
+                <div class="form-group mb-4">
+                    <label>Rol</label>
+                    <select class="admin-select" name="rol">
+                        <option value="alumno" {% if usuario.rol == 'alumno' %}selected{% endif %}>Alumno</option>
+                        <option value="profesor" {% if usuario.rol == 'profesor' %}selected{% endif %}>Profesor</option>
+                        <option value="bibliotecario" {% if usuario.rol == 'bibliotecario' %}selected{% endif %}>Bibliotecario</option>
+                        <option value="admin" {% if usuario.rol == 'admin' %}selected{% endif %}>Admin</option>
+                    </select>
+                </div>
+                <button type="submit" class="res-btn btn-primary" style="width: 100%; padding: 15px;">
+                    <i class="fa-solid fa-floppy-disk"></i> Guardar cambios
+                </button>
+            </form>
+        </div>
+
+    </div>
+{% endblock %}

@@ -207,6 +207,34 @@ def create_user():
         except Exception:
             pass
 
+@users_bp.route("/api/users/<int:user_id>", methods=["GET"])
+@requiere_auth(roles=["admin"])
+def get_user(user_id):
+    conn = obtener_conexion()
+    if conn is None:
+        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
+    cursor = None
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(
+            "SELECT id, nombre, mail, score, rol, carrera FROM usuario WHERE id = %s",
+            (user_id,)
+        )
+        user = cursor.fetchone()
+        if not user:
+            return jsonify({"message": MSG_NOT_FOUND}), HTTP_NOT_FOUND
+        return jsonify(user), HTTP_OK
+    except Exception:
+        return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
+    finally:
+        try:
+            cursor.close()
+        except Exception:
+            pass
+        try:
+            conn.close()
+        except Exception:
+            pass
 
 @users_bp.route("/api/users/<int:user_id>", methods=["PUT"])
 @requiere_auth(roles=["admin"])

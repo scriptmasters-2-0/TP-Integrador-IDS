@@ -1,10 +1,16 @@
 """Rutas del area de administracion."""
 
-import requests
-from flask import Blueprint, render_template, session
 import config
+import requests
+from flask import Blueprint, render_template, session, redirect, url_for, request
 from services.api_client import obtener_detalle_prestamo
-
+from http_codes_and_messages import (
+    HTTP_OK,
+    HTTP_NOT_FOUND,
+    HTTP_INTERNAL_SERVER_ERROR,
+    MSG_NOT_FOUND,
+    MSG_INTERNAL_SERVER_ERROR,
+)
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 @admin_bp.route("/prestamos/<int:id>")
@@ -79,3 +85,32 @@ def dashboard():
         str: Plantilla HTML del panel principal del administrador.
     """
     return render_template("admin/dashboard.html")
+
+
+# Rutas adicionales provenientes de la versión blueprint (ajustadas al url_prefix)
+@admin_bp.route('/usuarios/<id>/editar', methods=['POST'])
+def editar_usuario(id):
+    token = session.get('token')
+    if not token:
+        return redirect(url_for('login'))
+    response = requests.put(f"http://localhost:5001/api/users/{id}", json=request.form.to_dict(), headers={"Authorization": f"Bearer {token}"})
+    if response.status_code == HTTP_OK:
+        return redirect(url_for('admin.obtener_usuario', id=id))
+    elif response.status_code == HTTP_NOT_FOUND:
+        return render_template("404.html", message=MSG_NOT_FOUND), HTTP_NOT_FOUND
+    else:
+        return render_template("500.html", message=MSG_INTERNAL_SERVER_ERROR), HTTP_INTERNAL_SERVER_ERROR
+
+@admin_bp.route('/usuarios/<id>', methods=['GET'])
+def obtener_usuario(id):
+    token = session.get('token')
+    if not token:
+        return redirect(url_for('login'))
+    response = requests.get(f"http://localhost:5001/api/users/{id}", headers={"Authorization": f"Bearer {token}"})
+    if response.status_code == HTTP_OK:
+        usuario = response.json()
+        return render_template("admin/perfil_usuario.html", usuario=usuario)
+    elif response.status_code == HTTP_NOT_FOUND:
+        return render_template("404.html", message=MSG_NOT_FOUND), HTTP_NOT_FOUND
+    else:
+        return render_template("500.html", message=MSG_INTERNAL_SERVER_ERROR), HTTP_INTERNAL_SERVER_ERROR
