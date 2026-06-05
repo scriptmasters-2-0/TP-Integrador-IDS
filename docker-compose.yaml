@@ -49,6 +49,7 @@ services:
       - 3306:${DB_PORT}
     volumes:
       - tp_integrador_db:/var/lib/mysql
+      - ./app_backend/db_scripts/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql 
 
 volumes:
   tp_integrador_db:

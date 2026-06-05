@@ -2,7 +2,7 @@
 
 from flask import Blueprint, redirect, render_template, request, session, url_for
 
-from services.api_client import post_json
+from services.api_client import get_json, post_json
 
 
 public_bp = Blueprint("public", __name__)
@@ -70,9 +70,6 @@ def logout():
 def registro():
     """Renderiza la página de registro y maneja el proceso de registro de nuevos usuarios."""
     if request.method == "POST":
-        # 1. Capturar datos del form
-        # 2. Llamar a la API de backend para crear el usuario con rol 'alumno'
-        # 3. Redirigir a /login
         return redirect(url_for("public.login"))
 
     return render_template("public/registro.html")
@@ -80,6 +77,35 @@ def registro():
 
 @public_bp.route("/normas", methods=["GET"])
 def normas():
-    # En una implementación real, podrías obtener las normas desde la DB
-    # normas = requests.get(f"{BACKEND_URL}/normativa").json()
     return render_template("public/normas.html")
+
+
+@public_bp.route("/catalogo", methods=["GET"])
+def mostrar_catalogo():
+    """Muestra el catálogo completo de artículos con filtros opcionales."""
+    tipo_actual = request.args.get("tipo", "")
+    seccion_actual = request.args.get("seccion", "")
+
+    filtros = {}
+    if tipo_actual:
+        filtros["tipo"] = tipo_actual
+    if seccion_actual:
+        filtros["seccion"] = seccion_actual
+
+    articulos = []
+    articulos_payload, fetch_error = get_json("/api/items", params=filtros)
+    if isinstance(articulos_payload, list):
+        articulos = articulos_payload
+
+    return render_template(
+        "public/catalogo.html",
+        articulos=articulos,
+        tipo_actual=tipo_actual,
+        seccion_actual=seccion_actual,
+        fetch_error=fetch_error,
+    )
+
+
+@public_bp.route("/faq", methods=["GET"])
+def mostrar_faq():
+    return render_template("public/faq.html")

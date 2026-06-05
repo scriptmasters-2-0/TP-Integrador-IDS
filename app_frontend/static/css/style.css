@@ -994,8 +994,45 @@ h3 {
   border-radius: 15px;
   padding: 40px 50px;
   border: 1px solid var(--border-color);
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
+
+/* ==========================================================================
+   UTILITY & HELPER CLASSES (Refactorización)
+   ========================================================================== */
+
+/* Spacing */
+.mt-0 { margin-top: 0 !important; }
+.mb-1 { margin-bottom: 5px !important; }
+.mt-4 { margin-top: 20px !important; }
+.mb-4 { margin-bottom: 30px !important; }
+
+/* Text & Colors */
+.text-muted { color: var(--text-grey) !important; }
+.text-danger { color: #d32f2f !important; }
+.text-success { color: #20c997 !important; }
+.fw-bold { font-weight: 700 !important; }
+
+/* Buttons & Badges */
+.btn-inline { display: inline-flex !important; width: auto !important; padding: 12px 25px !important; }
+.btn-block { width: 100% !important; }
+.btn-lg { padding: 18px !important; font-size: 16px !important; }
+.btn-success { background-color: #20c997 !important; border-color: #20c997 !important; color: white !important; }
+.btn-success:hover { background-color: #1ba87e !important; }
+.badge-lg { display: inline-flex !important; font-size: 14px !important; padding: 6px 15px !important; }
+
+/* Layout & Containers */
+.admin-header-flex { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; }
+.admin-title { margin-top: 10px; margin-bottom: 15px; font-size: 28px; }
+.admin-actions-wrapper { height: fit-content; background: #fafbfc; border: 2px solid var(--border-color); }
+.table-card { background: white; border-radius: 15px; border: 1px solid var(--border-color); box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
+
+/* Animations */
+.delay-1 { transition-delay: 0.1s !important; }
+.delay-2 { transition-delay: 0.2s !important; }
+.delay-3 { transition-delay: 0.3s !important; }
+.delay-4 { transition-delay: 0.4s !important; }
+.delay-5 { transition-delay: 0.5s !important; }
 
 .history-header {
   margin-bottom: 40px;

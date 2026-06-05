@@ -20,7 +20,5 @@ HOST = os.environ.get("FRONTEND_HOST", "127.0.0.1")
 PORT = int(os.environ.get("FRONTEND_PORT", "5000"))
 
 BACKEND_HOST = os.environ.get("BACKEND_HOST", "127.0.0.1")
-BACKEND_PORT = int(os.environ.get("BACKEND_PORT", "5001"))
-BACKEND_BASE_URL = os.environ.get(
-    "BACKEND_BASE_URL", f"http://{BACKEND_HOST}:{BACKEND_PORT}"
-)
+BACKEND_PORT = os.environ.get("BACKEND_PORT", "5001")
+BACKEND_URL = f"http://{BACKEND_HOST}:{BACKEND_PORT}/api"

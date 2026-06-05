@@ -24,18 +24,18 @@
                 <a href="https://x.com/ingenieriauba" target="_blank" title="X (Twitter)"><i class="fa-brands fa-x-twitter"></i></a>
                 <a href="https://www.instagram.com/ingenieriauba/" target="_blank" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
                 <a href="https://www.youtube.com/user/FIUBAoficial" target="_blank" title="YouTube"><i class="fa-brands fa-youtube"></i></a>
-                <a href="https://www.linkedin.com/company/facultad-de-ingenier-a---uba/" target="_blank" title="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+                <a href="https://www.linkedin.com/company/facultad-de-ingenieria---uba/" target="_blank" title="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
             </div>
         </div>
         <div class="navbar-bottom">
             <nav class="nav-links">
                 <a href="{{ url_for('public.home') }}#como-funciona">Información general</a>
                 <a href="{{ url_for('public.normas') }}">Normas</a>
-                <a href="{{ url_for('admin.listar_articulos') }}">Catálogo</a>
+                <a href="{{ url_for('public.mostrar_catalogo') }}">Catálogo</a>
             </nav>
             <div class="auth-buttons">
                 <button onclick="window.location.href='{{ url_for('public.login') }}'" class="login-btn">INICIA SESIÓN</button>
-                <button onclick="window.location.href='/registro'" class="register-btn-nav">REGISTRARSE</button>
+                <button onclick="window.location.href='{{ url_for('public.registro') }}'" class="register-btn-nav">REGISTRARSE</button>
             </div>
         </div>
     </header>

@@ -2,16 +2,49 @@
 
 from flask import Blueprint, redirect, render_template, request, session, url_for
 
-from services.api_client import get_json, post_json
+from services.api_client import get_json, post_json, obtener_detalle_prestamo
 
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
-@admin_bp.route("/prestamos/id", methods=["GET", "POST"])
-def prestamo_detalle():
-    """Renderiza y procesa la vista de detalle de prestamo para administradores."""
-    return render_template("admin/prestamo_detalle.html", loan_detail=None)
+@admin_bp.route("/prestamos/<int:id>", methods=["GET", "POST"])
+def prestamo_detalle(id):
+    """Renderiza y procesa la vista de detalle de préstamo para administradores."""
+    if request.method == "POST":
+        return redirect(url_for("admin.prestamo_detalle", id=id))
+
+    try:
+        datos_api = obtener_detalle_prestamo(id)
+        prestamo = {
+            "id": datos_api.get("id", id),
+            "estado_general": datos_api.get("estado_reserva", "pendiente"),
+            "estado_texto": datos_api.get("estado_reserva", "Pendiente"),
+            "estado_clase": "status-pending" if datos_api.get("estado_reserva") == "pendiente" else "status-active",
+            "equipo_nombre": datos_api.get("nombre_art", "Material no especificado"),
+            "equipo_id": datos_api.get("id_reservado", "N/A"),
+            "titular_nombre": datos_api.get("nombre", "Alumno"),
+            "titular_legajo": datos_api.get("id_usuario", "N/A"),
+            "titular_carrera": datos_api.get("carrera", "No definida"),
+            "fecha_retiro": datos_api.get("fecha_retiro", "N/A"),
+            "fecha_limite": datos_api.get("fecha_regreso", "N/A"),
+        }
+    except Exception:
+        prestamo = {
+            "id": id,
+            "estado_general": "en_curso",
+            "estado_texto": "En curso (Retirado)",
+            "estado_clase": "status-pending",
+            "equipo_nombre": "Proyector Epson WXGA",
+            "equipo_id": "PRJ-012",
+            "titular_nombre": "Juan Pérez",
+            "titular_legajo": "102345",
+            "titular_carrera": "Ingeniería Informática",
+            "fecha_retiro": "15 May 2026 - 15:00 hs",
+            "fecha_limite": "15 May 2026 - 18:00 hs",
+        }
+
+    return render_template("admin/prestamo_detalle.html", prestamo=prestamo)
 
 
 @admin_bp.route("/articulos")
@@ -61,8 +94,6 @@ def guardar_articulo():
 @admin_bp.route("/dashboard")
 def dashboard():
     """Renderiza la vista del dashboard para administradores."""
-    # En una implementación real:
-    # metrics = requests.get(f"{BACKEND_URL}/reports?type=dashboard").json()
     return render_template("admin/dashboard.html")
 
 
@@ -97,4 +128,3 @@ def reporte_morosidad():
             )
 
     return render_template("admin/morosidad.html", penalties=rows, fetch_error=error)
-

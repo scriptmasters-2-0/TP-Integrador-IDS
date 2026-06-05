@@ -1,11 +1,9 @@
 """Cliente HTTP simple para consumir la API backend desde el frontend Flask."""
-
 from __future__ import annotations
 
 from typing import Any
-
 import requests
-
+from flask import session
 import config
 
 DEFAULT_TIMEOUT = 8
@@ -13,15 +11,17 @@ DEFAULT_TIMEOUT = 8
 
 def _build_url(path: str) -> str:
     normalized = path if path.startswith("/") else f"/{path}"
-    return f"{config.BACKEND_BASE_URL}{normalized}"
+    return f"{config.BACKEND_URL}{normalized}"
+
+
+def get_auth_headers(token: str | None = None) -> dict[str, str]:
+    token = token or session.get("token")
+    return {"Authorization": f"Bearer {token}"} if token else {}
 
 
 def get_json(path: str, token: str | None = None, params: dict[str, Any] | None = None) -> tuple[Any, str | None]:
     """Ejecuta un GET y retorna (json, error)."""
-    headers: dict[str, str] = {}
-    if token:
-        headers["Authorization"] = f"Bearer {token}"
-
+    headers = get_auth_headers(token)
     try:
         response = requests.get(
             _build_url(path), headers=headers, params=params, timeout=DEFAULT_TIMEOUT
@@ -46,9 +46,7 @@ def get_json(path: str, token: str | None = None, params: dict[str, Any] | None 
 def post_json(path: str, data: dict[str, Any], token: str | None = None) -> tuple[Any, str | None, int]:
     """Ejecuta un POST JSON y retorna (json, error, status_code)."""
     headers: dict[str, str] = {"Content-Type": "application/json"}
-    if token:
-        headers["Authorization"] = f"Bearer {token}"
-
+    headers.update(get_auth_headers(token))
     try:
         response = requests.post(
             _build_url(path), json=data, headers=headers, timeout=DEFAULT_TIMEOUT
@@ -71,3 +69,29 @@ def post_json(path: str, data: dict[str, Any], token: str | None = None) -> tupl
         return payload, detail, response.status_code
 
     return payload, None, response.status_code
+
+
+def obtener_perfil_usuario():
+    """Obtiene el perfil del usuario autenticado."""
+    payload, error = get_json("/auth/me")
+    if error:
+        raise Exception(error)
+    if isinstance(payload, dict):
+        return payload.get("user", payload)
+    raise Exception("Respuesta inválida del backend")
+
+
+def obtener_prestamos():
+    """Obtiene la lista de préstamos disponibles para el usuario autenticado."""
+    payload, error = get_json("/loans")
+    if error:
+        raise Exception(error)
+    return payload
+
+
+def obtener_detalle_prestamo(loan_id):
+    """Obtiene el detalle de un préstamo específico."""
+    payload, error = get_json(f"/loans/{loan_id}")
+    if error:
+        raise Exception(error)
+    return payload

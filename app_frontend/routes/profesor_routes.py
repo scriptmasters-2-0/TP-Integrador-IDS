@@ -25,9 +25,31 @@ def dashboard():
     if user_id:
         payload, error = get_json(f"/api/users/{user_id}/loans", token=token)
         if isinstance(payload, list):
-            reservas = payload
+            for item in payload:
+                reservas.append(
+                    {
+                        "id": item.get("id"),
+                        "estado_clase": "status-active" if item.get("estado_reserva") != "pendiente" else "status-pending",
+                        "estado_texto": item.get("estado_reserva", "Pendiente"),
+                        "equipo": item.get("nombre_art", f"Artículo {item.get('id_reservado') or ''}"),
+                        "fecha": item.get("fecha_retiro", "Desconocida"),
+                        "ubicacion": "Sede FIUBA",
+                        "acciones": ["Cancelar", "Ver QR"],
+                    }
+                )
 
-    return render_template("profesor/dashboard.html", reservas=reservas, fetch_error=error)
+    estadisticas = {
+        "actuales": len(reservas),
+        "historicas": 0,
+        "sanciones": 0,
+    }
+
+    return render_template(
+        "profesor/dashboard.html",
+        reservas=reservas,
+        estadisticas=estadisticas,
+        fetch_error=error,
+    )
 
 
 @profesor_bp.route("/mis-reservas")
@@ -38,7 +60,7 @@ def mis_reservas():
 
 @profesor_bp.route("/historial")
 def historial():
-    """Vista temporal para historial del profesor."""
+    """Alias temporal para historial del profesor."""
     return dashboard()
 
 
