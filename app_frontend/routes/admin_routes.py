@@ -79,3 +79,12 @@ def dashboard():
         str: Plantilla HTML del panel principal del administrador.
     """
     return render_template("admin/dashboard.html")
+
+@admin_bp.route("/reportes", methods=["GET"])
+def reportes():
+    
+    return render_template("admin/reportes.html")
+
+@admin_bp.route("/normativas")
+def normativas():
+    return render_template("admin/normativas.html")

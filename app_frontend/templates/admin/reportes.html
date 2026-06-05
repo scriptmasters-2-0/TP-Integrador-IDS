@@ -1,0 +1,54 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+
+<main class="hero">
+<div class="container">
+
+    <h1>Reportes del sistema</h1>
+
+    <!-- FILTROS -->
+    <select id="tipo">
+        <option value="pending">Pendientes</option>
+        <option value="returned">Devueltos</option>
+        <option value="overdue">Atrasados</option>
+        <option value="all">Todos</option>
+    </select>
+
+    <button onclick="cargar()">Ver reporte</button>
+
+    <hr>
+
+    <div id="resultados"></div>
+
+</div>
+</main>
+
+<script>
+const API = "/api/reports";
+
+async function cargar() {
+
+    const tipo = document.getElementById("tipo").value;
+
+    const res = await fetch(`${API}?type=${tipo}`);
+    const data = await res.json();
+
+    const cont = document.getElementById("resultados");
+    cont.innerHTML = "";
+
+    data.datos.forEach(r => {
+        cont.innerHTML += 
+            <div class="card">
+                <p><b>Usuario:</b> ${r.nombre}</p>
+                <p><b>Artículo:</b> ${r.nombre_art}</p>
+                <p><b>Estado:</b> ${r.estado_reserva}</p>
+            </div>
+        ;
+    });
+}
+
+cargar();
+</script>
+
+{% endblock %}
