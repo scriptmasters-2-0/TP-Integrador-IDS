@@ -1,6 +1,7 @@
 """Rutas publicas del frontend."""
 
 from flask import Blueprint, redirect, render_template, request, url_for
+import requests
 
 
 public_bp = Blueprint("public", __name__)
@@ -38,3 +39,40 @@ def normas():
     # En una implementación real, podrías obtener las normas desde la DB
     # normas = requests.get(f"{BACKEND_URL}/normativa").json()
     return render_template("public/normas.html")
+
+
+BACKEND_URL = "http://127.0.0.1:5001"
+
+@public_bp.route("/catalogo", methods=["GET"])
+def mostrar_catalogo():
+    "Muestra el catalogo completo de articulos con opcion a filtrar por tipo y seccion"
+    
+    tipo_actual = request.args.get("tipo", "")
+    seccion_actual = request.args.get("seccion", "")
+
+    filtros = {}
+    if tipo_actual:
+        filtros["tipo"] = tipo_actual
+    if seccion_actual:
+        filtros["seccion"] = seccion_actual
+
+    try:
+        response = requests.get(f"{BACKEND_URL}/api/items", params=filtros)
+        if response.status_code == 200:
+            articulos = response.json()
+        else:
+            articulos = []
+            print(f"Error Backend")
+    except Exception:
+        pass
+
+    return render_template(
+        "public/catalogo.html",
+        articulos=articulos,
+        tipo_actual=tipo_actual,
+        seccion_actual=seccion_actual
+    )
+
+@public_bp.route("/faq", methods=["GET"])
+def mostrar_faq():
+    return render_template("public/faq.html")
