@@ -1,5 +1,6 @@
 """Rutas del area de alumnos."""
 
+import logging
 from flask import Blueprint, redirect, render_template, request, session, url_for
 
 from services.api_client import (
@@ -9,6 +10,7 @@ from services.api_client import (
     obtener_detalle_prestamo,
 )
 
+logger = logging.getLogger(__name__)
 alumno_bp = Blueprint("alumno", __name__, url_prefix="/alumno")
 
 
@@ -17,14 +19,9 @@ def perfil():
     """Renderiza la página de perfil del alumno."""
     try:
         usuario = obtener_perfil_usuario()
-    except Exception:
-        usuario = {
-            "nombre": "Juan Pérez (Mock)",
-            "email": "jperez@fi.uba.ar",
-            "legajo": "102345",
-            "rol": "alumno",
-            "carrera": "Ingeniería Informática",
-        }
+    except Exception as e:
+        logger.error(f"Error fetching user profile: {e}")
+        usuario = None
 
     return render_template("alumno/perfil.html", usuario=usuario)
 
@@ -62,7 +59,7 @@ def nueva_reserva():
     user_id = (session.get("user") or {}).get("id")
 
     if request.method == "POST":
-        item_id = request.form.get("articulo")
+        item_id = request.form.get("articulo_id")
         if user_id and item_id:
             post_json(
                 "/api/loans",
@@ -99,19 +96,20 @@ def comprobante(id):
             "titular_nombre": datos_api.get("nombre", "Alumno"),
             "titular_legajo": datos_api.get("id_usuario", "N/A"),
         }
-    except Exception:
+    except Exception as e:
+        logger.error(f"Error retrieving loan detail for ID {id}: {e}")
         prestamo = {
             "id": id,
-            "estado_texto": "Aprobado (Listo para retirar)",
-            "estado_clase": "status-active",
-            "equipo_nombre": "Proyector Epson WXGA",
-            "equipo_id": "PRJ-012",
-            "sede": "Paseo Colón - Aula 204",
-            "fecha_reserva": "15 May 2026 - 14:00 hs",
-            "fecha_retiro": "15 May 2026 - 15:00 hs",
-            "fecha_limite": "15 May 2026 - 18:00 hs",
-            "titular_nombre": "Juan Pérez",
-            "titular_legajo": "102345",
+            "estado_texto": "Error al cargar",
+            "estado_clase": "status-error",
+            "equipo_nombre": "No disponible",
+            "equipo_id": "N/A",
+            "sede": "No especificada",
+            "fecha_reserva": "N/A",
+            "fecha_retiro": "N/A",
+            "fecha_limite": "N/A",
+            "titular_nombre": "Usuario",
+            "titular_legajo": "N/A",
         }
 
     return render_template("alumno/comprobante.html", prestamo=prestamo)
@@ -122,4 +120,11 @@ def comprobante_sin_id():
     """Renderiza el comprobante de un prestamo especifico para el alumno (sin id)."""
     return render_template("alumno/comprobante.html")
 
+
+# TODO: Implement POST handlers for profile management
+# These handlers are placeholders for features to be implemented:
+# - @alumno_bp.route("/perfil/cambiar-contrasena", methods=["POST"]) - Change password
+# - @alumno_bp.route("/perfil/solicitar-correccion", methods=["POST"]) - Request data correction
+# Currently, these buttons are disabled in the template (alumno/perfil.html)
+# Backend endpoints in /api/users/*/password and /api/users/*/corrections should be created
 

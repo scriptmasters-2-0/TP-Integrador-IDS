@@ -38,17 +38,17 @@
                             <td>
                                 <div class="date-cell">
                                     <i class="fa-regular fa-calendar"></i>
-                                    <span>{{ prestamo.fecha | default('-') }}</span>
+                                    <span>{{ prestamo.fecha }}</span>
                                 </div>
                             </td>
                             <td>
-                                <strong>{{ prestamo.nombre_equipo | default('Artículo') }}</strong>
-                                <br><span class="text-sm text-grey">ID: {{ prestamo.id_equipo | default('N/A') }}</span>
+                                <strong>{{ prestamo.nombre_equipo }}</strong>
+                                <br><span class="text-sm text-grey">ID: {{ prestamo.id_equipo }}</span>
                             </td>
-                            <td>{{ prestamo.sede | default('Biblioteca') }}</td>
-                            <td><span class="badge badge-success">{{ prestamo.estado_texto | default('Pendiente') }}</span></td>
+                            <td>{{ prestamo.sede }}</td>
+                            <td><span class="badge badge-success">{{ prestamo.estado_texto }}</span></td>
                             <td class="action-cell text-center">
-                                <button class="btn-icon" title="Volver a reservar"><i class="fa-solid fa-rotate-right"></i></button>
+                                <button class="btn-icon" title="Volver a reservar" disabled><i class="fa-solid fa-rotate-right"></i></button>
                             </td>
                         </tr>
                         {% endfor %}

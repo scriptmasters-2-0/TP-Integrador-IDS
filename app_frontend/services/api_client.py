@@ -1,6 +1,7 @@
 """Cliente HTTP simple para consumir la API backend desde el frontend Flask."""
 from __future__ import annotations
 
+import logging
 from typing import Any
 import requests
 from flask import session
@@ -8,11 +9,12 @@ from flask import session
 from http_codes_and_messages import HTTP_BAD_REQUEST
 import config
 
+logger = logging.getLogger(__name__)
 DEFAULT_TIMEOUT = 8
 
 
 def _build_url(path: str) -> str:
-    normalized = path if path.startswith("/") else f"/{path}"
+    normalized: str = path if path.startswith("/") else f"/{path}"
     return f"{config.BACKEND_URL}{normalized}"
 
 
@@ -23,26 +25,31 @@ def get_auth_headers(token: str | None = None) -> dict[str, str]:
 
 def get_json(path: str, token: str | None = None, params: dict[str, Any] | None = None) -> tuple[Any, str | None]:
     """Ejecuta un GET y retorna (json, error)."""
-    headers = get_auth_headers(token)
+    headers: dict[str, str] = get_auth_headers(token)
     try:
-        response = requests.get(
+        response: requests.Response = requests.get(
             _build_url(path), headers=headers, params=params, timeout=DEFAULT_TIMEOUT
         )
     except requests.RequestException as exc:
-        return None, f"No se pudo conectar con backend: {exc}"
+        error_msg: str = f"No se pudo conectar con backend: {exc}"
+        logger.warning(error_msg)
+        return None, error_msg
 
     if response.status_code >= HTTP_BAD_REQUEST:
         try:
-            payload = response.json()
-            detail = payload.get("error") or payload.get("message") or str(payload)
+            payload: Any = response.json()
+            detail: str = payload.get("error") or payload.get("message") or str(payload)
         except Exception:
             detail = response.text or f"HTTP {response.status_code}"
+        logger.warning(f"Backend returned {response.status_code}: {detail}")
         return None, detail
 
     try:
         return response.json(), None
     except Exception:
-        return None, "Respuesta inválida del backend"
+        error_msg = "Respuesta inválida del backend"
+        logger.error(error_msg)
+        return None, error_msg
 
 
 def post_json(path: str, data: dict[str, Any], token: str | None = None) -> tuple[Any, str | None, int]:
@@ -50,11 +57,13 @@ def post_json(path: str, data: dict[str, Any], token: str | None = None) -> tupl
     headers: dict[str, str] = {"Content-Type": "application/json"}
     headers.update(get_auth_headers(token))
     try:
-        response = requests.post(
+        response: requests.Response = requests.post(
             _build_url(path), json=data, headers=headers, timeout=DEFAULT_TIMEOUT
         )
     except requests.RequestException as exc:
-        return None, f"No se pudo conectar con backend: {exc}", 0
+        error_msg = f"No se pudo conectar con backend: {exc}"
+        logger.warning(error_msg)
+        return None, error_msg, 0
 
     payload: Any = None
     try:
@@ -63,18 +72,21 @@ def post_json(path: str, data: dict[str, Any], token: str | None = None) -> tupl
         payload = None
 
     if response.status_code >= HTTP_BAD_REQUEST:
-        detail = "Error al consumir backend"
+        detail: str = "Error al consumir backend"
         if isinstance(payload, dict):
             detail = payload.get("error") or payload.get("message") or str(payload)
         elif response.text:
             detail = response.text
+        logger.warning(f"Backend returned {response.status_code}: {detail}")
         return payload, detail, response.status_code
 
     return payload, None, response.status_code
 
 
-def obtener_perfil_usuario():
+def obtener_perfil_usuario() -> dict[str, Any]:
     """Obtiene el perfil del usuario autenticado."""
+    payload: Any
+    error: str | None
     payload, error = get_json("/auth/me")
     if error:
         raise Exception(error)
@@ -83,16 +95,20 @@ def obtener_perfil_usuario():
     raise Exception("Respuesta inválida del backend")
 
 
-def obtener_prestamos():
+def obtener_prestamos() -> Any:
     """Obtiene la lista de préstamos disponibles para el usuario autenticado."""
+    payload: Any
+    error: str | None
     payload, error = get_json("/loans")
     if error:
         raise Exception(error)
     return payload
 
 
-def obtener_detalle_prestamo(loan_id):
+def obtener_detalle_prestamo(loan_id: int) -> dict[str, Any]:
     """Obtiene el detalle de un préstamo específico."""
+    payload: Any
+    error: str | None
     payload, error = get_json(f"/loans/{loan_id}")
     if error:
         raise Exception(error)
