@@ -387,14 +387,14 @@ def get_user_penalties():
 
     try:
         cursor = conn.cursor(dictionary=True)
-        user_check_query = "SELECT id FROM users WHERE id = %s"
+        user_check_query = "SELECT id FROM usuario WHERE id = %s"
         cursor.execute(user_check_query, (user_id,))
         user_exists = cursor.fetchone()
         
         if not user_exists:
             return jsonify({"error": f"User with ID {user_id} not found"}), 404
 
-        penalties_query = "SELECT * FROM penalties WHERE user_id = %s"
+        penalties_query = "SELECT * FROM penalizacion WHERE id_usuario = %s"
         cursor.execute(penalties_query, (user_id,))
         penalties = cursor.fetchall()
 

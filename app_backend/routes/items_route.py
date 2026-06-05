@@ -471,7 +471,10 @@ def get_item_by_id(item_id):
 
     try:
         cursor = conn.cursor(dictionary=True)
-        query = "SELECT id, name, description, status FROM items WHERE id = %s"
+        query = (
+            "SELECT id, nombre_art, tipo, seccion, prestacion_maxima, stock, necesita_reparacion "
+            "FROM articulos WHERE id = %s"
+        )
         cursor.execute(query, (item_id,))
         item = cursor.fetchone()
 

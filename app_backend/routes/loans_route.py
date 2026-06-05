@@ -232,24 +232,30 @@ def create_loan():
 
     try:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT id FROM users WHERE id = %s", (user_id,))
+        cursor.execute("SELECT id FROM usuario WHERE id = %s", (user_id,))
         if not cursor.fetchone():
             return jsonify({"error": f"Cannot create loan. User with ID {user_id} does not exist"}), 404
 
-        cursor.execute("SELECT id, status FROM items WHERE id = %s", (item_id,))
+        cursor.execute(
+            "SELECT id, stock, necesita_reparacion FROM articulos WHERE id = %s",
+            (item_id,),
+        )
         item = cursor.fetchone()
         if not item:
             return jsonify({"error": f"Cannot create loan. Item with ID {item_id} does not exist"}), 404
-            
-        if item['status'] == 'borrowed':
-            return jsonify({"error": f"Item with ID {item_id} is already borrowed"}), 400
 
-        insert_query = "INSERT INTO loans (user_id, item_id, loan_date, status) VALUES (%s, %s, NOW(), 'active')"
+        if item["stock"] <= 0 or item["necesita_reparacion"]:
+            return jsonify({"error": f"Item with ID {item_id} is not available"}), 400
+
+        insert_query = (
+            "INSERT INTO reserva (id_usuario, id_reservado, estado_reserva, fecha_retiro, fecha_regreso) "
+            "VALUES (%s, %s, 'pendiente', NOW(), NOW())"
+        )
         cursor.execute(insert_query, (user_id, item_id))
-        
-        update_item_query = "UPDATE items SET status = 'borrowed' WHERE id = %s"
+
+        update_item_query = "UPDATE articulos SET stock = stock - 1 WHERE id = %s"
         cursor.execute(update_item_query, (item_id,))
-   
+
         conn.commit()
 
         new_loan_id = cursor.lastrowid

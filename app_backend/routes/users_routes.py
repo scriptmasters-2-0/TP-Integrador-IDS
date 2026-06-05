@@ -46,7 +46,7 @@ def get_all_users():
 
     try:
         cursor = conn.cursor(dictionary=True)
-        query = "SELECT id, username, email, role FROM users"
+        query = "SELECT id, nombre, mail, rol FROM usuario"
         cursor.execute(query)
         users = cursor.fetchall()
 
@@ -92,7 +92,7 @@ def get_user_by_id(user_id):
 
     try:
         cursor = conn.cursor(dictionary=True)
-        query = "SELECT id, username, email, role FROM users WHERE id = %s"
+        query = "SELECT id, nombre, mail, rol FROM usuario WHERE id = %s"
         cursor.execute(query, (user_id,))
         user = cursor.fetchone()
 
