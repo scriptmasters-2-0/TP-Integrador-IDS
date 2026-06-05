@@ -4,9 +4,7 @@ from flask import Blueprint, redirect, render_template, request, session, url_fo
 
 from services.api_client import get_json, post_json
 
-
 public_bp = Blueprint("public", __name__)
-
 
 @public_bp.route("/")
 def home():
@@ -71,7 +69,6 @@ def registro():
     """Renderiza la página de registro y maneja el proceso de registro de nuevos usuarios."""
     if request.method == "POST":
         return redirect(url_for("public.login"))
-
     return render_template("public/registro.html")
 
 
@@ -85,7 +82,6 @@ def mostrar_catalogo():
     """Muestra el catálogo completo de artículos con filtros opcionales."""
     tipo_actual = request.args.get("tipo", "")
     seccion_actual = request.args.get("seccion", "")
-
     filtros = {}
     if tipo_actual:
         filtros["tipo"] = tipo_actual

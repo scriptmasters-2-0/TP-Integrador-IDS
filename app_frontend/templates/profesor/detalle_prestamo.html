@@ -1,0 +1,50 @@
+{% extends 'layouts/base_dashboard.html' %}
+
+{% block sidebar_links %}
+    <li><a href="#"><i class="fa-solid fa-user"></i> Perfil</a></li>
+    <li><a href="{{ url_for('profesor.profesor_mis_reservas') }}" class="active"><i class="fa-solid fa-list-check"></i> Mis reservas</a></li>
+{% endblock %}
+
+{% block user_name %}Profesor{% endblock %}
+
+{% block dashboard_content %}
+    <h2 class="reveal">Detalle del Préstamo</h2>
+
+    <div class="profile-layout reveal">
+        <div class="profile-card">
+            <h3>Información del préstamo</h3>
+            <div class="data-grid">
+                <div class="data-group">
+                    <label>Estado</label>
+                    <div class="data-value">
+                        <span class="badge {% if prestamo.estado_reserva == 'pendiente' %}badge-warning{% elif prestamo.estado_reserva == 'devuelto' %}badge-success{% elif prestamo.estado_reserva == 'entregado' %}badge-info{% else %}badge-success{% endif %}">
+                            {{ prestamo.estado_reserva }}
+                        </span>
+                    </div>
+                </div>
+                <div class="data-group">
+                    <label>Fecha retiro</label>
+                    <div class="data-value">{{ prestamo.fecha_retiro }}</div>
+                </div>
+                <div class="data-group">
+                    <label>Fecha regreso</label>
+                    <div class="data-value">{{ prestamo.fecha_regreso }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-card">
+            <h3>Código QR</h3>
+            <div class="qr-code-box">
+                {% if prestamo.qr_url %}
+                    <img src="{{ prestamo.qr_url }}" alt="QR del préstamo">
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fa-solid fa-qrcode empty-icon"></i>
+                        <p>QR no disponible</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

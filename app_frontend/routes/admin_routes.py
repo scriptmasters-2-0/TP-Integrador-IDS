@@ -4,7 +4,6 @@ from flask import Blueprint, redirect, render_template, request, session, url_fo
 
 from services.api_client import get_json, post_json, obtener_detalle_prestamo
 
-
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 

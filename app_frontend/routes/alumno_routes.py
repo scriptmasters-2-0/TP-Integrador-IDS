@@ -9,7 +9,6 @@ from services.api_client import (
     obtener_detalle_prestamo,
 )
 
-
 alumno_bp = Blueprint("alumno", __name__, url_prefix="/alumno")
 
 
@@ -116,3 +115,11 @@ def comprobante(id):
         }
 
     return render_template("alumno/comprobante.html", prestamo=prestamo)
+
+
+@alumno_bp.route("/prestamos/id/comprobante")
+def comprobante_sin_id():
+    """Renderiza el comprobante de un prestamo especifico para el alumno (sin id)."""
+    return render_template("alumno/comprobante.html")
+
+

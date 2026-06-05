@@ -4,7 +4,6 @@ from flask import Blueprint, redirect, render_template, request, session, url_fo
 
 from services.api_client import get_json, post_json
 
-
 profesor_bp = Blueprint("profesor", __name__, url_prefix="/profesor")
 
 
