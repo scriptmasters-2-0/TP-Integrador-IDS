@@ -2,6 +2,7 @@
 
 from flask import Blueprint, redirect, render_template, request, session, url_for
 
+from http_codes_and_messages import HTTP_UNAUTHORIZED
 from services.api_client import get_json, post_json
 
 public_bp = Blueprint("public", __name__)
@@ -42,7 +43,7 @@ def login_submit():
                 "public/login.html",
                 login_error=f"No se pudo iniciar sesión ({status_code}): {error}",
             ),
-            401,
+            HTTP_UNAUTHORIZED,
         )
 
     role = (payload or {}).get("role", "alumno")

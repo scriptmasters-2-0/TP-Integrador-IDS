@@ -4,6 +4,8 @@ from __future__ import annotations
 from typing import Any
 import requests
 from flask import session
+
+from http_codes_and_messages import HTTP_BAD_REQUEST
 import config
 
 DEFAULT_TIMEOUT = 8
@@ -29,7 +31,7 @@ def get_json(path: str, token: str | None = None, params: dict[str, Any] | None 
     except requests.RequestException as exc:
         return None, f"No se pudo conectar con backend: {exc}"
 
-    if response.status_code >= 400:
+    if response.status_code >= HTTP_BAD_REQUEST:
         try:
             payload = response.json()
             detail = payload.get("error") or payload.get("message") or str(payload)
@@ -60,7 +62,7 @@ def post_json(path: str, data: dict[str, Any], token: str | None = None) -> tupl
     except Exception:
         payload = None
 
-    if response.status_code >= 400:
+    if response.status_code >= HTTP_BAD_REQUEST:
         detail = "Error al consumir backend"
         if isinstance(payload, dict):
             detail = payload.get("error") or payload.get("message") or str(payload)
