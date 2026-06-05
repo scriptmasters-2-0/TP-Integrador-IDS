@@ -1,0 +1,65 @@
+{% extends "layouts/base_dashboard.html" %}
+
+{% block user_name %}Administrador{% endblock %}
+
+{% block sidebar_links %}
+<li>
+  <a href="/admin/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+</li>
+<li>
+  <a href="/admin/articulos"><i class="fa-solid fa-box"></i> Articulos</a>
+</li>
+<li>
+  <a href="/admin/prestamos/id"><i class="fa-solid fa-clipboard-list"></i> Préstamos</a>
+</li>
+<li>
+  <a href="/admin/usuarios" class="active"><i class="fa-solid fa-users"></i> Usuarios</a>
+</li>
+<li>
+  <a href="/admin/reportes/morosidad"><i class="fa-solid fa-chart-column"></i> Morosidad</a>
+</li>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="breadcrumb reveal">
+  <a href="/admin/dashboard">Admin</a> <i class="fa-solid fa-chevron-right"></i> <span>Usuarios</span>
+</div>
+
+<div class="history-container">
+  <div class="history-header">
+    <h2>Gestion de usuarios</h2>
+    <p>Consulta y administra los usuarios registrados en el sistema.</p>
+  </div>
+
+  <div class="history-table-wrapper">
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Rol</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if usuarios %}
+          {% for user in usuarios %}
+          <tr>
+            <td>{{ user.username if user.username is defined else user.nombre }}</td>
+            <td>{{ user.email if user.email is defined else user.mail }}</td>
+            <td>{{ user.role if user.role is defined else user.rol }}</td>
+            <td><span class="badge badge-success">Activo</span></td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="4" style="text-align:center; color: var(--text-grey);">
+              {{ fetch_error if fetch_error else 'No hay usuarios para mostrar.' }}
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "layouts/base_dashboard.html" %}
+
+{% block user_name %}Administrador{% endblock %}
+
+{% block sidebar_links %}
+<li>
+  <a href="/admin/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+</li>
+<li>
+  <a href="/admin/articulos"><i class="fa-solid fa-box"></i> Articulos</a>
+</li>
+<li>
+  <a href="/admin/prestamos/id"><i class="fa-solid fa-clipboard-list"></i> Préstamos</a>
+</li>
+<li>
+  <a href="/admin/usuarios"><i class="fa-solid fa-users"></i> Usuarios</a>
+</li>
+<li>
+  <a href="/admin/reportes/morosidad" class="active"><i class="fa-solid fa-chart-column"></i> Morosidad</a>
+</li>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="breadcrumb reveal">
+  <a href="/admin/dashboard">Admin</a> <i class="fa-solid fa-chevron-right"></i> <span>Morosidad</span>
+</div>
+
+<div class="history-container">
+  <div class="history-header">
+    <h2>Reporte de morosidad</h2>
+    <p>Visualiza prestamos vencidos y usuarios con penalizaciones activas.</p>
+  </div>
+
+  <div class="history-table-wrapper">
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Articulo</th>
+          <th>Vencimiento</th>
+          <th>Dias de atraso</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if penalties %}
+          {% for p in penalties %}
+          <tr>
+            <td>{{ p.usuario }}</td>
+            <td>{{ p.articulo }}</td>
+            <td>{{ p.vencimiento if p.vencimiento else '-' }}</td>
+            <td>-</td>
+            <td>
+              {% if p.estado == 'Activa' %}
+                <span class="badge" style="background: #ffe5e5; color: #c0392b">Activa</span>
+              {% else %}
+                <span class="badge" style="background: #e8f5e9; color: #2e7d32">Levantada</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="5" style="text-align:center; color: var(--text-grey);">
+              {{ fetch_error if fetch_error else 'No hay penalizaciones para mostrar.' }}
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

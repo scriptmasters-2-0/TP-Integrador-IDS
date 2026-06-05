@@ -1,0 +1,53 @@
+{% extends "layouts/base_dashboard.html" %}
+
+{% block user_name %}Profesor{% endblock %}
+
+{% block sidebar_links %}
+<li><a href="/profesor/perfil" class="active"><i class="fa-solid fa-user"></i> Perfil</a></li>
+<li><a href="/profesor/mis-reservas"><i class="fa-solid fa-list-check"></i> Mis reservas</a></li>
+<li><a href="/profesor/nueva"><i class="fa-solid fa-plus"></i> Nueva reserva</a></li>
+<li><a href="/profesor/historial"><i class="fa-solid fa-clock-rotate-left"></i> Historial</a></li>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="breadcrumb reveal">
+  <a href="/profesor/perfil">Profesor</a> <i class="fa-solid fa-chevron-right"></i> <span>Perfil</span>
+</div>
+
+<div class="profile-header reveal">
+  <h2 style="margin-top: 0; margin-bottom: 5px">Perfil del profesor</h2>
+  <p style="color: var(--text-grey)">Revisa tus datos y estado de cuenta institucional.</p>
+</div>
+
+<div class="profile-layout reveal" style="transition-delay: 0.2s">
+  <div class="profile-card user-card">
+    <div class="user-card-avatar">
+      <i class="fa-solid fa-chalkboard-user"></i>
+    </div>
+    <h3 class="user-card-name">{{ perfil.nombre if perfil and perfil.nombre else 'Profesor' }}</h3>
+    <span class="badge badge-success mb-3">Docente Activo</span>
+  </div>
+
+  <div class="profile-card data-card">
+    <h3>Informacion profesional</h3>
+    <div class="data-grid">
+      <div class="data-group">
+        <label>Nombre completo</label>
+        <div class="data-value">{{ perfil.nombre if perfil and perfil.nombre else '-' }}</div>
+      </div>
+      <div class="data-group">
+        <label>Legajo</label>
+        <div class="data-value">{{ perfil.id if perfil and perfil.id else '-' }}</div>
+      </div>
+      <div class="data-group">
+        <label>Correo</label>
+        <div class="data-value">{{ perfil.mail if perfil and perfil.mail else '-' }}</div>
+      </div>
+      <div class="data-group">
+        <label>Departamento</label>
+        <div class="data-value">{{ perfil.carrera if perfil and perfil.carrera else '-' }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

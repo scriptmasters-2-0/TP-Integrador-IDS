@@ -158,8 +158,8 @@ def valid_user_update(data):  # noqa: PLR0911, PLR0912
 def valid_login(data):  # noqa: PLR0911
     """Valida el payload de inicio de sesión.
 
-    Verifica que los campos username y password estén presentes,
-    sean cadenas no vacías y que username cumpla con la longitud mínima.
+    Verifica que los campos email y password estén presentes,
+    sean cadenas no vacías y que email tenga formato básico válido.
 
     Args:
         data (dict): Diccionario con las credenciales de inicio de sesión.
@@ -172,14 +172,15 @@ def valid_login(data):  # noqa: PLR0911
     if not isinstance(data, dict):
         return False, "payload_must_be_object"
 
-    if data.get("username") is None:
-        return False, "missing:username"
-    if not isinstance(data.get("username"), str):
-        return False, "invalid_type:username"
-    if data.get("username").strip() == "":
-        return False, "empty:username"
-    if len(data.get("username").strip()) < MIN_USERNAME_LENGTH:
-        return False, "invalid_value:username"
+    if data.get("email") is None:
+        return False, "missing:email"
+    if not isinstance(data.get("email"), str):
+        return False, "invalid_type:email"
+    if data.get("email").strip() == "":
+        return False, "empty:email"
+    email = data.get("email").strip()
+    if "@" not in email or "." not in email.split("@")[-1]:
+        return False, "invalid_value:email"
 
     if data.get("password") is None:
         return False, "missing:password"

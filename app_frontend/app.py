@@ -10,6 +10,7 @@ from routes.public_routes import public_bp
 
 
 app = Flask(__name__)
+app.config["SECRET_KEY"] = config.SECRET_KEY
 app.register_blueprint(public_bp)
 app.register_blueprint(alumno_bp)
 app.register_blueprint(profesor_bp)
