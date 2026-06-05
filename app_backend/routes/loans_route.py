@@ -219,7 +219,7 @@ def create_loan():
 
     is_valid, error, parsed = valid_loan_create(data)
     if not is_valid:
-        return jsonify({"error": "Invalid loan payload", "detail": error}), 400
+        return jsonify({"error": "Invalid loan payload", "detail": error}), HTTP_BAD_REQUEST
 
     user_id = parsed.get("user_id")
     item_id = parsed.get("item_id")
@@ -234,7 +234,7 @@ def create_loan():
         cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT id FROM usuario WHERE id = %s", (user_id,))
         if not cursor.fetchone():
-            return jsonify({"error": f"Cannot create loan. User with ID {user_id} does not exist"}), 404
+            return jsonify({"error": f"Cannot create loan. User with ID {user_id} does not exist"}), HTTP_NOT_FOUND
 
         cursor.execute(
             "SELECT id, stock, necesita_reparacion FROM articulos WHERE id = %s",
@@ -242,10 +242,10 @@ def create_loan():
         )
         item = cursor.fetchone()
         if not item:
-            return jsonify({"error": f"Cannot create loan. Item with ID {item_id} does not exist"}), 404
+            return jsonify({"error": f"Cannot create loan. Item with ID {item_id} does not exist"}), HTTP_NOT_FOUND
 
         if item["stock"] <= 0 or item["necesita_reparacion"]:
-            return jsonify({"error": f"Item with ID {item_id} is not available"}), 400
+            return jsonify({"error": f"Item with ID {item_id} is not available"}), HTTP_BAD_REQUEST
 
         insert_query = (
             "INSERT INTO reserva (id_usuario, id_reservado, estado_reserva, fecha_retiro, fecha_regreso) "
@@ -265,7 +265,7 @@ def create_loan():
             "loan_id": new_loan_id,
             "user_id": user_id,
             "item_id": item_id
-        }), 201
+        }), HTTP_CREATED
 
     except mysql.connector.Error as query_err:
         logging.error(f"Database query error in create_loan: {query_err}")
@@ -275,7 +275,7 @@ def create_loan():
         except Exception:
             pass
 
-        return jsonify({"error": "Internal server error: Database transaction failed"}), 500
+        return jsonify({"error": "Internal server error: Database transaction failed"}), HTTP_INTERNAL_SERVER_ERROR
 
     finally:
         try:

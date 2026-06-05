@@ -50,12 +50,12 @@ def get_all_users():
         cursor.execute(query)
         users = cursor.fetchall()
 
-        return jsonify(users), 200
+        return jsonify(users), HTTP_OK
 
     except mysql.connector.Error as query_err:
         logging.error(f"Database query error in get_all_users: {query_err}")
 
-        return jsonify({"error": "Internal server error: Database query failed"}), 500
+        return jsonify({"error": "Internal server error: Database query failed"}), HTTP_INTERNAL_SERVER_ERROR
 
     finally:
         try:
@@ -82,7 +82,7 @@ def get_user_by_id(user_id):
 
     """
     if valid_id(user_id) is None:
-        return jsonify({"error": "Invalid user ID format"}), 400
+        return jsonify({"error": "Invalid user ID format"}), HTTP_BAD_REQUEST
 
     conn = obtener_conexion()
     if conn is None:
@@ -97,14 +97,14 @@ def get_user_by_id(user_id):
         user = cursor.fetchone()
 
         if not user:
-            return jsonify({"error": f"User with ID {user_id} not found"}), 404
+            return jsonify({"error": f"User with ID {user_id} not found"}), HTTP_NOT_FOUND
 
-        return jsonify(user), 200
+        return jsonify(user), HTTP_OK
 
     except mysql.connector.Error as query_err:
         logging.error(f"Database query error in get_user_by_id: {query_err}")
 
-        return jsonify({"error": "Internal server error: Database query failed"}), 500
+        return jsonify({"error": "Internal server error: Database query failed"}), HTTP_INTERNAL_SERVER_ERROR
 
     finally:
         try:
