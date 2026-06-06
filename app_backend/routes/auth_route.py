@@ -9,23 +9,27 @@ from functools import wraps
 
 import bcrypt
 import jwt
+import mysql.connector
 from flask import Blueprint, jsonify, request
 
 from config import JWT_ALGORITHM, JWT_SECRET
 from database import obtener_conexion
 from http_codes_and_messages import (
     HTTP_BAD_REQUEST,
+    HTTP_CONFLICT,
+    HTTP_CREATED,
     HTTP_INTERNAL_SERVER_ERROR,
     HTTP_NOT_FOUND,
     HTTP_OK,
     HTTP_UNAUTHORIZED,
     MSG_BAD_REQUEST,
+    MSG_CONFLICT,
     MSG_DB_CONNECTION_FAILED,
     MSG_INTERNAL_SERVER_ERROR,
     MSG_NOT_FOUND,
     MSG_UNAUTHORIZED,
 )
-from validators import valid_login
+from validators import valid_login, valid_user
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -192,7 +196,7 @@ def login():
     if not is_valid:
         return jsonify({"error": MSG_BAD_REQUEST, "detail": error}), HTTP_BAD_REQUEST
 
-    email = data.get("email") 
+    email = data.get("email")
     password = data.get("password")
 
     conn = obtener_conexion()
@@ -346,5 +350,98 @@ def obtener_perfil():
         try:
             conn.close()
 
+        except Exception:
+            pass
+
+
+@auth_bp.route("/api/auth/logup", methods=["POST"])
+def logup():
+    """Registra un nuevo usuario y devuelve token JWT.
+
+    Crea un usuario con rol 'alumno' y guarda el hash de la contraseña.
+    Retorna token y perfil del usuario al crearse exitosamente.
+    """
+    try:
+        data = request.get_json()
+    except Exception:
+        data = None
+
+    if not data:
+        return jsonify({"error": MSG_BAD_REQUEST}), HTTP_BAD_REQUEST
+
+    is_valid, error = valid_user(data)
+    if not is_valid:
+        return jsonify({"error": MSG_BAD_REQUEST, "detail": error}), HTTP_BAD_REQUEST
+
+    password = data.get("password")
+    if password is None or not isinstance(password, str) or password.strip() == "":
+        return jsonify(
+            {"error": MSG_BAD_REQUEST, "detail": "missing:password"}
+        ), HTTP_BAD_REQUEST
+
+    password_hash = hashear_password(password)
+
+    conn = obtener_conexion()
+    if conn is None:
+        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
+
+    cursor = None
+
+    try:
+        cursor = conn.cursor()
+        sql = """
+            INSERT INTO usuario (nombre, mail, score, rol, carrera, password_hash)
+            VALUES (%(nombre)s, %(mail)s, %(score)s, %(rol)s, %(carrera)s, %(password_hash)s)
+        """
+        values = {
+            "nombre": data.get("nombre"),
+            "mail": data.get("mail"),
+            "score": 0,
+            "rol": "alumno",
+            "carrera": data.get("carrera"),
+            "password_hash": password_hash,
+        }
+        cursor.execute(sql, values)
+        conn.commit()
+        user_id = cursor.lastrowid
+
+        user_profile = {
+            "id": user_id,
+            "nombre": data.get("nombre"),
+            "mail": data.get("mail"),
+            "score": 0,
+            "rol": "alumno",
+            "carrera": data.get("carrera"),
+        }
+
+        token = generar_token(user_id, "alumno")
+
+        return jsonify(
+            {"token": token, "role": "alumno", "user": user_profile}
+        ), HTTP_CREATED
+
+    except mysql.connector.Error as err:
+        try:
+            if err.errno == 1062:
+                return (
+                    jsonify({"error": MSG_CONFLICT, "detail": "duplicate_entry"}),
+                    HTTP_CONFLICT,
+                )
+        except Exception:
+            pass
+        return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
+
+    except Exception:
+        return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
+
+    finally:
+        try:
+            if cursor:
+                cursor.close()
+        except Exception:
+            pass
+        try:
+            if conn:
+                conn.close()
         except Exception:
             pass
