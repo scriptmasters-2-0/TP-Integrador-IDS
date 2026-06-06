@@ -1,8 +1,12 @@
 """Rutas del area de profesores."""
 
-from flask import Blueprint, redirect, render_template, request, session, url_for, requests
+from flask import Blueprint, redirect, render_template, request, session, url_for
+from datetime import datetime
+import requests
 
 from services.api_client import get_json, post_json
+from services.user_service import obtener_prestamos_usuario
+from services.qr_service import obtener_qr_reserva
 
 profesor_bp = Blueprint("profesor", __name__, url_prefix="/profesor")
 
@@ -85,35 +89,23 @@ def guardar_reserva():
     return redirect(url_for("profesor.mis_reservas"))
 
 
-from datetime import datetime
-
-BACKEND_URL = "http://127.0.0.1:5001"
-
 @profesor_bp.route("/historial", methods=["GET"])
 def historial_reserva():
     "Muestra el historial completo de reservas historicas de un profesor"
 
-    id_profesor = request.args.get('id')
-    token = request.headers.get('Authorization')
-    headers = {'Authorization': token}
+    rol = session.get("profesor")
+    """if rol not in ["profesor"]:
+        return redirect("/")"""
+    
+    """user_id = session.get("user_id")"""
+    prestamos = obtener_prestamos_usuario(3) 
 
-    try:
-        response = requests.get(f"{BACKEND_URL}/users/{id_profesor}/loans", headers=headers)
-        if response.status_code == 200:
-            reservas_totales = response.json()
-            hoy = datetime.now()
-            historial = []
+    return render_template("/historial_reservas.html", prestamos=prestamos)
 
-            for reserva in reservas_totales:
-                fecha_fin = datetime.strptime(reserva["fecha_fin"], '%Y-%m-%d %H:%M:%S')
-                if fecha_fin < hoy:
-                    historial.append(reserva)
 
-            return render_template("profesor/historial_reservas.html", historial=historial)
-        else:
-            return render_template("profesor/historial_reservas.html", historial=[], error="No se pudo obtener el historial")
-        
-    except Exception as e:
-        print(f"Error inesperado: {e}")
-        return render_template("profesor/historial_reservas.html", historial=[], error="Error al mostrar el historial")
+@profesor_bp.route("/prestamos/<int:id>/comprobante", methods=["GET"])
+def comprobante(id):
+    """Muestra el comprobante de reserva"""
 
+    qr = obtener_qr_reserva(id)
+    return render_template("/comproante.html", qr=qr)
