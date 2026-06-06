@@ -1,13 +1,23 @@
 {
+  "plugins": ["prettier-plugin-jinja-template"],
+  "overrides": [
+    {
+      "files": ["*.html", "*.jinja", "*.j2"],
+      "options": {
+        "parser": "jinja-template"
+      }
+    }
+  ],
+  "arrowParens": "always",
+  "bracketSameLine": true,
+  "bracketSpacing": true,
+  "endOfLine": "lf",
+  "htmlWhitespaceSensitivity": "css",
+  "printWidth": 100,
+  "proseWrap": "always",
   "semi": true,
   "singleQuote": false,
   "tabWidth": 2,
-  "useTabs": false,
   "trailingComma": "es5",
-  "bracketSpacing": true,
-  "arrowParens": "always",
-  "printWidth": 80,
-  "proseWrap": "always",
-  "endOfLine": "lf",
-  "htmlWhitespaceSensitivity": "css"
+  "useTabs": false,
 }
