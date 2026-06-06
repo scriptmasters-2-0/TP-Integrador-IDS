@@ -1,0 +1,40 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+<main class="login-modern-wrap">
+  <section class="login-modern-card reveal">
+    <div class="login-modern-icon" aria-hidden="true">
+      <i class="fa-solid fa-book-open"></i>
+    </div>
+
+    <header class="login-modern-header">
+      <h1>Iniciar Sesion</h1>
+      <p>Biblioteca Facultad de Ingenieria</p>
+    </header>
+
+    <form id="login-form" data-validate="login" action="/login" method="POST" class="login-modern-form">
+      <div class="login-modern-group">
+        <label for="email">Correo institucional</label>
+        <input type="email" id="email" name="email" placeholder="ejemplo@fi.uba.ar" required>
+      </div>
+
+      <div class="login-modern-group">
+        <label for="password">Contrasena</label>
+        <input type="password" id="password" name="password" required>
+      </div>
+
+      <button type="submit" class="login-single-btn">
+        <i class="fa-solid fa-right-to-bracket"></i>
+        Iniciar sesion
+      </button>
+
+      {% if login_error %}
+      <p style="color: #c0392b; font-weight: 700; text-align: center; margin-top: 8px;">{{ login_error }}</p>
+      {% endif %}
+    </form>
+
+    <p class="login-modern-terms">Al ingresar aceptas los terminos y condiciones de la biblioteca.</p>
+    <p class="login-modern-register">No tienes cuenta? <a href="/registro">Registrate</a></p>
+  </section>
+</main>
+{% endblock %}

@@ -1,57 +1,115 @@
+"""Cliente HTTP simple para consumir la API backend desde el frontend Flask."""
+from __future__ import annotations
+
+import logging
+from typing import Any
 import requests
 from flask import session
+
+from http_codes_and_messages import HTTP_BAD_REQUEST
 import config
 
-def get_auth_headers():
-    """Genera los headers de autenticación si existe un token en sesión.
+logger = logging.getLogger(__name__)
+DEFAULT_TIMEOUT = 8
 
-    Returns:
-        dict: Diccionario con el header de Authorization, o vacío si no hay token.
-    """
-    token = session.get("jwt_token")
+
+def _build_url(path: str) -> str:
+    normalized: str = path if path.startswith("/") else f"/{path}"
+    return f"{config.BACKEND_URL}{normalized}"
+
+
+def get_auth_headers(token: str | None = None) -> dict[str, str]:
+    token = token or session.get("token")
     return {"Authorization": f"Bearer {token}"} if token else {}
 
-def obtener_perfil_usuario():
-    """Llama a la API para obtener el perfil del usuario autenticado.
 
-    Returns:
-        dict: Datos del perfil del usuario obtenidos de la base de datos.
+def get_json(path: str, token: str | None = None, params: dict[str, Any] | None = None) -> tuple[Any, str | None]:
+    """Ejecuta un GET y retorna (json, error)."""
+    headers: dict[str, str] = get_auth_headers(token)
+    try:
+        response: requests.Response = requests.get(
+            _build_url(path), headers=headers, params=params, timeout=DEFAULT_TIMEOUT
+        )
+    except requests.RequestException as exc:
+        error_msg: str = f"No se pudo conectar con backend: {exc}"
+        logger.warning(error_msg)
+        return None, error_msg
 
-    Raises:
-        Exception: Si el backend no responde con éxito (HTTP 200).
-    """
-    response = requests.get(f"{config.BACKEND_URL}/auth/me", headers=get_auth_headers(), timeout=3)
-    if response.status_code == 200:
-        return response.json().get("user", response.json())
-    raise Exception("No autorizado o error del backend")
+    if response.status_code >= HTTP_BAD_REQUEST:
+        try:
+            payload: Any = response.json()
+            detail: str = payload.get("error") or payload.get("message") or str(payload)
+        except Exception:
+            detail = response.text or f"HTTP {response.status_code}"
+        logger.warning(f"Backend returned {response.status_code}: {detail}")
+        return None, detail
 
-def obtener_prestamos():
-    """Llama a la API para obtener el listado completo de préstamos y reservas.
+    try:
+        return response.json(), None
+    except Exception:
+        error_msg = "Respuesta inválida del backend"
+        logger.error(error_msg)
+        return None, error_msg
 
-    Returns:
-        list: Lista de diccionarios con los detalles crudos de los préstamos de MySQL.
 
-    Raises:
-        Exception: Si la obtención falla o el backend no está disponible.
-    """
-    response = requests.get(f"{config.BACKEND_URL}/loans", headers=get_auth_headers(), timeout=3)
-    if response.status_code == 200:
-        return response.json()
-    raise Exception("Error al obtener prestamos")
+def post_json(path: str, data: dict[str, Any], token: str | None = None) -> tuple[Any, str | None, int]:
+    """Ejecuta un POST JSON y retorna (json, error, status_code)."""
+    headers: dict[str, str] = {"Content-Type": "application/json"}
+    headers.update(get_auth_headers(token))
+    try:
+        response: requests.Response = requests.post(
+            _build_url(path), json=data, headers=headers, timeout=DEFAULT_TIMEOUT
+        )
+    except requests.RequestException as exc:
+        error_msg = f"No se pudo conectar con backend: {exc}"
+        logger.warning(error_msg)
+        return None, error_msg, 0
 
-def obtener_detalle_prestamo(loan_id):
-    """Llama a la API para obtener el detalle de un préstamo específico.
+    payload: Any = None
+    try:
+        payload = response.json()
+    except Exception:
+        payload = None
 
-    Args:
-        loan_id (int): El identificador único del préstamo.
+    if response.status_code >= HTTP_BAD_REQUEST:
+        detail: str = "Error al consumir backend"
+        if isinstance(payload, dict):
+            detail = payload.get("error") or payload.get("message") or str(payload)
+        elif response.text:
+            detail = response.text
+        logger.warning(f"Backend returned {response.status_code}: {detail}")
+        return payload, detail, response.status_code
 
-    Returns:
-        dict: Detalle del préstamo con llaves provenientes del backend.
+    return payload, None, response.status_code
 
-    Raises:
-        Exception: Si no se encuentra el préstamo o falla la API.
-    """
-    response = requests.get(f"{config.BACKEND_URL}/loans/{loan_id}", headers=get_auth_headers(), timeout=3)
-    if response.status_code == 200:
-        return response.json()
-    raise Exception("Préstamo no encontrado")
+
+def obtener_perfil_usuario() -> dict[str, Any]:
+    """Obtiene el perfil del usuario autenticado."""
+    payload: Any
+    error: str | None
+    payload, error = get_json("/auth/me")
+    if error:
+        raise Exception(error)
+    if isinstance(payload, dict):
+        return payload.get("user", payload)
+    raise Exception("Respuesta inválida del backend")
+
+
+def obtener_prestamos() -> Any:
+    """Obtiene la lista de préstamos disponibles para el usuario autenticado."""
+    payload: Any
+    error: str | None
+    payload, error = get_json("/loans")
+    if error:
+        raise Exception(error)
+    return payload
+
+
+def obtener_detalle_prestamo(loan_id: int) -> dict[str, Any]:
+    """Obtiene el detalle de un préstamo específico."""
+    payload: Any
+    error: str | None
+    payload, error = get_json(f"/loans/{loan_id}")
+    if error:
+        raise Exception(error)
+    return payload

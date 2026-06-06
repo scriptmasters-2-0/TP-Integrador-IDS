@@ -15,6 +15,7 @@ from routes.qr_route import qr_bp
 from routes.reportes_route import reportes_bp
 from routes.salud_route import salud_bp
 from routes.users_routes import users_bp
+from routes.normativas import normativas_bp
 
 app = Flask(__name__)
 
@@ -28,6 +29,7 @@ app.register_blueprint(salud_bp)
 app.register_blueprint(users_bp)
 app.register_blueprint(qr_bp)
 app.register_blueprint(reportes_bp)
+app.register_blueprint(normativas_bp)
 
 HERE = os.path.dirname(__file__)
 

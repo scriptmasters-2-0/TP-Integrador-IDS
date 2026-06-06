@@ -1,10 +1,13 @@
-{% extends "layouts/base_dashboard.html" %} {% block sidebar_links %}
-<li>
-  <a href="/profesor/dashboard"
-    ><i class="fa-solid fa-arrow-left"></i> Volver a mis reservas</a
-  >
-</li>
+{% extends "layouts/base_dashboard.html" %} {% block user_name %}Profesor{% endblock %} {% block sidebar_links %}
+<li><a href="/profesor/perfil"><i class="fa-solid fa-user"></i> Perfil</a></li>
+<li><a href="/profesor/mis-reservas"><i class="fa-solid fa-list-check"></i> Mis reservas</a></li>
+<li><a href="/profesor/nueva" class="active"><i class="fa-solid fa-plus"></i> Nueva reserva</a></li>
+<li><a href="/profesor/historial"><i class="fa-solid fa-clock-rotate-left"></i> Historial</a></li>
 {% endblock %} {% block dashboard_content %}
+<div class="breadcrumb reveal">
+  <a href="/profesor/perfil">Profesor</a> <i class="fa-solid fa-chevron-right"></i> <span>Nueva reserva</span>
+</div>
+
 <div class="history-container">
   <div class="history-header">
     <h1>Nueva Reserva</h1>
@@ -12,7 +15,9 @@
   </div>
 
   <form
-    action="/profesor/mis-reservas/guardar"
+    id="profesor-reserva-form"
+    data-validate="profesor-reserva"
+    action="/profesor/guardar"
     method="POST"
     class="admin-form"
   >
@@ -26,8 +31,9 @@
           required
         >
           <option value="">-- Seleccionar --</option>
-          <option value="1">Osciloscopio Rigol</option>
-          <option value="2">Multímetro Digital</option>
+          {% for item in items %}
+          <option value="{{ item.id }}">{{ item.nombre_art }} (stock: {{ item.stock }})</option>
+          {% endfor %}
         </select>
       </div>
     </div>
@@ -74,5 +80,8 @@
       <button type="submit" class="register-btn-nav">Solicitar Reserva</button>
     </div>
   </form>
+  {% if fetch_error %}
+  <p style="color: #c0392b; font-weight: 700; margin-top: 12px;">{{ fetch_error }}</p>
+  {% endif %}
 </div>
 {% endblock %}

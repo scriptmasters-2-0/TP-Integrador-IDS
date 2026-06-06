@@ -192,7 +192,7 @@ def login():
     if not is_valid:
         return jsonify({"error": MSG_BAD_REQUEST, "detail": error}), HTTP_BAD_REQUEST
 
-    username = data.get("username")
+    email = data.get("email") 
     password = data.get("password")
 
     conn = obtener_conexion()
@@ -207,10 +207,10 @@ def login():
         sql_query = """
             SELECT id, nombre, mail, score, rol, carrera, password_hash
             FROM usuario
-            WHERE nombre = %(value)s
+            WHERE mail = %(value)s
             LIMIT 1
         """
-        value = {"value": username}
+        value = {"value": email}
 
         cursor.execute(sql_query, value)
 

@@ -1,11 +1,13 @@
 """Rutas para los endpoints de préstamos."""
 
+import logging
 import mysql.connector
 from flask import Blueprint, jsonify, request
 
 from database import obtener_conexion
 from http_codes_and_messages import (
     HTTP_BAD_REQUEST,
+    HTTP_CREATED,
     HTTP_INTERNAL_SERVER_ERROR,
     HTTP_NOT_FOUND,
     HTTP_OK,
@@ -15,7 +17,7 @@ from http_codes_and_messages import (
     MSG_NOT_FOUND,
 )
 from routes.auth_route import requiere_auth
-from validators import valid_id, valid_loan_status_update
+from validators import valid_id, valid_loan_create, valid_loan_status_update
 
 loans_bp = Blueprint("loans", __name__)
 
@@ -37,6 +39,7 @@ def format_loan(row):
         "id": row.get("id"),
         "id_usuario": row.get("id_usuario"),
         "id_reservado": row.get("id_reservado"),
+        "nombre_art": row.get("nombre_art"),
         "estado_reserva": row.get("estado_reserva"),
         "fecha_retiro": (
             row.get("fecha_retiro").isoformat() if row.get("fecha_retiro") else None
@@ -46,6 +49,37 @@ def format_loan(row):
         ),
     }
 
+@loans_bp.route("/api/loans", methods=["GET"])
+@requiere_auth(roles=["admin", "profesor", "bibliotecario", "alumno"])
+def listar_prestamos():
+    conn = obtener_conexion()
+    if conn is None:
+        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
+    cursor = None
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT r.id, r.id_usuario, r.id_reservado,
+                   a.nombre_art, r.estado_reserva,
+                   r.fecha_retiro, r.fecha_regreso
+            FROM reserva r
+            JOIN articulos a ON r.id_reservado = a.id
+            WHERE r.id_usuario = %(user_id)s
+            ORDER BY r.fecha_retiro DESC
+        """, {"user_id": request.user_id})
+        loans = [format_loan(row) for row in cursor.fetchall()]
+        return jsonify(loans), HTTP_OK
+    except Exception:
+        return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
+    finally:
+        try:
+            cursor.close()
+        except Exception:
+            pass
+        try:
+            conn.close()
+        except Exception:
+            pass
 
 def obtener_detalle_prestamo_db(loan_id):
     """Obtiene el detalle completo de un préstamo.
@@ -176,6 +210,84 @@ def patch_loan_status(loan_id):  # noqa: PLR0911
             pass
 
 
+@loans_bp.route('/api/loans', methods=['POST'])
+@requiere_auth(roles=['admin', 'profesor', 'bibliotecario', 'alumno'])
+def create_loan():
+    """Crea una nueva reserva para un usuario."""
+    try:
+        data = request.get_json()
+    except Exception:
+        data = None
+
+    if not data:
+        return jsonify({"error": "Invalid loan payload"}), HTTP_BAD_REQUEST
+
+    is_valid, error, parsed = valid_loan_create(data)
+    if not is_valid:
+        return jsonify({"error": "Invalid loan payload", "detail": error}), HTTP_BAD_REQUEST
+
+    user_id = parsed.get("user_id")
+    item_id = parsed.get("item_id")
+
+    conn = obtener_conexion()
+    if conn is None:
+        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
+
+    cursor = None
+
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT id FROM usuario WHERE id = %s", (user_id,))
+        if not cursor.fetchone():
+            return jsonify({"error": f"Cannot create loan. User with ID {user_id} does not exist"}), HTTP_NOT_FOUND
+
+        cursor.execute(
+            "SELECT id, stock, necesita_reparacion FROM articulos WHERE id = %s",
+            (item_id,),
+        )
+        item = cursor.fetchone()
+        if not item:
+            return jsonify({"error": f"Cannot create loan. Item with ID {item_id} does not exist"}), HTTP_NOT_FOUND
+
+        if item["stock"] <= 0 or item["necesita_reparacion"]:
+            return jsonify({"error": f"Item with ID {item_id} is not available"}), HTTP_BAD_REQUEST
+
+        insert_query = (
+            "INSERT INTO reserva (id_usuario, id_reservado, estado_reserva, fecha_retiro, fecha_regreso) "
+            "VALUES (%s, %s, 'pendiente', NOW(), DATE_ADD(NOW(), INTERVAL 7 DAY))"
+        )
+        cursor.execute(insert_query, (user_id, item_id))
+        update_item_query = "UPDATE articulos SET stock = stock - 1 WHERE id = %s"
+        cursor.execute(update_item_query, (item_id,))
+        conn.commit()
+
+        new_loan_id = cursor.lastrowid
+
+        return jsonify({
+            "message": "Loan created successfully",
+            "loan_id": new_loan_id,
+            "user_id": user_id,
+            "item_id": item_id,
+        }), HTTP_CREATED
+
+    except mysql.connector.Error as query_err:
+        return jsonify({"error": "Internal server error: Database query failed", "detail": str(query_err)}), HTTP_INTERNAL_SERVER_ERROR
+
+    except Exception:
+        return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
+
+    finally:
+        try:
+            if cursor:
+                cursor.close()
+        except Exception:
+            pass
+        try:
+            conn.close()
+        except Exception:
+            pass
+
+
 @loans_bp.route("/api/loans/<int:loan_id>", methods=["GET"])
 def obtener_detalle_prestamo(loan_id):
     """Obtiene el detalle completo de un préstamo.
@@ -197,3 +309,92 @@ def obtener_detalle_prestamo(loan_id):
 
     else:
         return jsonify({"error": "Préstamo no encontrado"}), HTTP_NOT_FOUND
+
+
+@loans_bp.route('/api/loans', methods=['POST'])
+def create_loan():
+    """Crea un nuevo préstamo para un usuario y un artículo.
+
+    Valida que el usuario y el artículo existan, verifica disponibilidad
+    del artículo y registra el préstamo junto con la actualización de estado.
+
+    Returns:
+        tuple: JSON con el préstamo creado y código HTTP 201,
+            o un error con su código correspondiente.
+
+    """
+    try:
+        data = request.get_json()
+    except Exception:
+        data = None
+
+    is_valid, error, parsed = valid_loan_create(data)
+    if not is_valid:
+        return jsonify({"error": "Invalid loan payload", "detail": error}), HTTP_BAD_REQUEST
+
+    user_id = parsed.get("user_id")
+    item_id = parsed.get("item_id")
+
+    conn = obtener_conexion()
+    if conn is None:
+        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
+
+    cursor = None
+
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT id FROM usuario WHERE id = %s", (user_id,))
+        if not cursor.fetchone():
+            return jsonify({"error": f"Cannot create loan. User with ID {user_id} does not exist"}), HTTP_NOT_FOUND
+
+        cursor.execute(
+            "SELECT id, stock, necesita_reparacion FROM articulos WHERE id = %s",
+            (item_id,),
+        )
+        item = cursor.fetchone()
+        if not item:
+            return jsonify({"error": f"Cannot create loan. Item with ID {item_id} does not exist"}), HTTP_NOT_FOUND
+
+        if item["stock"] <= 0 or item["necesita_reparacion"]:
+            return jsonify({"error": f"Item with ID {item_id} is not available"}), HTTP_BAD_REQUEST
+
+        insert_query = (
+            "INSERT INTO reserva (id_usuario, id_reservado, estado_reserva, fecha_retiro, fecha_regreso) "
+            "VALUES (%s, %s, 'pendiente', NOW(), NOW())"
+        )
+        cursor.execute(insert_query, (user_id, item_id))
+
+        update_item_query = "UPDATE articulos SET stock = stock - 1 WHERE id = %s"
+        cursor.execute(update_item_query, (item_id,))
+
+        conn.commit()
+
+        new_loan_id = cursor.lastrowid
+
+        return jsonify({
+            "message": "Loan created successfully",
+            "loan_id": new_loan_id,
+            "user_id": user_id,
+            "item_id": item_id
+        }), HTTP_CREATED
+
+    except mysql.connector.Error as query_err:
+        logging.error(f"Database query error in create_loan: {query_err}")
+
+        try:
+            conn.rollback()
+        except Exception:
+            pass
+
+        return jsonify({"error": "Internal server error: Database transaction failed"}), HTTP_INTERNAL_SERVER_ERROR
+
+    finally:
+        try:
+            if cursor:
+                cursor.close()
+        except Exception:
+            pass
+        try:
+            conn.close()
+        except Exception:
+            pass

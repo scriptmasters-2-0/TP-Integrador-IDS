@@ -158,8 +158,8 @@ def valid_user_update(data):  # noqa: PLR0911, PLR0912
 def valid_login(data):  # noqa: PLR0911
     """Valida el payload de inicio de sesión.
 
-    Verifica que los campos username y password estén presentes,
-    sean cadenas no vacías y que username cumpla con la longitud mínima.
+    Verifica que los campos email y password estén presentes,
+    sean cadenas no vacías y que email tenga formato básico válido.
 
     Args:
         data (dict): Diccionario con las credenciales de inicio de sesión.
@@ -172,14 +172,15 @@ def valid_login(data):  # noqa: PLR0911
     if not isinstance(data, dict):
         return False, "payload_must_be_object"
 
-    if data.get("username") is None:
-        return False, "missing:username"
-    if not isinstance(data.get("username"), str):
-        return False, "invalid_type:username"
-    if data.get("username").strip() == "":
-        return False, "empty:username"
-    if len(data.get("username").strip()) < MIN_USERNAME_LENGTH:
-        return False, "invalid_value:username"
+    if data.get("email") is None:
+        return False, "missing:email"
+    if not isinstance(data.get("email"), str):
+        return False, "invalid_type:email"
+    if data.get("email").strip() == "":
+        return False, "empty:email"
+    email = data.get("email").strip()
+    if "@" not in email or "." not in email.split("@")[-1]:
+        return False, "invalid_value:email"
 
     if data.get("password") is None:
         return False, "missing:password"
@@ -533,3 +534,61 @@ def valid_loan_status_update(data):
         return False, "invalid_value:estado_reserva"
 
     return True, None
+
+
+def valid_loan_create(data):
+    """Valida el payload de creación de préstamo.
+
+    Verifica que los campos user_id e item_id estén presentes
+    y que sean identificadores enteros positivos.
+
+    Args:
+        data (dict): Diccionario con los campos del préstamo a crear.
+
+    Returns:
+        tuple: (True, None, dict) con valores parseados si es válido,
+            o (False, str, None) con detalle del error.
+
+    """
+    if not isinstance(data, dict):
+        return False, "payload_must_be_object", None
+
+    if data.get("user_id") is None:
+        return False, "missing:user_id", None
+    if data.get("item_id") is None:
+        return False, "missing:item_id", None
+
+    user_id = valid_id(data.get("user_id"))
+    if user_id is None:
+        return False, "invalid_value:user_id", None
+
+    item_id = valid_id(data.get("item_id"))
+    if item_id is None:
+        return False, "invalid_value:item_id", None
+
+    return True, None, {"user_id": user_id, "item_id": item_id}
+
+
+def valid_user_id_query(filters):
+    """Valida y parsea query params que requieren user_id.
+
+    Args:
+        filters: Objeto con query params (por ejemplo request.args).
+
+    Returns:
+        tuple: (True, None, int) con user_id parseado si es válido,
+            o (False, str, None) con detalle del error.
+
+    """
+    if filters is None:
+        return False, "missing:user_id", None
+
+    raw_user_id = filters.get("user_id")
+    if raw_user_id is None:
+        return False, "missing:user_id", None
+
+    user_id = valid_id(raw_user_id)
+    if user_id is None:
+        return False, "invalid_value:user_id", None
+
+    return True, None, user_id

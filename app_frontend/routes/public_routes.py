@@ -1,11 +1,11 @@
 """Rutas publicas del frontend."""
 
-from flask import Blueprint, redirect, render_template, request, url_for
-import requests
+from flask import Blueprint, redirect, render_template, request, session, url_for
 
+from http_codes_and_messages import HTTP_UNAUTHORIZED
+from services.api_client import get_json, post_json
 
 public_bp = Blueprint("public", __name__)
-
 
 @public_bp.route("/")
 def home():
@@ -13,12 +13,55 @@ def home():
     return render_template("public/index.html")
 
 
+@public_bp.route("/login", methods=["GET"])
+def login():
+    """Renderiza la página de inicio de sesión."""
+    if session.get("token"):
+        role = session.get("role", "alumno")
+        if role in ("admin", "bibliotecario"):
+            return redirect(url_for("admin.dashboard"))
+        if role in ("profesor", "docente"):
+            return redirect(url_for("profesor.mis_reservas"))
+        return redirect(url_for("alumno.perfil"))
+
+    return render_template("public/login.html", login_error=None)
+
+
+@public_bp.route("/login", methods=["POST"])
+def login_submit():
+    """Procesa login contra backend y guarda sesión local."""
+    email = (request.form.get("email") or "").strip()
+    password = request.form.get("password") or ""
+
+    payload, error, status_code = post_json(
+        "/api/auth/login", {"email": email, "password": password}
+    )
+
+    if error:
+        return (
+            render_template(
+                "public/login.html",
+                login_error=f"No se pudo iniciar sesión ({status_code}): {error}",
+            ),
+            HTTP_UNAUTHORIZED,
+        )
+
+    role = (payload or {}).get("role", "alumno")
+    session["token"] = (payload or {}).get("token")
+    session["role"] = role
+    session["user"] = (payload or {}).get("user", {})
+
+    if role in ("admin", "bibliotecario"):
+        return redirect(url_for("admin.dashboard"))
+    if role in ("profesor", "docente"):
+        return redirect(url_for("profesor.mis_reservas"))
+    return redirect(url_for("alumno.perfil"))
+
+
 @public_bp.route("/logout", methods=["GET"])
 def logout():
     """Cierra la sesión del usuario y redirige a la página de inicio."""
-    # Limpiamos la sesión activa
-    # session.clear()
-    # Renderizamos la pantalla de salida
+    session.clear()
     return render_template("public/logout.html")
 
 
@@ -26,52 +69,39 @@ def logout():
 def registro():
     """Renderiza la página de registro y maneja el proceso de registro de nuevos usuarios."""
     if request.method == "POST":
-        # 1. Capturar datos del form
-        # 2. Llamar a la API de backend para crear el usuario con rol 'alumno'
-        # 3. Redirigir a /login
         return redirect(url_for("public.login"))
-
     return render_template("public/registro.html")
 
 
 @public_bp.route("/normas", methods=["GET"])
 def normas():
-    # En una implementación real, podrías obtener las normas desde la DB
-    # normas = requests.get(f"{BACKEND_URL}/normativa").json()
     return render_template("public/normas.html")
 
 
-BACKEND_URL = "http://127.0.0.1:5001"
-
 @public_bp.route("/catalogo", methods=["GET"])
 def mostrar_catalogo():
-    "Muestra el catalogo completo de articulos con opcion a filtrar por tipo y seccion"
-    
+    """Muestra el catálogo completo de artículos con filtros opcionales."""
     tipo_actual = request.args.get("tipo", "")
     seccion_actual = request.args.get("seccion", "")
-
     filtros = {}
     if tipo_actual:
         filtros["tipo"] = tipo_actual
     if seccion_actual:
         filtros["seccion"] = seccion_actual
 
-    try:
-        response = requests.get(f"{BACKEND_URL}/api/items", params=filtros)
-        if response.status_code == 200:
-            articulos = response.json()
-        else:
-            articulos = []
-            print(f"Error Backend")
-    except Exception:
-        pass
+    articulos = []
+    articulos_payload, fetch_error = get_json("/api/items", params=filtros)
+    if isinstance(articulos_payload, list):
+        articulos = articulos_payload
 
     return render_template(
         "public/catalogo.html",
         articulos=articulos,
         tipo_actual=tipo_actual,
-        seccion_actual=seccion_actual
+        seccion_actual=seccion_actual,
+        fetch_error=fetch_error,
     )
+
 
 @public_bp.route("/faq", methods=["GET"])
 def mostrar_faq():
