@@ -212,7 +212,7 @@ def patch_loan_status(loan_id):  # noqa: PLR0911
 
 @loans_bp.route('/api/loans', methods=['POST'])
 @requiere_auth(roles=['admin', 'profesor', 'bibliotecario', 'alumno'])
-def create_loan():
+def crear_reserva():
     """Crea una nueva reserva para un usuario."""
     try:
         data = request.get_json()

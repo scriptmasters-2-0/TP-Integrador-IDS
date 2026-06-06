@@ -1,54 +1,91 @@
-{% extends "layouts/base.html" %}
+v{% extends "layouts/base_dashboard.html" %}
 
-{% block content %}
+{% block user_name %}Administrador{% endblock %}
 
-<main class="hero">
-<div class="container">
+{% block sidebar_links %}
+<li>
+  <a href="/admin/dashboard">
+    <i class="fa-solid fa-gauge"></i> Dashboard
+  </a>
+</li>
 
-    <h1>Reportes del sistema</h1>
+<li>
+  <a href="/admin/articulos">
+    <i class="fa-solid fa-box"></i> Artículos
+  </a>
+</li>
 
-    <!-- FILTROS -->
-    <select id="tipo">
-        <option value="pending">Pendientes</option>
-        <option value="returned">Devueltos</option>
-        <option value="overdue">Atrasados</option>
-        <option value="all">Todos</option>
-    </select>
+<li>
+  <a href="/admin/prestamos/id">
+    <i class="fa-solid fa-clipboard-list"></i> Préstamos
+  </a>
+</li>
 
-    <button onclick="cargar()">Ver reporte</button>
+<li>
+  <a href="/admin/usuarios">
+    <i class="fa-solid fa-users"></i> Usuarios
+  </a>
+</li>
 
-    <hr>
+<li>
+  <a href="/admin/reportes" class="active">
+    <i class="fa-solid fa-chart-column"></i> Reportes
+  </a>
+</li>
+{% endblock %}
 
-    <div id="resultados"></div>
+{% block dashboard_content %}
+
+<div class="breadcrumb reveal">
+  <a href="/admin/dashboard">Admin</a>
+  <i class="fa-solid fa-chevron-right"></i>
+  <span>Reportes</span>
+</div>
+
+<div class="history-container">
+
+  <div class="history-header">
+    <h2>Demanda por carrera</h2>
+    <p>
+      Cantidad de préstamos realizados por alumnos de cada carrera.
+    </p>
+  </div>
+
+  <div class="reportes-chart">
+
+    {% if carreras %}
+
+      {% for carrera in carreras %}
+
+      <div class="reportes-bar-row">
+
+        <div class="reportes-bar-label">
+          {{ carrera.carrera }}
+        </div>
+
+        <div class="reportes-bar-container">
+            <div
+                class="reportes-bar"
+                style="width: {{ carrera.cantidad_prestamos * 25 }}px;">
+            </div>
+        </div>
+
+        <div class="reportes-bar-value">
+          {{ carrera.cantidad_prestamos }}
+        </div>
+
+      </div>
+
+      {% endfor %}
+
+    {% else %}
+
+      <p>No hay datos para mostrar.</p>
+
+    {% endif %}
+
+  </div>
 
 </div>
-</main>
-
-<script>
-const API = "/api/reports";
-
-async function cargar() {
-
-    const tipo = document.getElementById("tipo").value;
-
-    const res = await fetch(`${API}?type=${tipo}`);
-    const data = await res.json();
-
-    const cont = document.getElementById("resultados");
-    cont.innerHTML = "";
-
-    data.datos.forEach(r => {
-        cont.innerHTML += 
-            <div class="card">
-                <p><b>Usuario:</b> ${r.nombre}</p>
-                <p><b>Artículo:</b> ${r.nombre_art}</p>
-                <p><b>Estado:</b> ${r.estado_reserva}</p>
-            </div>
-        ;
-    });
-}
-
-cargar();
-</script>
 
 {% endblock %}

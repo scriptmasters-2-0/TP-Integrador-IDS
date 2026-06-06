@@ -90,7 +90,7 @@ from datetime import datetime
 BACKEND_URL = "http://127.0.0.1:5001"
 
 @profesor_bp.route("/historial", methods=["GET"])
-def historial():
+def historial_reserva():
     "Muestra el historial completo de reservas historicas de un profesor"
 
     id_profesor = request.args.get('id')

@@ -57,7 +57,7 @@ def editar_normativa(id):
     cursor = conn.cursor()
 
     cursor.execute("""
-        UPDATE normativa SET titulo = %s, descripcion = %s WHERE id = %s)
+        UPDATE normativa SET titulo = %s, descripcion = %s WHERE id = %s
     """, (titulo, descripcion, id))
 
     conn.commit()
