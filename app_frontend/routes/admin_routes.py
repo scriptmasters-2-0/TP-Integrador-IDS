@@ -142,6 +142,7 @@ def normativas():
             if str(normativa["id"]) == str(id_editar):
                 normativa_editada = normativa
                 break
+            
     return render_template("admin/normativas.html", normativas=normativas, normativa_editada=normativa_editada)
 
 

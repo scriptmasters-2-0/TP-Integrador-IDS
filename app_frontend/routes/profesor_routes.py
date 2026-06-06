@@ -1,6 +1,6 @@
 """Rutas del area de profesores."""
 
-from flask import Blueprint, redirect, render_template, request, session, url_for
+from flask import Blueprint, redirect, render_template, request, session, url_for, requests
 
 from services.api_client import get_json, post_json
 
@@ -116,7 +116,4 @@ def historial_reserva():
     except Exception as e:
         print(f"Error inesperado: {e}")
         return render_template("profesor/historial_reservas.html", historial=[], error="Error al mostrar el historial")
-    if user_id and item_id:
-        post_json("/api/loans", {"user_id": user_id, "item_id": item_id}, token=token)
 
-    return redirect(url_for("profesor.mis_reservas"))
