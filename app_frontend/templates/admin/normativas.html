@@ -1,0 +1,139 @@
+{% extends "layouts/base_dashboard.html" %}
+
+{% block user_name %}Administrador{% endblock %}
+
+{% block sidebar_links %}
+
+<li>
+  <a href="/admin/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+</li>
+<li>
+  <a href="/admin/articulos"><i class="fa-solid fa-box"></i> Artículos</a>
+</li>
+<li>
+  <a href="/admin/usuarios"><i class="fa-solid fa-users"></i> Usuarios</a>
+</li>
+<li>
+  <a href="/admin/reportes"><i class="fa-solid fa-chart-column"></i> Reportes</a>
+</li>
+<li>
+  <a href="/admin/normativas" class="active">
+    <i class="fa-solid fa-book"></i> Normativas
+  </a>
+</li>
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="breadcrumb reveal">
+  <a href="/admin/dashboard">Admin</a>
+  <i class="fa-solid fa-chevron-right"></i>
+  <span>Normativas</span>
+</div>
+
+<div class="history-container">
+
+  <div class="history-header">
+    <h2>Gestión de normativas</h2>
+    <p>Administra las normativas del sistema.</p>
+  </div>
+
+  <form method="POST" class="normativa-form">
+
+<input
+  type="hidden"
+  name="id"
+  value="{{ normativa_editar.id if normativa_editar else '' }}"
+>
+
+<div>
+  <label>Título</label>
+  <input
+    type="text"
+    name="titulo"
+    value="{{ normativa_editar.titulo if normativa_editar else '' }}"
+    required
+  >
+</div>
+
+<div>
+  <label>Descripción</label>
+  <textarea
+    name="descripcion"
+    rows="4"
+    required
+  >{{ normativa_editar.descripcion if normativa_editar else '' }}</textarea>
+</div>
+
+<button type="submit">
+  {{ 'Actualizar normativa' if normativa_editar else 'Crear normativa' }}
+</button>
+  </form>
+
+  <div class="history-table-wrapper">
+
+<table class="history-table">
+
+  <thead>
+    <tr>
+      <th>Título</th>
+      <th>Descripción</th>
+      <th>Fecha</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+
+  <tbody>
+
+  {% if normativas %}
+
+    {% for normativa in normativas %}
+
+    <tr>
+
+      <td>{{ normativa.titulo }}</td>
+
+      <td>{{ normativa.descripcion }}</td>
+
+      <td>{{ normativa.fecha }}</td>
+
+      <td>
+
+        <a
+          href="/admin/normativas?editar={{ normativa.id }}"
+          class="btn-edit"
+        >
+          Editar
+        </a>
+
+        <a
+          href="/admin/normativas/{{ normativa.id }}/eliminar"
+          class="btn-delete"
+        >
+          Eliminar
+        </a>
+
+      </td>
+
+    </tr>
+
+    {% endfor %}
+
+  {% else %}
+
+    <tr>
+      <td colspan="4" style="text-align:center;">
+        No hay normativas cargadas.
+      </td>
+    </tr>
+
+  {% endif %}
+
+  </tbody>
+
+</table>
+  </div>
+
+</div>
+
+{% endblock %}

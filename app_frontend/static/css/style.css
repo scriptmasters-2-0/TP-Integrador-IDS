@@ -2166,3 +2166,31 @@ h3 {
     background-color: #fde8e8;
     color: #d32f2f;
 }
+
+/*reportes grafico*/
+.reportes-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.reportes-bar-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.reportes-bar-label {
+    width: 220px;
+}
+
+.reportes-bar {
+    height: 26px;
+    border-radius: 6px;
+    background-color: #00AEEF;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.reportes-bar-value {
+    font-weight: bold;
+}

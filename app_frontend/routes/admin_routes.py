@@ -3,6 +3,13 @@
 from flask import Blueprint, redirect, render_template, request, session, url_for
 
 from services.api_client import get_json, post_json, obtener_detalle_prestamo
+from services.reports_service import obtener_reportes
+from services.normativas_service import (
+    obtener_normativas,
+    crear_normativa,
+    actualizar_normativa,
+    eliminar_normativa,
+)
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -94,6 +101,56 @@ def guardar_articulo():
 def dashboard():
     """Renderiza la vista del dashboard para administradores."""
     return render_template("admin/dashboard.html")
+
+
+@admin_bp.route("/reportes", methods=["GET"])
+def reportes():
+    """Renderiza la vista de reportes para administradores."""
+
+    rol = session.get("rol")
+    if rol not in ["admin", "bibliotecario"]:
+        return redirect("/")
+
+    rta = obtener_reportes("careers")
+
+    carreras = rta.get("datos", [])
+    
+    return render_template("admin/reportes.html", carreras=carreras)
+
+
+@admin_bp.route("/normativas", methods=["GET", "POST"])
+def normativas():
+    """ABM de normativas solo visibles para admins y bibliotecarios"""
+    if request.method == "POST":
+        id_normativa = request.form.get("id")
+        data = {
+            "titulo": request.form.get("titulo"),
+            "descripcion": request.form.get("descripcion")
+        }
+        if id_normativa:
+            actualizar_normativa(id_normativa, data)
+        else:
+            crear_normativa(data)
+        return render_template("admin/normativas.html")
+    
+    normativas = obtener_normativas()
+    normativa_editada = None
+    id_editar = request.args.get("editar")
+
+    if id_editar:
+        for normativa in normativas:
+            if str(normativa["id"]) == str(id_editar):
+                normativa_editada = normativa
+                break
+            
+    return render_template("admin/normativas.html", normativas=normativas, normativa_editada=normativa_editada)
+
+
+@admin_bp.route("/normativas/<int:id>/eliminar")
+def eliminar_norm(id):
+    """Elimina una normativa y redirecciona a la pagina principal de normativas"""
+    eliminar_normativa(id)
+    return redirect("/normativas")
 
 
 @admin_bp.route("/usuarios")

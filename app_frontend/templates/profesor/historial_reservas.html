@@ -1,0 +1,44 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Historial de reservas{% endblock %}
+
+{% block content %}
+<div class="historial-container" style="padding: 20px; max-width: 1000px;">
+    <header style="margin-bottom: 30px; border-bottom: 2px solid #ccc; padding-bottom: 10px;">
+        <h1 style="color: #333; margin-bottom: 5px;">Historial de reservas anteriores</h1>
+    </header>
+
+    {% if historial %}
+        <table class="tabla-reservas" style="width: 100%; border-collapse: collapse; margin-top: 20px; box-shadow: 0 2pxx 5px rgba(0,0,0,0.1)">
+            <thead>
+                <tr style="background-color: #f2f2f2; border-bottom: 2px solid #ddd; text-align: left;">
+                    <th style="padding: 12; font-weight: bold;">ID Reserva</th>
+                    <th style="padding: 12; font-weight: bold;">Artículo reservado</th>
+                    <th style="padding: 12; font-weight: bold;">ID artículo reservado</th>
+                    <th style="padding: 12; font-weight: bold;">Fecha retirado</th>
+                    <th style="padding: 12; font-weight: bold;">Fecha devuelto</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reserva in historial %}
+                    <tr style="border-bottom: 1px solid #ddd;">
+                        <th style="padding: 12px; color: #555;">#{{ reserva.id }}</th>
+                        <th style="padding: 12px;">{{ reserva.nombre_articulo }}</th>
+                        <th style="padding: 12px;">{{ reserva.id_reservado }}</th>
+                        <th style="padding: 12px;">{{ reserva.fecha_retiro }}</th>
+                        <th style="padding: 12px;">{{ reserva.fecha_regreso }}</th>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    {% else %}
+        {% if not error %}
+            <div class="alert alert-info" style="background-color: #e2f0d9; color: #385723; padding: 20px; border-radius: 4px; border-left: 5px solid #70ad47;">
+                <p style="margin: 0; font-weight: bold;">Aún no tienes historial de reservas.</p>
+            </div>
+        {% endif %}
+    {% endif %}
+
+</div>
+{% endblock %}

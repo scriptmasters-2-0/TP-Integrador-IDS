@@ -20,7 +20,7 @@ def obtener_reporte_db(tipo_reporte):
 
     Args:
         tipo_reporte (str): El tipo de reporte a obtener
-            ('pending', 'returned', 'overdue', 'all').
+            ('pending', 'returned', 'overdue', 'all', 'careers').
 
     Returns:
         list[dict]: Lista de diccionarios con los datos obtenidos de la BD.
@@ -91,6 +91,18 @@ def obtener_reporte_db(tipo_reporte):
             JOIN articulos
                 ON reserva.id_reservado = articulos.id
             """)
+        
+    elif tipo_reporte == "careers":
+        cursor.execute("""
+            SELECT
+                usuario.carrera,
+                COUNT(*) AS cantidad_prestamos
+            FROM reserva
+            JOIN usuario
+                ON reserva.id_usuario = usuario.id   
+            GROUP BY usuario.carrera
+            ORDER BY cantidad_prestamos DESC          
+        """)
 
     for fila in cursor:
         resultado.append(fila)
@@ -112,7 +124,7 @@ def obtener_reportes():
     tipo = request.args.get("type")
     formato = request.args.get("format")
 
-    tipos_validos = ["pending", "returned", "overdue", "all"]
+    tipos_validos = ["pending", "returned", "overdue", "all", "careers"]
 
     if tipo not in tipos_validos:
         return jsonify({"error": "Tipo de reporte inválido"}), HTTP_BAD_REQUEST
@@ -126,3 +138,6 @@ def obtener_reportes():
     }
 
     return jsonify(respuesta), HTTP_OK
+
+
+
