@@ -1,10 +1,10 @@
 {% extends "layouts/base_dashboard.html" %} {% block usuario_name %}Administrador{% endblock %}
 {% block sidebar_links %}
   <li>
-    <a href="/admin/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+    <a href="{{ url_for('admin.dashboard') }}"><i class="fa-solid fa-gauge"></i> Dashboard</a>
   </li>
   <li>
-    <a href="/admin/articulos" class="active"><i class="fa-solid fa-box"></i> Artículos</a>
+    <a href="{{ url_for('admin.listar_articulos') }}" class="active"><i class="fa-solid fa-box"></i> Artículos</a>
   </li>
   <li>
     <a href="{{ url_for('admin.lista_reservas') }}"
@@ -12,15 +12,15 @@
     >
   </li>
   <li>
-    <a href="/admin/usuarios"><i class="fa-solid fa-usuarios"></i> Usuarios</a>
+    <a href="{{ url_for('admin.usuarios') }}"><i class="fa-solid fa-usuarios"></i> Usuarios</a>
   </li>
   <li>
-    <a href="/admin/reportes/morosidad"><i class="fa-solid fa-chart-column"></i> Morosidad</a>
+    <a href="{{ url_for('admin.reporte_morosidad') }}"><i class="fa-solid fa-chart-column"></i> Morosidad</a>
   </li>
 {% endblock %}
 {% block dashboard_content %}
   <div class="breadcrumb reveal">
-    <a href="/admin/dashboard">Admin</a> <i class="fa-solid fa-chevron-right"></i>
+    <a href="{{ url_for('admin.dashboard') }}">Admin</a> <i class="fa-solid fa-chevron-right"></i>
     <span>Artículos</span>
   </div>
 
@@ -32,7 +32,7 @@
         <h1>Gestión de Artículos</h1>
         <p>Administra el inventario de la biblioteca.</p>
       </div>
-      <button class="register-btn-nav" onclick="window.location.href = '/admin/articulos/nuevo'">
+      <button class="register-btn-nav" onclick="window.location.href = '{{ url_for('admin.crear_articulo') }}'">
         <i class="fa-solid fa-plus"></i> Nuevo Artículo
       </button>
     </div>

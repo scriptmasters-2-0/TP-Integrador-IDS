@@ -150,6 +150,7 @@ def requiere_auth(roles):
 
         @wraps(route)
         def wrapper(*args, **kwargs):
+            """Descripción: función wrapper."""
             token, tokenError = extraer_token_del_header()
 
             if token is None:

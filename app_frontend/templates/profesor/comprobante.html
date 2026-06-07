@@ -4,9 +4,9 @@
 
 {% block dashboard_content %}
   <div class="breadcrumb">
-    <a href="/profesor/dashboard">Profesor</a>
+    <a href="{{ url_for('profesor.dashboard') }}">Profesor</a>
     <i class="fa-solid fa-chevron-right"></i>
-    <a href="/profesor/historial">Historial</a>
+    <a href="{{ url_for('profesor.historial') }}">Historial</a>
     <i class="fa-solid fa-chevron-right"></i>
     <span>Comprobante</span>
   </div>

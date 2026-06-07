@@ -4,18 +4,18 @@
 
 {% block sidebar_links %}
   <li>
-    <a href="/alumno/perfil"><i class="fa-solid fa-usuario"></i> Perfil</a>
+    <a href="{{ url_for('alumno.perfil') }}"><i class="fa-solid fa-usuario"></i> Perfil</a>
   </li>
   <li>
-    <a href="/alumno/historial"><i class="fa-solid fa-list-check"></i> Mis reservas</a>
+    <a href="{{ url_for('alumno.historial') }}"><i class="fa-solid fa-list-check"></i> Mis reservas</a>
   </li>
   <li>
-    <a href="/alumno/mis-reservas/nueva" class="active"
+    <a href="{{ url_for('alumno.nueva_reserva') }}" class="active"
       ><i class="fa-solid fa-plus"></i> Nueva reserva</a
     >
   </li>
   <li>
-    <a href="/alumno/reservas/id/comprobante"
+    <a href="{{ url_for('alumno.comprobante_sin_id') }}"
       ><i class="fa-solid fa-file-invoice"></i> Comprobante</a
     >
   </li>
@@ -23,7 +23,7 @@
 
 {% block dashboard_content %}
   <div class="breadcrumb reveal">
-    <a href="/alumno/perfil">Alumno</a> <i class="fa-solid fa-chevron-right"></i>
+    <a href="{{ url_for('alumno.perfil') }}">Alumno</a> <i class="fa-solid fa-chevron-right"></i>
     <span>Nueva reserva</span>
   </div>
 
@@ -38,11 +38,11 @@
       data-validate="alumno-reserva"
       class="admin-form"
       method="post"
-      action="/alumno/mis-reservas/nueva">
+      action="{{ url_for('alumno.nueva_reserva') }}">
       <div class="data-grid">
         <div class="data-group">
           <label for="articulo">Articulo</label>
-          <select id="articulo" name="articulo" class="admin-select" required>
+          <select id="articulo" name="articulo_id" class="admin-select" required>
             <option value="">Seleccionar</option>
             {% for articulo in articulos %}
               <option value="{{ articulo.id }}">{{ articulo.nombre_art }} (stock: {{ articulo.stock }})</option>
@@ -69,7 +69,7 @@
       <div style="margin-top: 20px; display: flex; gap: 12px">
         <button type="submit" class="register-btn-nav">Confirmar reserva</button>
         <a
-          href="/alumno/historial"
+          href="{{ url_for('alumno.historial') }}"
           class="login-btn"
           style="text-decoration: none; display: inline-flex; align-articulos: center"
           >Cancelar</a

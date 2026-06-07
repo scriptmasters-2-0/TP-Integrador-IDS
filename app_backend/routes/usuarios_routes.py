@@ -312,6 +312,7 @@ def create_usuario():
 @usuarios_bp.route("/api/usuarios/<int:usuario_id>", methods=["GET"])
 @requiere_auth(roles=["admin"])
 def get_usuario(usuario_id):
+    """Descripción: función get_usuario."""
     conn = obtener_conexion()
     if conn is None:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR

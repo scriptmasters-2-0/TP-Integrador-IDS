@@ -13,7 +13,6 @@ from servicios.api_client import (
 
 logger = logging.getLogger(__name__)
 alumno_bp = Blueprint("alumno", __name__, url_prefix="/alumno")
-BACKEND_URL = "http://127.0.0.1:5001"
 
 
 @alumno_bp.route("/perfil")

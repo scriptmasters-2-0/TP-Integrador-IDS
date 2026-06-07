@@ -1,9 +1,6 @@
 # auth_servicio.py
 # Funciones de servicio para consumir endpoints /auth
-import requests
-from requests.exceptions import RequestException
-
-from config import BACKEND_URL
+from servicios.api_client import post_json, get_json
 
 TIMEOUT = 5
 
@@ -13,15 +10,10 @@ def crear_usuario(credentials):
     credentials: dict (ej., {"nombre": "...", "email": "...", "carrera": "...", "contrasenia": "..."})
     Devuelve el JSON parseado en caso de éxito, {} en caso de fallo.
     """
-    url = f"{BACKEND_URL}/auth/logup"
-    try:
-        resp = requests.post(url, json=credentials, timeout=TIMEOUT)
-        resp.raise_for_status()
-        return resp.json()
-    except RequestException:
+    payload, error, status = post_json("/auth/logup", credentials)
+    if error:
         return {}
-    except Exception:
-        return {}
+    return payload or {}
 
 
 def iniciar_sesion(credentials):
@@ -29,45 +21,27 @@ def iniciar_sesion(credentials):
     credentials: dict (ej., {"nombre": "...", "contrasenia": "..."})
     Devuelve el JSON parseado en caso de éxito, {} en caso de fallo.
     """
-    url = f"{BACKEND_URL}/auth/login"
-    try:
-        resp = requests.post(url, json=credentials, timeout=TIMEOUT)
-        resp.raise_for_status()
-        return resp.json()
-    except RequestException:
+    payload, error, status = post_json("/auth/login", credentials)
+    if error:
         return {}
-    except Exception:
-        return {}
+    return payload or {}
 
 
-def cerrar_sesion():
+def cerrar_sesion(token=None):
     """POST /auth/logout
     Devuelve el JSON parseado en caso de éxito, {} en caso de fallo.
     """
-    url = f"{BACKEND_URL}/auth/logout"
-    try:
-        resp = requests.post(url, timeout=TIMEOUT)
-        resp.raise_for_status()
-        try:
-            return resp.json()
-        except ValueError:
-            return {}
-    except RequestException:
+    payload, error, status = post_json("/auth/logout", {}, token=token)
+    if error:
         return {}
-    except Exception:
-        return {}
+    return payload or {}
 
 
-def obtener_mi_perfil():
+def obtener_mi_perfil(token=None):
     """GET /auth/me
     Devuelve el JSON con la información del usuario en caso de éxito, {} en caso de fallo.
     """
-    url = f"{BACKEND_URL}/auth/me"
-    try:
-        resp = requests.get(url, timeout=TIMEOUT)
-        resp.raise_for_status()
-        return resp.json()
-    except RequestException:
+    payload, error = get_json("/auth/me", token=token)
+    if error:
         return {}
-    except Exception:
-        return {}
+    return payload or {}

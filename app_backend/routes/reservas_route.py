@@ -54,6 +54,7 @@ def format_reserva(row):
 @reservas_bp.route("/api/reservas", methods=["GET"])
 @requiere_auth(roles=["admin", "profesor", "bibliotecario", "alumno"])
 def listar_reservas():
+    """Descripción: función listar_reservas."""
     conn = obtener_conexion()
     if conn is None:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
