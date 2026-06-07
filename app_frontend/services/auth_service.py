@@ -3,9 +3,27 @@
 import requests
 from requests.exceptions import RequestException
 
-BASE_URL = "http://localhost:5000/api"
+from config import BACKEND_URL
+
+
 TIMEOUT = 5
 
+
+def crear_usuario(credentials):
+    """
+    POST /auth/logup
+    credentials: dict (ej., {"username": "...", "mail": "...", "carrera": "...", "password": "..."})
+    Devuelve el JSON parseado en caso de éxito, {} en caso de fallo.
+    """
+    url = f"{BACKEND_URL}/auth/logup"
+    try:
+        resp = requests.post(url, json=credentials, timeout=TIMEOUT)
+        resp.raise_for_status()
+        return resp.json()
+    except RequestException:
+        return {}
+    except Exception:
+        return {}
 
 def iniciar_sesion(credentials):
     """
@@ -13,7 +31,7 @@ def iniciar_sesion(credentials):
     credentials: dict (ej., {"username": "...", "password": "..."})
     Devuelve el JSON parseado en caso de éxito, {} en caso de fallo.
     """
-    url = f"{BASE_URL}/auth/login"
+    url = f"{BACKEND_URL}/auth/login"
     try:
         resp = requests.post(url, json=credentials, timeout=TIMEOUT)
         resp.raise_for_status()
@@ -29,7 +47,7 @@ def cerrar_sesion():
     POST /auth/logout
     Devuelve el JSON parseado en caso de éxito, {} en caso de fallo.
     """
-    url = f"{BASE_URL}/auth/logout"
+    url = f"{BACKEND_URL}/auth/logout"
     try:
         resp = requests.post(url, timeout=TIMEOUT)
         resp.raise_for_status()
@@ -48,7 +66,7 @@ def obtener_mi_perfil():
     GET /auth/me
     Devuelve el JSON con la información del usuario en caso de éxito, {} en caso de fallo.
     """
-    url = f"{BASE_URL}/auth/me"
+    url = f"{BACKEND_URL}/auth/me"
     try:
         resp = requests.get(url, timeout=TIMEOUT)
         resp.raise_for_status()

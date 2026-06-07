@@ -3,14 +3,55 @@
 from flask import Blueprint, redirect, render_template, request, session, url_for
 
 from http_codes_and_messages import HTTP_UNAUTHORIZED
+from services import auth_service, normativas_service
 from services.api_client import get_json, post_json
 
 public_bp = Blueprint("public", __name__)
+
 
 @public_bp.route("/")
 def home():
     """Renderiza la pagina de inicio."""
     return render_template("public/index.html")
+
+
+@public_bp.route("/logup", methods=["GET"])
+def logup():
+    """Renderiza la página de registro de nuevos usuarios."""
+    if session.get("token"):
+        role = session.get("role", "alumno")
+        if role in ("admin", "bibliotecario"):
+            return redirect(url_for("admin.dashboard"))
+        if role in ("profesor", "docente"):
+            return redirect(url_for("profesor.mis_reservas"))
+        return redirect(url_for("alumno.perfil"))
+
+    return render_template("public/registro.html")
+
+
+@public_bp.route("/logup", methods=["POST"])
+def logup_submit():
+    """Procesa logup contra backend."""
+    username = (request.form.get("email") or "").strip()
+    email = (request.form.get("email") or "").strip()
+    carrera = request.form.get("carrera") or ""
+    password = request.form.get("password") or ""
+
+    respuesta = auth_service.crear_usuario(
+        {"nombre": username, "mail": email, "carrera": carrera, "password": password},
+    )
+
+    if not respuesta:
+        return (
+            render_template(
+                "public/registro.html",
+                hasError=True,
+                errorMessage="No se pudo crear el usuario. Intente nuevamente.",
+            ),
+            HTTP_UNAUTHORIZED,
+        )
+
+    return redirect(url_for("public.login"))
 
 
 @public_bp.route("/login", methods=["GET"])
@@ -24,7 +65,7 @@ def login():
             return redirect(url_for("profesor.mis_reservas"))
         return redirect(url_for("alumno.perfil"))
 
-    return render_template("public/login.html", login_error=None)
+    return render_template("public/login.html")
 
 
 @public_bp.route("/login", methods=["POST"])
@@ -34,14 +75,16 @@ def login_submit():
     password = request.form.get("password") or ""
 
     payload, error, status_code = post_json(
-        "/api/auth/login", {"email": email, "password": password}
+        "/auth/login", {"email": email, "password": password}
     )
 
     if error:
+        print(error)
         return (
             render_template(
                 "public/login.html",
-                login_error=f"No se pudo iniciar sesión ({status_code}): {error}",
+                hasError=True,
+                errorMessage=f"No se pudo iniciar sesión ({status_code}): {error}",
             ),
             HTTP_UNAUTHORIZED,
         )
@@ -75,7 +118,8 @@ def registro():
 
 @public_bp.route("/normas", methods=["GET"])
 def normas():
-    return render_template("public/normas.html")
+    normativas = normativas_service.obtener_normativas()
+    return render_template("public/normas.html", normativas=normativas)
 
 
 @public_bp.route("/catalogo", methods=["GET"])
