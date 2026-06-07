@@ -49,41 +49,40 @@
       <p>Administra las normativas del sistema.</p>
     </div>
 
-    <form method="POST" class="normativa-form">
-      <input
-        type="hidden"
-        name="id"
-        value="{{ normativa_editar.id if normativa_editar else '' }}" />
+    <input type="hidden" name="id"
+      value="{{ normativa_editar.id if normativa_editar else '' }}">
 
-      <div>
-        <label>Título</label>
-        <input
-          type="text"
-          name="titulo"
-          value="{{ normativa_editar.titulo if normativa_editar else '' }}"
-          required />
-      </div>
+    <div>
+      <label>Título</label>
+      <input type="text" name="titulo"
+        value="{{ normativa_editar.titulo if normativa_editar else '' }}"
+        required>
+    </div>
 
-      <div>
-        <label>Descripción</label>
-        <textarea name="descripcion" rows="4" required>
-{{ normativa_editar.descripcion if normativa_editar else '' }}</textarea
-        >
-      </div>
+    <div>
+      <label>Descripción</label>
+      <textarea name="descripcion" required>
+{{ normativa_editar.descripcion if normativa_editar else '' }}
+      </textarea>
+    </div>
 
-      <button type="submit">
-        {{ 'Actualizar normativa' if normativa_editar else 'Crear normativa' }}
-      </button>
-    </form>
+    <button type="submit">
+      {{ 'Actualizar' if normativa_editar else 'Crear' }}
+    </button>
 
-    <div class="history-table-wrapper">
-      <table class="history-table">
-        <thead>
-          <tr>
-            <th>Título</th>
-            <th>Descripción</th>
-            <th>Fecha</th>
-            <th>Acciones</th>
+  </form>
+
+  <div class="history-table-wrapper">
+
+    <table class="history-table">
+
+      <thead>
+        <tr>
+          <th>Título</th>
+          <th>Descripción</th>
+          <th>Fecha</th>
+          <th>Acciones</th>
+        </tr>
           </tr>
         </thead>
 
@@ -117,6 +116,7 @@
         </tbody>
       </table>
     </div>
+
   </div>
 {% endblock %}
 

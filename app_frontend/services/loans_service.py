@@ -3,6 +3,7 @@
 import requests
 from flask import session
 from requests.exceptions import RequestException
+from services.api_client import get_json
 
 from config import BACKEND_URL
 
@@ -73,3 +74,7 @@ def establecer_estado_prestamo(loan_id, status_data):
         return {}
     except Exception:
         return {}
+
+def obtener_qr_reserva(id_reserva):
+    url = f"/qr/loans/{id_reserva}"
+    return get_json(url)

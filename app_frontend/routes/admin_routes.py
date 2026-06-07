@@ -124,6 +124,11 @@ def reportes():
 @admin_bp.route("/normativas", methods=["GET", "POST"])
 def normativas():
     """ABM de normativas solo visibles para admins y bibliotecarios"""
+
+    rol = session.get("rol")
+    if rol not in ["admin", "bibliotecario"]:
+        return redirect("/")
+    
     if request.method == "POST":
         id_normativa = request.form.get("id")
         data = {
@@ -134,8 +139,8 @@ def normativas():
             actualizar_normativa(id_normativa, data)
         else:
             crear_normativa(data)
-        return render_template("admin/normativas.html")
-
+        return redirect("/admin/normativas")
+    
     normativas = obtener_normativas()
     normativa_editada = None
     id_editar = request.args.get("editar")
@@ -143,9 +148,9 @@ def normativas():
     if id_editar:
         for normativa in normativas:
             if str(normativa["id"]) == str(id_editar):
-                normativa_editada = normativa
+                normativa_editar = normativa
                 break
-
+            
     return render_template(
         "admin/normativas.html",
         normativas=normativas,
@@ -153,11 +158,11 @@ def normativas():
     )
 
 
-@admin_bp.route("/normativas/<int:id>/eliminar")
-def eliminar_norm(id):
-    """Elimina una normativa y redirecciona a la pagina principal de normativas"""
-    eliminar_normativa(id)
-    return redirect("/normativas")
+@admin_bp.route("/normativas/eliminar", methods=["POST"])
+def eliminar_norm():
+    id_norm = request.form.get("id")
+    eliminar_normativa(id_norm)
+    return redirect("/admin/normativas")
 
 
 @admin_bp.route("/usuarios")
