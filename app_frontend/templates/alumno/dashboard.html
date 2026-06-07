@@ -1,47 +1,59 @@
 {% extends "layouts/base_dashboard.html" %}
 
 {% block user_name %}
-    {{ session.get('user', {}).get('nombre', 'Alumno') }}
+  {{ session.get('user', {}).get('nombre', 'Alumno') }}
 {% endblock %}
 
 {% block sidebar_links %}
-    <li><a href="{{ url_for('alumno.perfil') }}"><i class="fa-solid fa-user"></i> Perfil</a></li>
-    <li><a href="{{ url_for('alumno.historial') }}"><i class="fa-solid fa-list-check"></i> Mis reservas</a></li>
-    <li><a href="{{ url_for('alumno.nueva_reserva') }}"><i class="fa-solid fa-plus"></i> Nueva reserva</a></li>
-    <li><a href="{{ url_for('alumno.comprobante_sin_id') }}"><i class="fa-solid fa-file-invoice"></i> Comprobante</a></li>
+  <li>
+    <a href="{{ url_for('alumno.perfil') }}"><i class="fa-solid fa-user"></i> Perfil</a>
+  </li>
+  <li>
+    <a href="{{ url_for('alumno.historial') }}"
+      ><i class="fa-solid fa-list-check"></i> Mis reservas</a
+    >
+  </li>
+  <li>
+    <a href="{{ url_for('alumno.nueva_reserva') }}"
+      ><i class="fa-solid fa-plus"></i> Nueva reserva</a
+    >
+  </li>
+  <li>
+    <a href="{{ url_for('alumno.comprobante_sin_id') }}"
+      ><i class="fa-solid fa-file-invoice"></i> Comprobante</a
+    >
+  </li>
 {% endblock %}
 
 {% block dashboard_content %}
-    <h2 class="reveal">Panel Principal</h2>
+  <h2 class="reveal">Panel Principal</h2>
 
-    {% if fetch_error %}
-        <div class="alert alert-danger">
-            {{ fetch_error }}
-        </div>
-    {% endif %}
+  {% if fetch_error %}
+    <div class="alert alert-danger">{{ fetch_error }}</div>
+  {% endif %}
 
-    <div class="row">
-        <div class="card p-3">
-            <h4>Reservas Activas</h4>
-            <p>{{ dashboard.reservas_activas | length if dashboard.reservas_activas else 0 }}</p>
-        </div>
-        
-        <div class="card p-3">
-            <h4>Score</h4>
-            <p>{{ dashboard.score if dashboard.score is defined else 'N/A' }}</p>
-        </div>
-
-        <div class="card p-3">
-            <h4>Alertas de Penalización</h4>
-            {% if dashboard.penalizaciones %}
-                <ul>
-                    {% for p in dashboard.penalizaciones %}
-                        <li class="text-danger">{{ p.motivo }}</li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p>Sin alertas activas</p>
-            {% endif %}
-        </div>
+  <div class="row">
+    <div class="card p-3">
+      <h4>Reservas Activas</h4>
+      <p>{{ dashboard.reservas_activas | length if dashboard.reservas_activas else 0 }}</p>
     </div>
+
+    <div class="card p-3">
+      <h4>Score</h4>
+      <p>{{ dashboard.score if dashboard.score is defined else 'N/A' }}</p>
+    </div>
+
+    <div class="card p-3">
+      <h4>Alertas de Penalización</h4>
+      {% if dashboard.penalizaciones %}
+        <ul>
+          {% for p in dashboard.penalizaciones %}
+            <li class="text-danger">{{ p.motivo }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>Sin alertas activas</p>
+      {% endif %}
+    </div>
+  </div>
 {% endblock %}

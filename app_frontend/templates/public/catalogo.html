@@ -1,101 +1,100 @@
 {% extends "layouts/base.html" %}
 
 {% block content %}
-
-<main class="catalogo-page">
+  <main class="catalogo-page">
     <div class="catalogo-container">
+      <h1 class="catalogo-title">Catálogo</h1>
+      <p class="catalogo-subtitle">Explorá todos nuestros artículos disponibles.</p>
 
-        <h1 class="catalogo-title">Catálogo</h1>
-        <p class="catalogo-subtitle">Explorá todos nuestros artículos disponibles.</p>
-
-        <form action="{{ url_for('public.mostrar_catalogo') }}" method="GET" class="catalogo-filtros">
-
-            <div class="filter-group">
-                <label for="tipo">Tipos:</label>
-                <select name="tipo" id="tipo">
-                    <option value="">Tipos de artículos</option>
-                    <option value="Libro" {% if tipo_actual == 'Libro' %}selected{% endif %}>Libros</option>
-                    <option value="Electronicos" {% if tipo_actual == 'Electronicos' %}selected{% endif %}>Equipos Electrónicos</option>
-                    <option value="Herramienta" {% if tipo_actual == 'Herramienta' %}selected{% endif %}>Herramientas</option>
-                    <option value="Proyector" {% if tipo_actual == 'Proyector' %}selected{% endif %}>Proyectores</option>
-                    <option value="Accesorios" {% if tipo_actual == 'Accesorios' %}selected{% endif %}>Accesorios y Cables</option>
-                </select>
-            </div>
-
-            <div class="filter-group">
-                <label for="seccion">Sección:</label>
-                <select name="seccion" id="seccion">
-                    <option value="">Todas las secciones</option>
-                    <option value="Biblioteca" {% if seccion_actual == 'Biblioteca' %}selected{% endif %}>Biblioteca</option>
-                    <option value="Tecnologia" {% if seccion_actual == 'Tecnologia' %}selected{% endif %}>Tecnología</option>
-                    <option value="Bedelia" {% if seccion_actual == 'Bedelía' %}selected{% endif %}>Bedelía</option>
-                </select>
-            </div>
-
-            <button type="submit" class="btn-filtro">
-                Aplicar Filtro
-            </button>
-
-        </form>
-        
-        <div class="catalogo-grid">
-
-            {% for articulo in articulos %}
-                <div class="catalogo-card">
-                    <h3 class="card-title">
-                        {{ articulo.nombre_art }}
-                    </h3>
-
-                    <div class="card-icon">
-                        {% if articulo.tipo == 'Libro' %}
-                            <i class="fa-solid fa-book"></i>
-                        {% elif articulo.tipo == 'Electronicos' %}
-                            <i class="fa-solid fa-laptop"></i>
-                        {% elif articulo.tipo == 'Proyector' %}
-                            <i class="fa-solid fa-display"></i>
-                        {% elif articulo.tipo == 'Accesorios' %}
-                            <i class="fa-solid fa-plug"></i>
-                        {% elif articulo.tipo == 'Herramienta' %}
-                            <i class="fa-solid fa-screwdriver-wrench"></i>
-                        {% else %}
-                            <i class="fa-solid fa-box"></i>
-                        {% endif %}
-                    </div>
-
-                    <div class="status">
-                        {% if articulo.stock > 0 and not articulo.necesita_reparacion %}
-                            <span class="available">
-                                <i class="fa-solid fa-circle-check"></i>
-                                Disponible
-                            </span>
-                        {% else %}
-                            <span class="unavailable">
-                                <i class="fa-solid fa-circle-xmark"></i>
-                                No disponible
-                            </span>
-                        {% endif %}
-                    </div>
-
-                    <div class="card-action">
-                        {% if articulo.stock > 0 and not articulo.necesita_reparacion %}
-                            <button class="btn-reserva" onclick="window.location.href='/'">
-                                SOLICITAR RESERVA
-                            </button>
-                        {% else %}
-                            <button class="btn-disabled" disabled>
-                                No disponible
-                            </button>
-                        {% endif %}
-                    </div>
-
-                </div>
-            {% else %}
-                <div class="no-results">
-                    No se encontraron artículos que cumplan con los filtros.
-                </div>
-            {% endfor %}
+      <form action="{{ url_for('public.mostrar_catalogo') }}" method="GET" class="catalogo-filtros">
+        <div class="filter-group">
+          <label for="tipo">Tipos:</label>
+          <select name="tipo" id="tipo">
+            <option value="">Tipos de artículos</option>
+            <option value="Libro" {% if tipo_actual == 'Libro' %}selected{% endif %}>Libros</option>
+            <option value="Electronicos" {% if tipo_actual == 'Electronicos' %}selected{% endif %}>
+              Equipos Electrónicos
+            </option>
+            <option value="Herramienta" {% if tipo_actual == 'Herramienta' %}selected{% endif %}>
+              Herramientas
+            </option>
+            <option value="Proyector" {% if tipo_actual == 'Proyector' %}selected{% endif %}>
+              Proyectores
+            </option>
+            <option value="Accesorios" {% if tipo_actual == 'Accesorios' %}selected{% endif %}>
+              Accesorios y Cables
+            </option>
+          </select>
         </div>
-    </div>
-</main>
 
+        <div class="filter-group">
+          <label for="seccion">Sección:</label>
+          <select name="seccion" id="seccion">
+            <option value="">Todas las secciones</option>
+            <option value="Biblioteca" {% if seccion_actual == 'Biblioteca' %}selected{% endif %}>
+              Biblioteca
+            </option>
+            <option value="Tecnologia" {% if seccion_actual == 'Tecnologia' %}selected{% endif %}>
+              Tecnología
+            </option>
+            <option value="Bedelia" {% if seccion_actual == 'Bedelía' %}selected{% endif %}>
+              Bedelía
+            </option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn-filtro">Aplicar Filtro</button>
+      </form>
+
+      <div class="catalogo-grid">
+        {% for articulo in articulos %}
+          <div class="catalogo-card">
+            <h3 class="card-title">{{ articulo.nombre_art }}</h3>
+
+            <div class="card-icon">
+              {% if articulo.tipo == 'Libro' %}
+                <i class="fa-solid fa-book"></i>
+              {% elif articulo.tipo == 'Electronicos' %}
+                <i class="fa-solid fa-laptop"></i>
+              {% elif articulo.tipo == 'Proyector' %}
+                <i class="fa-solid fa-display"></i>
+              {% elif articulo.tipo == 'Accesorios' %}
+                <i class="fa-solid fa-plug"></i>
+              {% elif articulo.tipo == 'Herramienta' %}
+                <i class="fa-solid fa-screwdriver-wrench"></i>
+              {% else %}
+                <i class="fa-solid fa-box"></i>
+              {% endif %}
+            </div>
+
+            <div class="status">
+              {% if articulo.stock > 0 and not articulo.necesita_reparacion %}
+                <span class="available">
+                  <i class="fa-solid fa-circle-check"></i>
+                  Disponible
+                </span>
+              {% else %}
+                <span class="unavailable">
+                  <i class="fa-solid fa-circle-xmark"></i>
+                  No disponible
+                </span>
+              {% endif %}
+            </div>
+
+            <div class="card-action">
+              {% if articulo.stock > 0 and not articulo.necesita_reparacion %}
+                <button class="btn-reserva" onclick="window.location.href='/'">
+                  SOLICITAR RESERVA
+                </button>
+              {% else %}
+                <button class="btn-disabled" disabled>No disponible</button>
+              {% endif %}
+            </div>
+          </div>
+        {% else %}
+          <div class="no-results">No se encontraron artículos que cumplan con los filtros.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </main>
 {% endblock %}

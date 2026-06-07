@@ -9,8 +9,7 @@ TIMEOUT = 5
 
 
 def obtener_penalizaciones(params=None):
-    """
-    GET /penalties
+    """GET /penalties
     Devuelve una lista en caso de éxito, [] en caso de fallo.
     """
     url = f"{BACKEND_URL}/penalties"
@@ -25,8 +24,7 @@ def obtener_penalizaciones(params=None):
 
 
 def crear_penalizacion(penalty_data):
-    """
-    POST /penalties
+    """POST /penalties
     Devuelve el JSON de la penalización creada en caso de éxito, {} en caso de fallo.
     """
     url = f"{BACKEND_URL}/penalties"
@@ -41,8 +39,7 @@ def crear_penalizacion(penalty_data):
 
 
 def obtener_penalizacion(penalty_id):
-    """
-    GET /penalties/{id}
+    """GET /penalties/{id}
     Devuelve el JSON de la penalización en caso de éxito, {} en caso de fallo.
     """
     url = f"{BACKEND_URL}/penalties/{penalty_id}"
@@ -57,8 +54,7 @@ def obtener_penalizacion(penalty_id):
 
 
 def actualizar_penalizacion(penalty_id, penalty_data):
-    """
-    PUT /penalties/{id}
+    """PUT /penalties/{id}
     Devuelve el JSON actualizado en caso de éxito, {} en caso de fallo.
     """
     url = f"{BACKEND_URL}/penalties/{penalty_id}"
@@ -73,8 +69,7 @@ def actualizar_penalizacion(penalty_id, penalty_data):
 
 
 def actualizar_parcial_penalizacion(penalty_id, patch_data):
-    """
-    PATCH /penalties/{id}
+    """PATCH /penalties/{id}
     Devuelve True en caso de éxito, {} en caso de fallo.
     """
     url = f"{BACKEND_URL}/penalties/{penalty_id}"

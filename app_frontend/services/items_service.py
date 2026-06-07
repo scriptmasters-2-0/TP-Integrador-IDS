@@ -9,8 +9,7 @@ TIMEOUT = 5
 
 
 def obtener_items(params=None):
-    """
-    GET /items
+    """GET /items
     Devuelve una lista en caso de éxito, [] en caso de fallo.
     """
     url = f"{BACKEND_URL}/items"
@@ -25,8 +24,7 @@ def obtener_items(params=None):
 
 
 def crear_item(item_data):
-    """
-    POST /items
+    """POST /items
     Devuelve el JSON creado en caso de éxito, {} en caso de fallo.
     """
     url = f"{BACKEND_URL}/items"
@@ -41,8 +39,7 @@ def crear_item(item_data):
 
 
 def obtener_item(item_id):
-    """
-    GET /items/{id}
+    """GET /items/{id}
     Devuelve el JSON del ítem en caso de éxito, {} en caso de fallo.
     """
     url = f"{BACKEND_URL}/items/{item_id}"
@@ -57,8 +54,7 @@ def obtener_item(item_id):
 
 
 def actualizar_item(item_id, item_data):
-    """
-    PUT /items/{id}
+    """PUT /items/{id}
     Devuelve el JSON actualizado en caso de éxito, {} en caso de fallo.
     """
     url = f"{BACKEND_URL}/items/{item_id}"
@@ -73,8 +69,7 @@ def actualizar_item(item_id, item_data):
 
 
 def eliminar_item(item_id):
-    """
-    DELETE /items/{id}
+    """DELETE /items/{id}
     Devuelve True en caso de éxito, {} en caso de fallo.
     """
     url = f"{BACKEND_URL}/items/{item_id}"
@@ -89,8 +84,7 @@ def eliminar_item(item_id):
 
 
 def establecer_condicion_item(item_id, condition_data):
-    """
-    PATCH /items/{id}/condition
+    """PATCH /items/{id}/condition
     condition_data: dict (ej., {"condition": "good"})
     Devuelve True en caso de éxito, {} en caso de fallo.
     """

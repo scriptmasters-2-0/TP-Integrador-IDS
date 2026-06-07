@@ -3,46 +3,57 @@
 {% block user_name %}Alumno{% endblock %}
 
 {% block sidebar_links %}
-    <li><a href="#"><i class="fa-solid fa-user"></i> Perfil</a></li>
-    <li><a href="{{ url_for('alumno.alumno_mis_reservas') }}"><i class="fa-solid fa-list-check"></i> Mis reservas</a></li>
-    <li><a href="#" class="active"><i class="fa-solid fa-triangle-exclamation"></i> Penalizaciones</a></li>
+  <li>
+    <a href="#"><i class="fa-solid fa-user"></i> Perfil</a>
+  </li>
+  <li>
+    <a href="{{ url_for('alumno.alumno_mis_reservas') }}"
+      ><i class="fa-solid fa-list-check"></i> Mis reservas</a
+    >
+  </li>
+  <li>
+    <a href="#" class="active"><i class="fa-solid fa-triangle-exclamation"></i> Penalizaciones</a>
+  </li>
 {% endblock %}
 
 {% block dashboard_content %}
-    <h2 class="reveal">Mis Penalizaciones</h2>
+  <h2 class="reveal">Mis Penalizaciones</h2>
 
-    {% if penalizaciones %}
-    <div class="history-table-wrapper reveal" style="background: white; border-radius: 15px; border: 1px solid var(--border-color);">
-        <table class="history-table">
-            <thead>
-                <tr>
-                    <th>Motivo</th>
-                    <th>Severidad</th>
-                    <th>Fecha inicio</th>
-                    <th>Fecha fin</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for penalizacion in penalizaciones %}
-                <tr>
-                    <td>{{ penalizacion.motivo }}</td>
-                    <td>
-                        <span class="badge {% if penalizacion.severidad == 'alta' %}badge-danger{% elif penalizacion.severidad == 'media' %}badge-warning{% else %}badge-success{% endif %}">
-                            {{ penalizacion.severidad }}
-                        </span>
-                    </td>
-                    <td>{{ penalizacion.fecha_inicio }}</td>
-                    <td>{{ penalizacion.fecha_fin }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+  {% if penalizaciones %}
+    <div
+      class="history-table-wrapper reveal"
+      style="background: white; border-radius: 15px; border: 1px solid var(--border-color);">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Motivo</th>
+            <th>Severidad</th>
+            <th>Fecha inicio</th>
+            <th>Fecha fin</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for penalizacion in penalizaciones %}
+            <tr>
+              <td>{{ penalizacion.motivo }}</td>
+              <td>
+                <span
+                  class="badge {% if penalizacion.severidad == 'alta' %}badge-danger{% elif penalizacion.severidad == 'media' %}badge-warning{% else %}badge-success{% endif %}">
+                  {{ penalizacion.severidad }}
+                </span>
+              </td>
+              <td>{{ penalizacion.fecha_inicio }}</td>
+              <td>{{ penalizacion.fecha_fin }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-    {% else %}
+  {% else %}
     <div class="empty-state reveal">
-        <i class="fa-solid fa-circle-check empty-icon" style="color: #20c997;"></i>
-        <h3>¡No tenés penalizaciones vigentes!</h3>
-        <p>Tu historial está limpio.</p>
+      <i class="fa-solid fa-circle-check empty-icon" style="color: #20c997;"></i>
+      <h3>¡No tenés penalizaciones vigentes!</h3>
+      <p>Tu historial está limpio.</p>
     </div>
-    {% endif %}
+  {% endif %}
 {% endblock %}

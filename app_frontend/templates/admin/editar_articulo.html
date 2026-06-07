@@ -1,40 +1,47 @@
 {% extends "layouts/base_dashboard.html" %}
 
 {% block dashboard_content %}
-<h2>Editar Artículo</h2>
+  <h2>Editar Artículo</h2>
 
-<form action="{{ url_for('admin.editar_articulo', id=articulo.id) }}" method="POST">
+  <form action="{{ url_for('admin.editar_articulo', id=articulo.id) }}" method="POST">
     <div class="form-group">
-        <label>Nombre:</label>
-        <input type="text" name="nombre" value="{{ articulo.nombre }}" required>
+      <label>Nombre:</label>
+      <input type="text" name="nombre" value="{{ articulo.nombre }}" required />
     </div>
 
     <div class="form-group">
-        <label>Tipo:</label>
-        <select name="tipo" required>
-            <option value="Libro" {% if articulo.tipo == 'Libro' %}selected{% endif %}>Libro</option>
-            <option value="Computadora" {% if articulo.tipo == 'Computadora' %}selected{% endif %}>Computadora</option>
-            <option value="Accesorio" {% if articulo.tipo == 'Accesorio' %}selected{% endif %}>Accesorio</option>
-        </select>
+      <label>Tipo:</label>
+      <select name="tipo" required>
+        <option value="Libro" {% if articulo.tipo == 'Libro' %}selected{% endif %}>Libro</option>
+        <option value="Computadora" {% if articulo.tipo == 'Computadora' %}selected{% endif %}>
+          Computadora
+        </option>
+        <option value="Accesorio" {% if articulo.tipo == 'Accesorio' %}selected{% endif %}>
+          Accesorio
+        </option>
+      </select>
     </div>
 
     <div class="form-group">
-        <label>Sección:</label>
-        <input type="text" name="seccion" value="{{ articulo.seccion }}" required>
+      <label>Sección:</label>
+      <input type="text" name="seccion" value="{{ articulo.seccion }}" required />
     </div>
 
     <div class="form-group">
-        <label>Stock:</label>
-        <input type="number" name="stock" value="{{ articulo.stock }}" required>
+      <label>Stock:</label>
+      <input type="number" name="stock" value="{{ articulo.stock }}" required />
     </div>
 
     <div class="form-group">
-        <label>
-            <input type="checkbox" name="necesita_reparacion" {% if articulo.necesita_reparacion %}checked{% endif %}>
-            ¿Necesita reparación?
-        </label>
+      <label>
+        <input
+          type="checkbox"
+          name="necesita_reparacion"
+          {% if articulo.necesita_reparacion %}checked{% endif %} />
+        ¿Necesita reparación?
+      </label>
     </div>
 
     <button type="submit" class="btn-primary">Guardar Cambios</button>
-</form>
+  </form>
 {% endblock %}

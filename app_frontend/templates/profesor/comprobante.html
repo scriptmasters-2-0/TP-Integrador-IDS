@@ -3,39 +3,27 @@
 {% block user_name %}Profesor{% endblock %}
 
 {% block dashboard_content %}
-
-<div class="breadcrumb">
+  <div class="breadcrumb">
     <a href="/profesor/dashboard">Profesor</a>
     <i class="fa-solid fa-chevron-right"></i>
     <a href="/profesor/historial">Historial</a>
     <i class="fa-solid fa-chevron-right"></i>
     <span>Comprobante</span>
-</div>
+  </div>
 
-<div class="ticket-container">
-
+  <div class="ticket-container">
     <div class="ticket-card">
+      <h2>📄 Comprobante de Reserva</h2>
 
-        <h2>📄 Comprobante de Reserva</h2>
+      <div class="ticket-info">
+        <p><b>ID Reserva:</b> {{ qr.id_reserva }}</p>
+      </div>
 
-        <div class="ticket-info">
-            <p><b>ID Reserva:</b> {{ qr.id_reserva }}</p>
-        </div>
-
-        <div class="qr-section">
-            <h3>Codigo QR</h3>
-            <img
-                src="data:image/png;base64,{{ qr.qrData }}"
-                alt="QR de la reserva"
-                class="qr-image"
-            >
-            <p class="qr-text">
-                Escaneá este código para verificar la reserva
-            </p>
-        </div>
-
+      <div class="qr-section">
+        <h3>Codigo QR</h3>
+        <img src="data:image/png;base64,{{ qr.qrData }}" alt="QR de la reserva" class="qr-image" />
+        <p class="qr-text">Escaneá este código para verificar la reserva</p>
+      </div>
     </div>
-
-</div>
-
+  </div>
 {% endblock %}

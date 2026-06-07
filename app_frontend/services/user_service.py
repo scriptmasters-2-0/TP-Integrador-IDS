@@ -9,8 +9,7 @@ TIMEOUT = 5
 
 
 def obtener_usuarios(params=None):
-    """
-    GET /users
+    """GET /users
     params: diccionario opcional para parámetros de consulta
     Devuelve una lista en caso de éxito, [] en caso de fallo.
     """
@@ -26,8 +25,7 @@ def obtener_usuarios(params=None):
 
 
 def crear_usuario(user_data):
-    """
-    POST /users
+    """POST /users
     user_data: dict
     Devuelve el JSON parseado en caso de éxito, {} en caso de fallo.
     """
@@ -43,8 +41,7 @@ def crear_usuario(user_data):
 
 
 def obtener_usuario(user_id):
-    """
-    GET /users/{id}
+    """GET /users/{id}
     Devuelve el JSON del usuario en caso de éxito, {} en caso de fallo.
     """
     url = f"{BACKEND_URL}/users/{user_id}"
@@ -59,8 +56,7 @@ def obtener_usuario(user_id):
 
 
 def actualizar_usuario(user_id, user_data):
-    """
-    PUT /users/{id}
+    """PUT /users/{id}
     Devuelve el JSON actualizado en caso de éxito, {} en caso de fallo.
     """
     url = f"{BACKEND_URL}/users/{user_id}"
@@ -75,8 +71,7 @@ def actualizar_usuario(user_id, user_data):
 
 
 def eliminar_usuario(user_id):
-    """
-    DELETE /users/{id}
+    """DELETE /users/{id}
     Devuelve True en caso de éxito, {} en caso de fallo.
     """
     url = f"{BACKEND_URL}/users/{user_id}"
@@ -91,8 +86,7 @@ def eliminar_usuario(user_id):
 
 
 def establecer_estado_usuario(user_id, status_data):
-    """
-    PATCH /users/{id}/status
+    """PATCH /users/{id}/status
     status_data: dict (ej., {"active": True})
     Devuelve True en caso de éxito, {} en caso de fallo.
     """
@@ -108,8 +102,7 @@ def establecer_estado_usuario(user_id, status_data):
 
 
 def obtener_prestamos_usuario(user_id, params=None):
-    """
-    GET /users/{id}/loans
+    """GET /users/{id}/loans
     Devuelve una lista de préstamos del usuario en caso de éxito, [] en caso de fallo.
     """
     url = f"{BACKEND_URL}/users/{user_id}/loans"
@@ -124,8 +117,7 @@ def obtener_prestamos_usuario(user_id, params=None):
 
 
 def obtener_penalizaciones_usuario(user_id, params=None):
-    """
-    GET /users/{id}/penalties
+    """GET /users/{id}/penalties
     Devuelve una lista de penalizaciones del usuario en caso de éxito, [] en caso de fallo.
     """
     url = f"{BACKEND_URL}/users/{user_id}/penalties"

@@ -3,55 +3,38 @@
 {% block user_name %}Profesor{% endblock %}
 
 {% block dashboard_content %}
+  <div class="history-container">
+    <div class="history-header">
+      <h2>Mi historial de préstamos</h2>
+    </div>
 
-<div class="history-container">
-
-  <div class="history-header">
-    <h2>Mi historial de préstamos</h2>
-  </div>
-
-  <div class="history-table-wrapper">
-
-    <table class="history-table">
-
-      <thead>
-        <tr>
-          <th>Artículo</th>
-          <th>Estado</th>
-          <th>Fecha</th>
-        </tr>
-      </thead>
-
-      <tbody>
-
-        {% if prestamos %}
-
-          {% for p in prestamos %}
-
+    <div class="history-table-wrapper">
+      <table class="history-table">
+        <thead>
           <tr>
-            <td>{{ p.nombre_art }}</td>
-            <td>{{ p.estado }}</td>
-            <td>{{ p.fecha }}</td>
+            <th>Artículo</th>
+            <th>Estado</th>
+            <th>Fecha</th>
           </tr>
+        </thead>
 
-          {% endfor %}
+        <tbody>
+          {% if prestamos %}
 
-        {% else %}
-
-          <tr>
-            <td colspan="3" style="text-align:center;">
-              No hay préstamos registrados
-            </td>
-          </tr>
-
-        {% endif %}
-
-      </tbody>
-
-    </table>
-
+            {% for p in prestamos %}
+              <tr>
+                <td>{{ p.nombre_art }}</td>
+                <td>{{ p.estado }}</td>
+                <td>{{ p.fecha }}</td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="3" style="text-align:center;">No hay préstamos registrados</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
   </div>
-
-</div>
-
 {% endblock %}
