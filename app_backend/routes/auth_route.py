@@ -388,7 +388,7 @@ def logup():
         cursor = conn.cursor()
         sql = """
             INSERT INTO usuario (nombre, email, puntaje, rol, carrera, contrasenia_hash)
-            VALUES (%(nombre)s, %(email),s, %(puntaje)s, %(rol)s, %(carrera)s, %(contrasenia_hash)s)
+            VALUES (%(nombre)s, %(email)s, %(puntaje)s, %(rol)s, %(carrera)s, %(contrasenia_hash)s)
         """
         values = {
             "nombre": data.get("nombre"),

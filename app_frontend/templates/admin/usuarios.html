@@ -48,7 +48,7 @@
           {% if usuarios %}
             {% for usuario in usuarios %}
               <tr>
-                <td>{{ usuario.usuarioname if usuario.usuarioname is defined else usuario.nombre }}</td>
+                <td>{{ usuario.nombre if usuario.nombre is defined else usuario.nombre }}</td>
                 <td>{{ usuario.email if usuario.email is defined else usuario.mail }}</td>
                 <td>{{ usuario.rol if usuario.rol is defined else usuario.rol }}</td>
                 <td><span class="badge badge-exito">Activo</span></td>

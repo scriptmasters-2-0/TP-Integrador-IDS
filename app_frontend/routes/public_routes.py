@@ -33,13 +33,13 @@ def logup():
 @public_bp.route("/logup", methods=["POST"])
 def logup_submit():
     """Procesa logup contra backend."""
-    usuarioname = (request.form.get("email") or "").strip()
+    nombre = (request.form.get("nombre") or "").strip()
     email = (request.form.get("email") or "").strip()
     carrera = request.form.get("carrera") or ""
     contrasenia = request.form.get("contrasenia") or ""
 
     respuesta = auth_servicio.crear_usuario(
-        {"nombre": usuarioname, "email": eemail, "carrera": carrera, "contrasenia": contrasenia},
+        {"nombre": nombre, "email": email, "carrera": carrera, "contrasenia": contrasenia},
     )
 
     if not respuesta:
@@ -76,7 +76,7 @@ def login_submit():
     contrasenia = request.form.get("contrasenia") or ""
 
     payload, error, status_code = post_json(
-        "/auth/login", {"email": eemail, "contrasenia": contrasenia}
+        "/auth/login", {"email": email, "contrasenia": contrasenia}
     )
 
     if error:
@@ -152,7 +152,7 @@ def mostrar_faq():
 @public_bp.route("/articulos/<int:articulo_id>")
 def get_article_details(articulo_id):
     """Muestra el detalle público de un artículo."""
-    articulo, fetch_error = get_json(f"/api/articulos/{articulo_id}")
+    articulo, fetch_error = get_json(f"/articulos/{articulo_id}")
 
     return render_template(
         "public/article_details.html", articulo=articulo, fetch_error=fetch_error

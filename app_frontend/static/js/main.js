@@ -141,10 +141,10 @@ document.addEventListener("DOMContentLoaded", () => {
       greeting = "Buenas tardes";
     }
 
-    const usuarioNameElement = document.getElementById("dashboard-usuario-name");
-    const usuarioName = usuarioNameElement ? usuarioNameElement.textContent.trim() : "Usuario";
+    const userNameElement = document.getElementById("dashboard-usuario-name");
+    const userName = userNameElement ? userNameElement.textContent.trim() : "Usuario";
 
-    greetingElement.textContent = `${greeting}, ${usuarioName}`;
+    greetingElement.textContent = `${greeting}, ${userName}`;
 
     const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
     // Primera letra mayúscula para el día
