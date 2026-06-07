@@ -12,6 +12,7 @@ normativas_bp = Blueprint("normativas", __name__, url_prefix="/api/normativas")
 
 @normativas_bp.route("/", methods=["GET"])
 def listar_normativas():
+    """Descripción: función listar_normativas."""
     conn = obtener_conexion()
     cursor = conn.cursor(dictionary=True)
 
@@ -26,6 +27,7 @@ def listar_normativas():
 
 @normativas_bp.route("/", methods=["POST"])
 def crear_normativa():
+    """Descripción: función crear_normativa."""
     data = request.get_json()
     titulo = data.get("titulo")
     descripcion = data.get("descripcion")
@@ -53,6 +55,7 @@ def crear_normativa():
 
 @normativas_bp.route("/<int:id>", methods=["PUT"])
 def editar_normativa(id):
+    """Descripción: función editar_normativa."""
     data = request.get_json()
     titulo = data.get("titulo")
     descripcion = data.get("descripcion")
@@ -76,6 +79,7 @@ def editar_normativa(id):
 
 @normativas_bp.route("/<int:id>", methods=["DELETE"])
 def eliminar_normativa(id):
+    """Descripción: función eliminar_normativa."""
     conn = obtener_conexion()
     cursor = conn.cursor()
 

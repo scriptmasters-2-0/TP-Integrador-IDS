@@ -66,7 +66,11 @@ def init_database():
         with open(sql_file, "r", encoding="utf-8") as f:
             script = f.read()
 
-        cursor.execute(script)
+        # Ejecutar múltiples sentencias separadas por ';' de forma segura
+        statements = [s.strip() for s in script.split(';') if s.strip()]
+        for stmt in statements:
+            cursor.execute(stmt)
+        conn.commit()
 
         print("Database initialization script executed successfully.")
 

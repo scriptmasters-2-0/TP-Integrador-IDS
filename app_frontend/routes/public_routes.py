@@ -119,6 +119,7 @@ def registro():
 
 @public_bp.route("/normas", methods=["GET"])
 def normas():
+    """Descripción: función normas."""
     normativas = normativas_servicio.obtener_normativas()
     return render_template("public/normas.html", normativas=normativas)
 
@@ -146,6 +147,7 @@ def mostrar_catalogo():
 
 @public_bp.route("/faq", methods=["GET"])
 def mostrar_faq():
+    """Descripción: función mostrar_faq."""
     return render_template("public/faq.html")
 
 

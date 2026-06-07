@@ -1,21 +1,21 @@
 {% extends "layouts/base_dashboard.html" %} {% block usuario_name %}Profesor{% endblock %}
 {% block sidebar_links %}
   <li>
-    <a href="/profesor/perfil"><i class="fa-solid fa-usuario"></i> Perfil</a>
+    <a href="{{ url_for('profesor.perfil') }}"><i class="fa-solid fa-usuario"></i> Perfil</a>
   </li>
   <li>
-    <a href="/profesor/mis-reservas"><i class="fa-solid fa-list-check"></i> Mis reservas</a>
+    <a href="{{ url_for('profesor.mis_reservas') }}"><i class="fa-solid fa-list-check"></i> Mis reservas</a>
   </li>
   <li>
-    <a href="/profesor/nueva" class="active"><i class="fa-solid fa-plus"></i> Nueva reserva</a>
+    <a href="{{ url_for('profesor.nueva_reserva') }}" class="active"><i class="fa-solid fa-plus"></i> Nueva reserva</a>
   </li>
   <li>
-    <a href="/profesor/historial"><i class="fa-solid fa-clock-rotate-left"></i> Historial</a>
+    <a href="{{ url_for('profesor.historial_reserva') }}"><i class="fa-solid fa-clock-rotate-left"></i> Historial</a>
   </li>
 {% endblock %}
 {% block dashboard_content %}
   <div class="breadcrumb reveal">
-    <a href="/profesor/perfil">Profesor</a> <i class="fa-solid fa-chevron-right"></i>
+    <a href="{{ url_for('profesor.perfil') }}">Profesor</a> <i class="fa-solid fa-chevron-right"></i>
     <span>Nueva reserva</span>
   </div>
 
@@ -30,7 +30,7 @@
       data-validate="alumno-reserva"
       class="admin-form"
       method="post"
-      action="/profesor/guardar">
+      action="{{ url_for('profesor.guardar_reserva') }}">
       <div class="data-grid">
         <div class="data-group">
           <label for="articulo">Articulo</label>
@@ -61,7 +61,7 @@
       <div style="margin-top: 20px; display: flex; gap: 12px">
         <button type="submit" class="register-btn-nav">Confirmar reserva</button>
         <a
-          href="/profesor/historial"
+          href="{{ url_for('profesor.historial_reserva') }}"
           class="login-btn"
           style="text-decoration: none; display: inline-flex; align-articulos: center"
           >Cancelar</a

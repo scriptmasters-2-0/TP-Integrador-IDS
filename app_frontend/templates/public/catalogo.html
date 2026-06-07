@@ -83,7 +83,7 @@
 
             <div class="card-action">
               {% if articulo.stock > 0 and not articulo.necesita_reparacion %}
-                <button class="btn-reserva" onclick="window.location.href='/'">
+                <button class="btn-reserva" onclick="window.location.href='{{ url_for('public.login') }}'">
                   SOLICITAR RESERVA
                 </button>
               {% else %}

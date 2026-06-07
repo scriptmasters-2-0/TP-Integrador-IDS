@@ -2,10 +2,10 @@
 
 {% block sidebar_links %}
   <li>
-    <a href="/admin/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+    <a href="{{ url_for('admin.dashboard') }}"><i class="fa-solid fa-gauge"></i> Dashboard</a>
   </li>
   <li>
-    <a href="/admin/articulos"><i class="fa-solid fa-box"></i> Artículos</a>
+    <a href="{{ url_for('admin.listar_articulos') }}"><i class="fa-solid fa-box"></i> Artículos</a>
   </li>
   <li>
     <a href="{{ url_for('admin.lista_reservas') }}"
@@ -13,10 +13,10 @@
     >
   </li>
   <li>
-    <a href="/admin/usuarios"><i class="fa-solid fa-usuarios"></i> Usuarios</a>
+    <a href="{{ url_for('admin.usuarios') }}"><i class="fa-solid fa-usuarios"></i> Usuarios</a>
   </li>
   <li>
-    <a href="/admin/penalizaciones" class="active"
+    <a href="{{ url_for('admin.listar_penalizaciones') }}" class="active"
       ><i class="fa-solid fa-triangle-exclamation"></i> Penalizaciones</a
     >
   </li>
@@ -24,7 +24,7 @@
 
 {% block dashboard_content %}
   <div class="breadcrumb reveal">
-    <a href="/admin/dashboard">Admin</a> <i class="fa-solid fa-chevron-right"></i>
+    <a href="{{ url_for('admin.dashboard') }}">Admin</a> <i class="fa-solid fa-chevron-right"></i>
     <span>Penalizaciones</span>
   </div>
 

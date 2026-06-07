@@ -116,4 +116,4 @@ def comprobante(id):
     """Muestra el comprobante de reserva."""
     qr, error = obtener_qr_reserva(id)
 
-    return render_template("/profesor/comprobante.html", qr=qr)
+    return render_template("profesor/comprobante.html", qr=qr)

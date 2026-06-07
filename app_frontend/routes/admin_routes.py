@@ -159,6 +159,7 @@ def normativas():
 
 @admin_bp.route("/normativas/eliminar", methods=["POST"])
 def eliminar_norm():
+    """Descripción: función eliminar_norm."""
     id_norm = request.form.get("id")
     eliminar_normativa(id_norm)
     return redirect("/admin/normativas")

@@ -1,66 +1,35 @@
-import requests
-from requests.exceptions import RequestException
-
-from config import BACKEND_URL
+from servicios.api_client import get_json, post_json, put_json, delete_json
 
 TIMEOUT = 5
 
 
 def obtener_normativas():
-    try:
-        resp = requests.get(f"{BACKEND_URL}/normativas/", timeout=TIMEOUT)
-
-        resp.raise_for_status()
-        return resp.json()
-
-    except RequestException:
+    """Obtiene la lista de normativas desde el backend. Devuelve [] en caso de error."""
+    payload, error = get_json("/normativas")
+    if error:
         return []
-
-    except Exception:
-        return []
+    return payload or []
 
 
 def crear_normativa(data):
-    try:
-        resp = requests.post(f"{BACKEND_URL}/normativas/", json=data, timeout=TIMEOUT)
-
-        resp.raise_for_status()
-        return resp.json()
-
-    except RequestException:
+    """Crea una nueva normativa en el backend. Devuelve el objeto creado o {} en caso de fallo."""
+    payload, error, status = post_json("/normativas", data)
+    if error:
         return {}
-
-    except Exception:
-        return {}
+    return payload or {}
 
 
 def actualizar_normativa(id_normativa, data):
-    try:
-        resp = requests.put(
-            f"{BACKEND_URL}/normativas/{id_normativa}", json=data, timeout=TIMEOUT
-        )
-
-        resp.raise_for_status()
-        return resp.json()
-
-    except RequestException:
+    """Actualiza una normativa existente. Devuelve el objeto actualizado o {} en caso de fallo."""
+    payload, error, status = put_json(f"/normativas/{id_normativa}", data)
+    if error:
         return {}
-
-    except Exception:
-        return {}
+    return payload or {}
 
 
 def eliminar_normativa(id_normativa):
-    try:
-        resp = requests.delete(
-            f"{BACKEND_URL}/normativas/{id_normativa}", timeout=TIMEOUT
-        )
-
-        resp.raise_for_status()
-        return True
-
-    except RequestException:
+    """Elimina una normativa y devuelve True en caso de éxito."""
+    payload, error, status = delete_json(f"/normativas/{id_normativa}")
+    if error:
         return False
-
-    except Exception:
-        return False
+    return True
