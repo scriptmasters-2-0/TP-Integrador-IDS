@@ -13,7 +13,7 @@ from dotenv import find_dotenv, load_dotenv
 env_path = find_dotenv()
 if env_path:
     if not load_dotenv(env_path):
-        print("No env variables loaded, using defaults", env_path)
+        print("Archivo .env no encontrado, usando valores por defecto", env_path)
 
 DEBUG = os.environ.get("FLASK_DEBUG", "1") == "1"
 

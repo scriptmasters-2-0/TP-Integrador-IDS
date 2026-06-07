@@ -14,18 +14,13 @@ dependencies = [
 ]
 
 [tool.ruff]
-# Set the maximum line length to 88 (standard Black format)
-line-length = 88
+line-length = 120
 
 [tool.ruff.lint]
-# Enable Pyflakes (F), pycodestyle (E, W), isort (I), and Pylint (PL)
 select = ["F", "E", "W", "I", "PL", "D"]
 
-# Ignore specific rules if they get too noisy (e.g., missing docstrings)
-ignore = ["D203", "D213"]
+ignore = ["D203", "D213", "D205", "PLR0911", "PLR0912"]
 
 [tool.ruff.format]
-# Use single quotes for non-docstrings if you prefer, otherwise defaults to double
 quote-style = "double"
-# Indent with spaces
 indent-style = "space"

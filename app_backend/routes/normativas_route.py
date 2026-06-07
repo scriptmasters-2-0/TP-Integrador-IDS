@@ -1,14 +1,14 @@
-from flask import Blueprint, request, jsonify
-import mysql.connector
-from http_codes_and_messages import (
-    HTTP_OK,
-    HTTP_CREATED,
-    HTTP_BAD_REQUEST,
-)
+from flask import Blueprint, jsonify, request
 
 from database import obtener_conexion
+from http_codes_and_messages import (
+    HTTP_BAD_REQUEST,
+    HTTP_CREATED,
+    HTTP_OK,
+)
 
 normativas_bp = Blueprint("normativas", __name__, url_prefix="/api/normativas")
+
 
 @normativas_bp.route("/", methods=["GET"])
 def listar_normativas():
@@ -23,6 +23,7 @@ def listar_normativas():
 
     return jsonify(data), HTTP_OK
 
+
 @normativas_bp.route("/", methods=["POST"])
 def crear_normativa():
     data = request.get_json()
@@ -31,14 +32,17 @@ def crear_normativa():
 
     if not titulo or not descripcion:
         return jsonify({"error": "faltan datos"}), HTTP_BAD_REQUEST
-    
+
     conn = obtener_conexion()
     cursor = conn.cursor()
 
-    cursor.execute("""
+    cursor.execute(
+        """
         INSERT INTO normativa (titulo, descripcion, fecha)
         VALUES (%s, %s, NOW())
-    """, (titulo, descripcion))
+    """,
+        (titulo, descripcion),
+    )
 
     conn.commit()
     cursor.close()
@@ -56,9 +60,12 @@ def editar_normativa(id):
     conn = obtener_conexion()
     cursor = conn.cursor()
 
-    cursor.execute("""
+    cursor.execute(
+        """
         UPDATE normativa SET titulo = %s, descripcion = %s WHERE id = %s
-    """, (titulo, descripcion, id))
+    """,
+        (titulo, descripcion, id),
+    )
 
     conn.commit()
     cursor.close()
