@@ -4,6 +4,7 @@ from flask import Blueprint, redirect, render_template, request, session, url_fo
 
 from http_codes_and_messages import HTTP_UNAUTHORIZED
 from services.api_client import get_json, post_json
+from services.items_service import obtener_items
 
 public_bp = Blueprint("public", __name__)
 
@@ -89,17 +90,13 @@ def mostrar_catalogo():
     if seccion_actual:
         filtros["seccion"] = seccion_actual
 
-    articulos = []
-    articulos_payload, fetch_error = get_json("/api/items", params=filtros)
-    if isinstance(articulos_payload, list):
-        articulos = articulos_payload
-
+    articulos = obtener_items(filtros)
+    
     return render_template(
         "public/catalogo.html",
         articulos=articulos,
         tipo_actual=tipo_actual,
         seccion_actual=seccion_actual,
-        fetch_error=fetch_error,
     )
 
 

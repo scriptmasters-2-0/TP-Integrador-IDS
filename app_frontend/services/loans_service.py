@@ -2,6 +2,7 @@
 # Funciones de servicio para consumir endpoints /loans
 import requests
 from requests.exceptions import RequestException
+from services.api_client import get_json
 
 BASE_URL = "http://localhost:5000/api"
 TIMEOUT = 5
@@ -70,3 +71,7 @@ def establecer_estado_prestamo(loan_id, status_data):
         return {}
     except Exception:
         return {}
+
+def obtener_qr_reserva(id_reserva):
+    url = f"/qr/loans/{id_reserva}"
+    return get_json(url)

@@ -6,7 +6,7 @@ import requests
 
 from services.api_client import get_json, post_json
 from services.user_service import obtener_prestamos_usuario
-from services.qr_service import obtener_qr_reserva
+from services.loans_service import obtener_qr_reserva
 
 profesor_bp = Blueprint("profesor", __name__, url_prefix="/profesor")
 
@@ -107,5 +107,6 @@ def historial_reserva():
 def comprobante(id):
     """Muestra el comprobante de reserva"""
 
-    qr = obtener_qr_reserva(id)
-    return render_template("/comproante.html", qr=qr)
+    qr, error = obtener_qr_reserva(id)
+    
+    return render_template("/profesor/comprobante.html", qr=qr)
