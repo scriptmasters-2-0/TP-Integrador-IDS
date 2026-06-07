@@ -1,126 +1,131 @@
-{% extends "layouts/base_dashboard.html" %} {% block user_name %}Administrador{% endblock %} {% block sidebar_links %}
-<li>
-  <a href="/admin/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a>
-</li>
-<li>
-  <a href="/admin/articulos" class="active"><i class="fa-solid fa-box"></i> Artículos</a>
-</li>
-<li>
-  <a href="/admin/prestamos/id"><i class="fa-solid fa-clipboard-list"></i> Préstamos</a>
-</li>
-<li>
-  <a href="/admin/usuarios"><i class="fa-solid fa-users"></i> Usuarios</a>
-</li>
-<li>
-  <a href="/admin/reportes/morosidad"><i class="fa-solid fa-chart-column"></i> Morosidad</a>
-</li>
-{% endblock %} {% block dashboard_content %}
-<div class="breadcrumb reveal">
-  <a href="/admin/dashboard">Admin</a> <i class="fa-solid fa-chevron-right"></i> <a href="/admin/articulos">Artículos</a> <i class="fa-solid fa-chevron-right"></i> <span>{{ "Editar" if articulo else "Nuevo" }}</span>
-</div>
-
-<div class="history-container">
-  <div class="history-header">
-    <h1>{{ "Editar Artículo" if articulo else "Nuevo Artículo" }}</h1>
-    <p>Complete los datos requeridos para gestionar el inventario.</p>
-    {% if form_error %}
-    <p style="color: #c0392b; font-weight: 700; margin-top: 8px;">{{ form_error }}</p>
-    {% endif %}
-    {% if form_success %}
-    <p style="color: #2e7d32; font-weight: 700; margin-top: 8px;">{{ form_success }}</p>
-    {% endif %}
+{% extends "layouts/base_dashboard.html" %} {% block user_name %}Administrador{% endblock %}
+{% block sidebar_links %}
+  <li>
+    <a href="{{ url_for('admin.dashboard') }}" class="active"
+      ><i class="fa-solid fa-gauge"></i> Mis reservas</a
+    >
+  </li>
+  <li>
+    <a href="{{ url_for('admin.reportes') }}"
+      ><i class="fa-solid fa-clipboard-list"></i> Reportes</a
+    >
+  </li>
+  <li>
+    <a href="{{ url_for('admin.listar_articulos') }}"><i class="fa-solid fa-box"></i> Articulos</a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.crear_articulo') }}"
+      ><i class="fa-solid fa-plus"></i> Nuevo Articulo</a
+    >
+  </li>
+  <li>
+    <a href="{{ url_for('admin.normativas') }}"
+      ><i class="fa-solid fa-clipboard-list"></i> Normativas</a
+    >
+  </li>
+  <li>
+    <a href="{{ url_for('admin.usuarios') }}"><i class="fa-solid fa-users"></i> Usuarios</a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.reporte_morosidad') }}"
+      ><i class="fa-solid fa-chart-column"></i> Morosidad</a
+    >
+  </li>
+{% endblock %}
+{% block dashboard_content %}
+  <div class="breadcrumb reveal">
+    <a href="/admin/dashboard">Admin</a> <i class="fa-solid fa-chevron-right"></i>
+    <a href="/admin/articulos">Artículos</a> <i class="fa-solid fa-chevron-right"></i>
+    <span>{{ "Editar" if articulo else "Nuevo" }}</span>
   </div>
 
-  <form
-    action="/admin/articulos/guardar"
-    method="POST"
-    class="admin-form"
-    style="
+  <div class="history-container">
+    <div class="history-header">
+      <h1>{{ "Editar Artículo" if articulo else "Nuevo Artículo" }}</h1>
+      <p>Complete los datos requeridos para gestionar el inventario.</p>
+      {% if form_error %}
+        <p style="color: #c0392b; font-weight: 700; margin-top: 8px;">{{ form_error }}</p>
+      {% endif %}
+      {% if form_success %}
+        <p style="color: #2e7d32; font-weight: 700; margin-top: 8px;">{{ form_success }}</p>
+      {% endif %}
+    </div>
+
+    <form
+      action="/admin/articulos/guardar"
+      method="POST"
+      class="admin-form"
+      style="
       max-width: 800px;
       background: #fff;
       padding: 30px;
       border-radius: 8px;
       border: 1px solid var(--border-color);
-    "
-  >
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px">
-      <div class="data-group">
-        <label for="nombre">Nombre del Artículo</label>
-        <input
-          type="text"
-          id="nombre"
-          name="nombre"
+    ">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px">
+        <div class="data-group">
+          <label for="nombre">Nombre del Artículo</label>
+          <input
+            type="text"
+            id="nombre"
+            name="nombre"
+            class="admin-input"
+            required
+            placeholder="Ej: Osciloscopio Rigol" />
+        </div>
+        <div class="data-group">
+          <label for="tipo">Tipo</label>
+          <select id="tipo" name="tipo" class="admin-select" required>
+            <option value="">Seleccione un tipo</option>
+            <option value="electronica">Electrónica</option>
+            <option value="libros">Libros</option>
+            <option value="herramientas">Herramientas</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="data-group" style="margin-top: 20px">
+        <label for="descripcion">Descripción</label>
+        <textarea
+          id="descripcion"
+          name="descripcion"
           class="admin-input"
-          required
-          placeholder="Ej: Osciloscopio Rigol"
-        />
+          rows="4"
+          placeholder="Detalles técnicos o estado del equipo..."></textarea>
       </div>
-      <div class="data-group">
-        <label for="tipo">Tipo</label>
-        <select id="tipo" name="tipo" class="admin-select" required>
-          <option value="">Seleccione un tipo</option>
-          <option value="electronica">Electrónica</option>
-          <option value="libros">Libros</option>
-          <option value="herramientas">Herramientas</option>
-        </select>
-      </div>
-    </div>
 
-    <div class="data-group" style="margin-top: 20px">
-      <label for="descripcion">Descripción</label>
-      <textarea
-        id="descripcion"
-        name="descripcion"
-        class="admin-input"
-        rows="4"
-        placeholder="Detalles técnicos o estado del equipo..."
-      ></textarea>
-    </div>
-
-    <div
-      style="
+      <div
+        style="
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 20px;
         margin-top: 20px;
-      "
-    >
-      <div class="data-group">
-        <label for="stock">Stock Inicial</label>
-        <input
-          type="number"
-          id="stock"
-          name="stock"
-          class="admin-input"
-          value="1"
-          min="0"
-        />
+      ">
+        <div class="data-group">
+          <label for="stock">Stock Inicial</label>
+          <input type="number" id="stock" name="stock" class="admin-input" value="1" min="0" />
+        </div>
+        <div class="data-group">
+          <label for="seccion">Sección/Ubicación</label>
+          <input
+            type="text"
+            id="seccion"
+            name="seccion"
+            class="admin-input"
+            placeholder="Ej: Laboratorio 4" />
+        </div>
       </div>
-      <div class="data-group">
-        <label for="seccion">Sección/Ubicación</label>
-        <input
-          type="text"
-          id="seccion"
-          name="seccion"
-          class="admin-input"
-          placeholder="Ej: Laboratorio 4"
-        />
-      </div>
-    </div>
 
-    <div
-      style="
+      <div
+        style="
         margin-top: 30px;
         display: flex;
         justify-content: flex-end;
         gap: 10px;
-      "
-    >
-      <button type="button" class="btn-secondary" onclick="history.back()">
-        Cancelar
-      </button>
-      <button type="submit" class="register-btn-nav">Guardar Artículo</button>
-    </div>
-  </form>
-</div>
+      ">
+        <button type="button" class="btn-secondary" onclick="history.back()">Cancelar</button>
+        <button type="submit" class="register-btn-nav">Guardar Artículo</button>
+      </div>
+    </form>
+  </div>
 {% endblock %}

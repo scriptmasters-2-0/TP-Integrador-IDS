@@ -3,41 +3,51 @@
 {% block user_name %}Administrador{% endblock %}
 
 {% block sidebar_links %}
-<li>
-  <a href="/admin/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a>
-</li>
-<li>
-  <a href="/admin/articulos"><i class="fa-solid fa-box"></i> Artículos</a>
-</li>
-<li>
-  <a href="/admin/usuarios"><i class="fa-solid fa-users"></i> Usuarios</a>
-</li>
-<li>
-  <a href="/admin/reportes"><i class="fa-solid fa-chart-column"></i> Reportes</a>
-</li>
-<li>
-  <a href="/admin/normativas" class="active">
-    <i class="fa-solid fa-book"></i> Normativas
-  </a>
-</li>
+  <li>
+    <a href="{{ url_for('admin.dashboard') }}" class="active"
+      ><i class="fa-solid fa-gauge"></i> Mis reservas</a
+    >
+  </li>
+  <li>
+    <a href="{{ url_for('admin.reportes') }}"
+      ><i class="fa-solid fa-clipboard-list"></i> Reportes</a
+    >
+  </li>
+  <li>
+    <a href="{{ url_for('admin.listar_articulos') }}"><i class="fa-solid fa-box"></i> Articulos</a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.crear_articulo') }}"
+      ><i class="fa-solid fa-plus"></i> Nuevo Articulo</a
+    >
+  </li>
+  <li>
+    <a href="{{ url_for('admin.normativas') }}"
+      ><i class="fa-solid fa-clipboard-list"></i> Normativas</a
+    >
+  </li>
+  <li>
+    <a href="{{ url_for('admin.usuarios') }}"><i class="fa-solid fa-users"></i> Usuarios</a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.reporte_morosidad') }}"
+      ><i class="fa-solid fa-chart-column"></i> Morosidad</a
+    >
+  </li>
 {% endblock %}
 
 {% block dashboard_content %}
-
-<div class="breadcrumb">
-  <a href="/admin/dashboard">Admin</a>
-  <i class="fa-solid fa-chevron-right"></i>
-  <span>Normativas</span>
-</div>
-
-<div class="history-container">
-
-  <div class="history-header">
-    <h2>Gestión de Normativas</h2>
-    <p>Crear, editar y eliminar normativas del sistema</p>
+  <div class="breadcrumb reveal">
+    <a href="/admin/dashboard">Admin</a>
+    <i class="fa-solid fa-chevron-right"></i>
+    <span>Normativas</span>
   </div>
 
-  <form method="POST" class="normativa-form">
+  <div class="history-container">
+    <div class="history-header">
+      <h2>Gestión de normativas</h2>
+      <p>Administra las normativas del sistema.</p>
+    </div>
 
     <input type="hidden" name="id"
       value="{{ normativa_editar.id if normativa_editar else '' }}">
@@ -73,43 +83,40 @@
           <th>Fecha</th>
           <th>Acciones</th>
         </tr>
-      </thead>
+          </tr>
+        </thead>
 
-      <tbody>
+        <tbody>
+          {% if normativas %}
 
-        {% for normativa in normativas %}
+            {% for normativa in normativas %}
+              <tr>
+                <td>{{ normativa.titulo }}</td>
 
-        <tr>
-          <td>{{ normativa.titulo }}</td>
-          <td>{{ normativa.descripcion }}</td>
-          <td>{{ normativa.fecha }}</td>
+                <td>{{ normativa.descripcion }}</td>
 
-          <td>
-            <a href="/admin/normativas?editar={{ normativa.id }}" class="btn-edit">
-                Editar
-            </a>
-            
-            <from method="POST" action="/admin/normativas/eliminar" style="display:inline;">
+                <td>{{ normativa.fecha }}</td>
 
-              <input type="hidden" name="id" value="{{ normativa.id }}">
-              <button type="submit" class="btn-delete">
-                Eliminar
-              </button>
+                <td>
+                  <a href="/admin/normativas?editar={{ normativa.id }}" class="btn-edit">
+                    Editar
+                  </a>
 
-            </form>
-
-          </td>
-
-        </tr>
-
-        {% endfor %}
-
-      </tbody>
-
-    </table>
+                  <a href="/admin/normativas/{{ normativa.id }}/eliminar" class="btn-delete">
+                    Eliminar
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="4" style="text-align:center;">No hay normativas cargadas.</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
 
   </div>
-
-</div>
-
 {% endblock %}
+

@@ -1,79 +1,8 @@
-{% extends "layouts/base.html" %} {% block content %}
-<main
-  class="auth-container"
-  style="display: flex; justify-content: center; padding: 40px 20px"
->
-  <div
-    class="auth-card"
-    style="
-      width: 100%;
-      max-width: 450px;
-      background: white;
-      padding: 40px;
-      border-radius: 12px;
-      border: 1px solid var(--border-color);
-    "
-  >
-    <div class="auth-header" style="margin-bottom: 25px; text-align: center">
-      <h1>Crear cuenta</h1>
-      <p>Únete a la comunidad de Biblioteca FIUBA</p>
-    </div>
-
-    <form id="register-form" data-validate="register" action="/registro" method="POST" class="admin-form">
-      <div class="data-group">
-        <label for="nombre">Nombre completo</label>
-        <input
-          type="text"
-          id="nombre"
-          name="nombre"
-          class="admin-input"
-          required
-        />
-      </div>
-
-      <div class="data-group">
-        <label for="email">Correo electrónico</label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          class="admin-input"
-          required
-        />
-      </div>
-
-      <div class="data-group">
-        <label for="carrera">Carrera</label>
-        <select id="carrera" name="carrera" class="admin-select" required>
-          <option value="informatica">Ingeniería Informática</option>
-          <option value="industrial">Ingeniería Industrial</option>
-          <option value="electrica">Ingeniería Eléctrica</option>
-        </select>
-      </div>
-
-      <div class="data-group">
-        <label for="password">Contraseña</label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          class="admin-input"
-          required
-        />
-      </div>
-
-      <button
-        type="submit"
-        class="register-btn-nav"
-        style="width: 100%; margin-top: 20px; padding: 12px"
-      >
-        Registrarse
-      </button>
-    </form>
-
-    <p style="margin-top: 20px; text-align: center; font-size: 14px">
-      ¿Ya tienes cuenta? <a href="/login">Inicia sesión</a>
-    </p>
-  </div>
-</main>
+{% extends "layouts/base.html" %}
+{% block content %}
+  <main class="auth-container">
+    {% with isLogUp = True %}
+      {% include "componentes/auth-card.html" %}
+    {% endwith %}
+  </main>
 {% endblock %}

@@ -71,6 +71,32 @@ paths:
         '401':
           description: No autorizado.
 
+  /auth/logup:
+    post:
+      tags:
+        - Autenticación
+      summary: Crea una cuenta de usuario (registro público)
+      description: Registra un nuevo usuario con rol 'alumno', guarda el hash de contraseña y devuelve un token JWT.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogUpRequest'
+      responses:
+        '201':
+          description: Usuario creado y autenticado correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogUpResponse'
+        '400':
+          description: Datos inválidos.
+        '409':
+          description: Conflicto (entrada duplicada).
+        '500':
+          description: Error interno.
+
   # ==========================================
   # 2. Usuarios (/api/users)
   # ==========================================
@@ -820,6 +846,36 @@ components:
           example: 'Segura123*'
 
     LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        role:
+          type: string
+          enum: [alumno, docente, bibliotecario, admin]
+        user:
+          $ref: '#/components/schemas/UserPerfil'
+
+    LogUpRequest:
+      type: object
+      required:
+        - nombre
+        - mail
+        - carrera
+        - password
+      properties:
+        nombre:
+          type: string
+        mail:
+          type: string
+          format: email
+        carrera:
+          type: string
+        password:
+          type: string
+          format: password
+
+    LogUpResponse:
       type: object
       properties:
         token:
