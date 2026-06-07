@@ -1,0 +1,78 @@
+<div class="auth-card">
+  <div class="auth-header">
+    <h1>
+      {% if isLogUp %}
+      Crear cuenta
+      {% else %}
+      Iniciar sesión
+      {% endif %}
+    </h1>
+      <p>Bienvenido a la comunidad de Biblioteca FIUBA</p>
+      {% if hasError %}
+      <p class="auth-error">{{ errorMessage }}</p>
+      {% endif %}
+  </div>
+
+  {% if isLogUp %}
+  <form action="{{ url_for('public.logup_submit') }}" method="POST" class="auth-form">
+  {% else %}
+  <form action="{{ url_for('public.login_submit') }}" method="POST" class="auth-form">
+  {% endif %}
+
+      {% if isLogUp %}
+      <div class="data-group">
+        <label for="username">Nombre completo</label>
+        <input type="text" id="nombre" name="username" class="auth-input" required />
+      </div>
+      {% endif %}
+
+      <div class="data-group">
+        <label for="email">Correo electrónico</label>
+        <input type="email" id="email" name="email" class="auth-input" required />
+      </div>
+
+      {% if isLogUp %}
+      <div class="data-group">
+        <label for="carrera">Carrera</label>
+        <select id="carrera" name="carrera" class="auth-select" required>
+          <option value="arquitectura">Arquitectura</option>
+          <option value="biologia">Biologia</option>
+          <option value="derecho">Derecho</option>
+          <option value="economia">Economia</option>
+          <option value="fisica">Fisica</option>
+          <option value="ingenieria civil">Ingenieria Civil</option>
+          <option value="ingenieria electronica">Ingenieria Electronica</option>
+          <option value="ingenieria en sistemas">Ingenieria en Sistemas</option>
+          <option value="ingenieria industrial">Ingenieria Industrial</option>
+          <option value="matematica">Matematica</option>
+          <option value="medicina">Medicina</option>
+          <option value="psicologia">Psicologia</option>
+          <option value="quimica">Quimica</option>
+        </select>
+      </div>
+      {% endif %}
+
+      <div class="data-group">
+        <label for="password">Contraseña</label>
+        <input type="password" id="password" name="password" class="auth-input" required />
+      </div>
+
+      <button
+          type="submit"
+          class="auth-btn-nav">
+          {% if isLogUp %}
+          Registrarse
+          {% else %}
+          Iniciar sesión
+          {% endif %}
+      </button>
+    </form>
+
+    <p class="auth-alt-option">
+    {% if isLogUp %}
+    ¿Ya tienes cuenta? <a href="{{ url_for('public.login') }}">Inicia sesión</a>
+    {% else %}
+    ¿No tienes cuenta? <a href="{{ url_for('public.logup') }}">Registrate</a>
+    {% endif %}
+    </p>
+</div>

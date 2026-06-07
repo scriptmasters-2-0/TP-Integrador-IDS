@@ -2,14 +2,15 @@
 
 from flask import Blueprint, redirect, render_template, request, session, url_for
 
-from services.api_client import get_json, post_json, obtener_detalle_prestamo
-from services.reports_service import obtener_reportes
+from services import items_service
+from services.api_client import get_json, obtener_detalle_prestamo, post_json
 from services.normativas_service import (
-    obtener_normativas,
-    crear_normativa,
     actualizar_normativa,
+    crear_normativa,
     eliminar_normativa,
+    obtener_normativas,
 )
+from services.reports_service import obtener_reportes
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -26,7 +27,9 @@ def prestamo_detalle(id):
             "id": datos_api.get("id", id),
             "estado_general": datos_api.get("estado_reserva", "pendiente"),
             "estado_texto": datos_api.get("estado_reserva", "Pendiente"),
-            "estado_clase": "status-pending" if datos_api.get("estado_reserva") == "pendiente" else "status-active",
+            "estado_clase": "status-pending"
+            if datos_api.get("estado_reserva") == "pendiente"
+            else "status-active",
             "equipo_nombre": datos_api.get("nombre_art", "Material no especificado"),
             "equipo_id": datos_api.get("id_reservado", "N/A"),
             "titular_nombre": datos_api.get("nombre", "Alumno"),
@@ -56,12 +59,11 @@ def prestamo_detalle(id):
 @admin_bp.route("/articulos")
 def listar_articulos():
     """Renderiza la vista de listado de artículos para administradores."""
-    token = session.get("token")
-    articulos, error = get_json("/api/items", token=token)
+    articulos = items_service.obtener_items()
+
     return render_template(
         "admin/articulos.html",
-        articulos=articulos if isinstance(articulos, list) else [],
-        fetch_error=error,
+        articulos=articulos,
     )
 
 
@@ -94,7 +96,9 @@ def guardar_articulo():
     if error:
         return redirect(url_for("admin.crear_articulo", error=error))
 
-    return redirect(url_for("admin.crear_articulo", success="Artículo creado correctamente"))
+    return redirect(
+        url_for("admin.crear_articulo", success="Artículo creado correctamente")
+    )
 
 
 @admin_bp.route("/dashboard")
@@ -106,7 +110,6 @@ def dashboard():
 @admin_bp.route("/reportes", methods=["GET"])
 def reportes():
     """Renderiza la vista de reportes para administradores."""
-
     rol = session.get("rol")
     if rol not in ["admin", "bibliotecario"]:
         return redirect("/")
@@ -114,7 +117,7 @@ def reportes():
     rta = obtener_reportes("careers")
 
     carreras = rta.get("datos", [])
-    
+
     return render_template("admin/reportes.html", carreras=carreras)
 
 
@@ -125,14 +128,14 @@ def normativas():
         id_normativa = request.form.get("id")
         data = {
             "titulo": request.form.get("titulo"),
-            "descripcion": request.form.get("descripcion")
+            "descripcion": request.form.get("descripcion"),
         }
         if id_normativa:
             actualizar_normativa(id_normativa, data)
         else:
             crear_normativa(data)
         return render_template("admin/normativas.html")
-    
+
     normativas = obtener_normativas()
     normativa_editada = None
     id_editar = request.args.get("editar")
@@ -142,8 +145,12 @@ def normativas():
             if str(normativa["id"]) == str(id_editar):
                 normativa_editada = normativa
                 break
-            
-    return render_template("admin/normativas.html", normativas=normativas, normativa_editada=normativa_editada)
+
+    return render_template(
+        "admin/normativas.html",
+        normativas=normativas,
+        normativa_editada=normativa_editada,
+    )
 
 
 @admin_bp.route("/normativas/<int:id>/eliminar")
@@ -178,7 +185,8 @@ def reporte_morosidad():
                 {
                     "usuario": penalty.get("id_usuario") or penalty.get("userId"),
                     "articulo": penalty.get("id_reserva") or penalty.get("loanId"),
-                    "vencimiento": penalty.get("fecha_fin") or penalty.get("resolvedAt"),
+                    "vencimiento": penalty.get("fecha_fin")
+                    or penalty.get("resolvedAt"),
                     "estado": "Activa" if penalty.get("activa", True) else "Levantada",
                 }
             )

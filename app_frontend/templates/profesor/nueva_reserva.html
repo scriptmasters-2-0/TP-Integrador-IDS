@@ -10,78 +10,43 @@
 
 <div class="history-container">
   <div class="history-header">
-    <h1>Nueva Reserva</h1>
-    <p>Complete los detalles para solicitar el préstamo de un artículo.</p>
+    <h2>Nueva reserva</h2>
+    <p>Selecciona el articulo y define el horario para tu prestamo.</p>
   </div>
 
-  <form
-    id="profesor-reserva-form"
-    data-validate="profesor-reserva"
-    action="/profesor/guardar"
-    method="POST"
-    class="admin-form"
-  >
-    <div class="form-row">
+  <form id="alumno-reserva-form" data-validate="alumno-reserva" class="admin-form" method="post" action="/profesor/guardar">
+    <div class="data-grid">
       <div class="data-group">
-        <label for="articulo_id">Seleccionar Artículo</label>
-        <select
-          id="articulo_id"
-          name="articulo_id"
-          class="admin-select"
-          required
-        >
-          <option value="">-- Seleccionar --</option>
+        <label for="articulo">Articulo</label>
+        <select id="articulo" name="articulo" class="admin-select" required>
+          <option value="">Seleccionar</option>
           {% for item in items %}
           <option value="{{ item.id }}">{{ item.nombre_art }} (stock: {{ item.stock }})</option>
           {% endfor %}
         </select>
       </div>
-    </div>
 
-    <div
-      class="form-row"
-      style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px"
-    >
       <div class="data-group">
-        <label for="fecha_inicio">Fecha de inicio</label>
-        <input
-          type="date"
-          id="fecha_inicio"
-          name="fecha_inicio"
-          class="admin-input"
-          required
-        />
+        <label for="fecha">Fecha</label>
+        <input id="fecha" type="date" name="fecha" class="admin-input" required>
       </div>
+
       <div class="data-group">
-        <label for="fecha_fin">Fecha de devolución</label>
-        <input
-          type="date"
-          id="fecha_fin"
-          name="fecha_fin"
-          class="admin-input"
-          required
-        />
+        <label for="desde">Desde</label>
+        <input id="desde" type="time" name="desde" class="admin-input" required>
+      </div>
+
+      <div class="data-group">
+        <label for="hasta">Hasta</label>
+        <input id="hasta" type="time" name="hasta" class="admin-input" required>
       </div>
     </div>
 
-    <div class="data-group">
-      <label for="observaciones">Observaciones</label>
-      <textarea
-        id="observaciones"
-        name="observaciones"
-        class="admin-input"
-        rows="3"
-        placeholder="Uso académico, laboratorio, etc."
-      ></textarea>
-    </div>
-
-    <div class="form-actions" style="margin-top: 25px; text-align: right">
-      <a href="/profesor/mis-reservas" class="btn-secondary">Cancelar</a>
-      <button type="submit" class="register-btn-nav">Solicitar Reserva</button>
+    <div style="margin-top: 20px; display: flex; gap: 12px">
+      <button type="submit" class="register-btn-nav">Confirmar reserva</button>
+      <a href="/profesor/historial" class="login-btn" style="text-decoration: none; display: inline-flex; align-items: center">Cancelar</a>
     </div>
   </form>
-  {% if fetch_error %}
-  <p style="color: #c0392b; font-weight: 700; margin-top: 12px;">{{ fetch_error }}</p>
-  {% endif %}
 </div>
 {% endblock %}
+

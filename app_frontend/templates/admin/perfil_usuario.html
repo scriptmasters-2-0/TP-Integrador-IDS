@@ -3,10 +3,37 @@
 {% block user_name %}Admin{% endblock %}
 
 {% block sidebar_links %}
-    <li><a href="#" class="active"><i class="fa-solid fa-users"></i> Usuarios</a></li>
-    <li><a href="#"><i class="fa-solid fa-box-open"></i> Artículos</a></li>
-    <li><a href="#"><i class="fa-solid fa-triangle-exclamation"></i> Penalizaciones</a></li>
-    <li><a href="#"><i class="fa-solid fa-file-contract"></i> Reportes</a></li>
+  <li>
+    <a href="{{ url_for('admin.dashboard') }}" class="active"
+      ><i class="fa-solid fa-gauge"></i> Mis reservas</a
+    >
+  </li>
+  <li>
+    <a href="{{ url_for('admin.reportes') }}"
+      ><i class="fa-solid fa-clipboard-list"></i> Reportes</a
+    >
+  </li>
+  <li>
+    <a href="{{ url_for('admin.listar_articulos') }}"><i class="fa-solid fa-box"></i> Articulos</a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.crear_articulo') }}"
+      ><i class="fa-solid fa-plus"></i> Nuevo Articulo</a
+    >
+  </li>
+  <li>
+    <a href="{{ url_for('admin.normativas') }}"
+      ><i class="fa-solid fa-clipboard-list"></i> Normativas</a
+    >
+  </li>
+  <li>
+    <a href="{{ url_for('admin.usuarios') }}"><i class="fa-solid fa-users"></i> Usuarios</a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.reporte_morosidad') }}"
+      ><i class="fa-solid fa-chart-column"></i> Morosidad</a
+    >
+  </li>
 {% endblock %}
 
 {% block dashboard_content %}

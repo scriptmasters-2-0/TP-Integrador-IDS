@@ -1,7 +1,11 @@
 """Rutas del area de profesores."""
 
-from flask import Blueprint, redirect, render_template, request, session, url_for, requests
+from datetime import datetime
 
+from flask import Blueprint, redirect, render_template, request, session, url_for
+
+from config import BACKEND_URL
+from services import items_service, loans_service
 from services.api_client import get_json, post_json
 
 profesor_bp = Blueprint("profesor", __name__, url_prefix="/profesor")
@@ -22,15 +26,19 @@ def dashboard():
     reservas = []
     error = None
     if user_id:
-        payload, error = get_json(f"/api/users/{user_id}/loans", token=token)
+        payload, error = get_json(f"/users/{user_id}/loans", token=token)
         if isinstance(payload, list):
             for item in payload:
                 reservas.append(
                     {
                         "id": item.get("id"),
-                        "estado_clase": "status-active" if item.get("estado_reserva") != "pendiente" else "status-pending",
+                        "estado_clase": "status-active"
+                        if item.get("estado_reserva") != "pendiente"
+                        else "status-pending",
                         "estado_texto": item.get("estado_reserva", "Pendiente"),
-                        "equipo": item.get("nombre_art", f"Artículo {item.get('id_reservado') or ''}"),
+                        "equipo": item.get(
+                            "nombre_art", f"Artículo {item.get('id_reservado') or ''}"
+                        ),
                         "fecha": item.get("fecha_retiro", "Desconocida"),
                         "ubicacion": "Sede FIUBA",
                         "acciones": ["Cancelar", "Ver QR"],
@@ -66,54 +74,61 @@ def historial():
 @profesor_bp.route("/nueva", methods=["GET"])
 def nueva_reserva():
     """Renderiza el formulario para crear una nueva reserva."""
-    token = session.get("token")
-    items_payload, fetch_error = get_json("/api/items", token=token)
-    items = items_payload if isinstance(items_payload, list) else []
-    return render_template("profesor/nueva_reserva.html", items=items, fetch_error=fetch_error)
+    items = items_service.obtener_items()
+
+    return render_template(
+        "profesor/nueva_reserva.html",
+        items=items,
+    )
 
 
 @profesor_bp.route("/guardar", methods=["POST"])
 def guardar_reserva():
     """Lógica para guardar la nueva reserva."""
-    token = session.get("token")
     user_id = (session.get("user") or {}).get("id")
-    item_id = request.form.get("articulo_id")
+    item_id = request.form.get("articulo")
 
     if user_id and item_id:
-        post_json("/api/loans", {"user_id": user_id, "item_id": item_id}, token=token)
+        loans_service.crear_prestamo({"user_id": user_id, "item_id": item_id})
 
     return redirect(url_for("profesor.mis_reservas"))
 
 
-from datetime import datetime
-
-BACKEND_URL = "http://127.0.0.1:5001"
-
 @profesor_bp.route("/historial", methods=["GET"])
 def historial_reserva():
-    "Muestra el historial completo de reservas historicas de un profesor"
-
-    id_profesor = request.args.get('id')
-    token = request.headers.get('Authorization')
-    headers = {'Authorization': token}
+    """Muestra el historial completo de reservas historicas de un profesor"""
+    id_profesor = request.args.get("id")
+    token = request.headers.get("Authorization")
+    headers = {"Authorization": token}
 
     try:
-        response = requests.get(f"{BACKEND_URL}/users/{id_profesor}/loans", headers=headers)
+        response = request.get(
+            f"{BACKEND_URL}/users/{id_profesor}/loans", headers=headers
+        )
         if response.status_code == 200:
             reservas_totales = response.json()
             hoy = datetime.now()
             historial = []
 
             for reserva in reservas_totales:
-                fecha_fin = datetime.strptime(reserva["fecha_fin"], '%Y-%m-%d %H:%M:%S')
+                fecha_fin = datetime.strptime(reserva["fecha_fin"], "%Y-%m-%d %H:%M:%S")
                 if fecha_fin < hoy:
                     historial.append(reserva)
 
-            return render_template("profesor/historial_reservas.html", historial=historial)
+            return render_template(
+                "profesor/historial_reservas.html", historial=historial
+            )
         else:
-            return render_template("profesor/historial_reservas.html", historial=[], error="No se pudo obtener el historial")
-        
+            return render_template(
+                "profesor/historial_reservas.html",
+                historial=[],
+                error="No se pudo obtener el historial",
+            )
+
     except Exception as e:
         print(f"Error inesperado: {e}")
-        return render_template("profesor/historial_reservas.html", historial=[], error="Error al mostrar el historial")
-
+        return render_template(
+            "profesor/historial_reservas.html",
+            historial=[],
+            error="Error al mostrar el historial",
+        )

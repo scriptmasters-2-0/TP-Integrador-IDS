@@ -1,14 +1,15 @@
 import requests
 from requests.exceptions import RequestException
 
-BASE_URL = "http://localhost:5001/api"
+from config import BACKEND_URL
+
 TIMEOUT = 5
 
 
 def obtener_normativas():
     try:
         resp = requests.get(
-            f"{BASE_URL}/normativas/",
+            f"{BACKEND_URL}/normativas/",
             timeout=TIMEOUT
         )
 
@@ -25,7 +26,7 @@ def obtener_normativas():
 def crear_normativa(data):
     try:
         resp = requests.post(
-            f"{BASE_URL}/normativas/",
+            f"{BACKEND_URL}/normativas/",
             json=data,
             timeout=TIMEOUT
         )
@@ -43,7 +44,7 @@ def crear_normativa(data):
 def actualizar_normativa(id_normativa, data):
     try:
         resp = requests.put(
-            f"{BASE_URL}/normativas/{id_normativa}",
+            f"{BACKEND_URL}/normativas/{id_normativa}",
             json=data,
             timeout=TIMEOUT
         )
@@ -61,7 +62,7 @@ def actualizar_normativa(id_normativa, data):
 def eliminar_normativa(id_normativa):
     try:
         resp = requests.delete(
-            f"{BASE_URL}/normativas/{id_normativa}",
+            f"{BACKEND_URL}/normativas/{id_normativa}",
             timeout=TIMEOUT
         )
 

@@ -4,7 +4,8 @@
 import requests
 from requests.exceptions import RequestException
 
-BASE_URL = "http://localhost:5001/api"
+from config import BACKEND_URL
+
 TIMEOUT = 5
 
 def obtener_reportes(tipo="careers"):
@@ -16,7 +17,7 @@ def obtener_reportes(tipo="careers"):
     Devuelve el JSON de los reportes de las carreras en caso de éxito, vacio en caso de falla
     """
 
-    url = f"{BASE_URL}/reports"
+    url = f"{BACKEND_URL}/reports"
 
     try:
         response = requests.get(url, params={"type": tipo}, timeout=TIMEOUT)

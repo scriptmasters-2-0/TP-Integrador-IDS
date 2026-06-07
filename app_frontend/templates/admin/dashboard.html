@@ -1,126 +1,90 @@
-{% extends "layouts/base_dashboard.html" %} {% block user_name %}Administrador{% endblock %} {% block sidebar_links %}
-<li>
-  <a href="/admin/dashboard" class="active"><i class="fa-solid fa-gauge"></i> Dashboard</a>
-</li>
-<li>
-  <a href="/admin/articulos"><i class="fa-solid fa-box"></i> Artículos</a>
-</li>
-<li>
-  <a href="/admin/prestamos/id"><i class="fa-solid fa-clipboard-list"></i> Préstamos</a>
-</li>
-<li>
-  <a href="/admin/usuarios"><i class="fa-solid fa-users"></i> Usuarios</a>
-</li>
-<li>
-  <a href="/admin/reportes/morosidad"><i class="fa-solid fa-chart-column"></i> Morosidad</a>
-</li>
-{% endblock %} {% block dashboard_content %}
-<div class="breadcrumb reveal">
-  <a href="/admin/dashboard">Admin</a> <i class="fa-solid fa-chevron-right"></i> <span>Dashboard</span>
-</div>
+{% extends "layouts/base_dashboard.html" %}
 
-<div
-  class="dashboard-stats-grid"
-  style="
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-  "
->
-  <div
-    class="stat-card"
-    style="
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-    "
-  >
-    <h3 style="color: var(--text-grey); font-size: 14px">Préstamos Activos</h3>
-    <p style="font-size: 28px; font-weight: 700; margin-top: 10px">24</p>
-  </div>
-  <div
-    class="stat-card"
-    style="
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-    "
-  >
-    <h3 style="color: var(--text-grey); font-size: 14px">En Mora</h3>
-    <p
-      style="
-        font-size: 28px;
-        font-weight: 700;
-        color: #ff4d4d;
-        margin-top: 10px;
-      "
-    >
-      3
-    </p>
-  </div>
-  <div
-    class="stat-card"
-    style="
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-    "
-  >
-    <h3 style="color: var(--text-grey); font-size: 14px">Demanda (Carrera)</h3>
-    <p style="font-size: 28px; font-weight: 700; margin-top: 10px">
-      Informática
-    </p>
-  </div>
-  <div
-    class="stat-card"
-    style="
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-    "
-  >
-    <h3 style="color: var(--text-grey); font-size: 14px">Inventario Crítico</h3>
-    <p
-      style="
-        font-size: 28px;
-        font-weight: 700;
-        color: #f39c12;
-        margin-top: 10px;
-      "
-    >
-      5
-    </p>
-  </div>
-</div>
+{% block user_name %}Admin{% endblock %}
 
-<div class="history-container">
-  <div class="history-header">
-    <h2>Resumen de Actividad Reciente</h2>
+{% block sidebar_links %}
+  <li>
+    <a href="{{ url_for('admin.dashboard') }}" class="active"
+      ><i class="fa-solid fa-gauge"></i> Mis reservas</a
+    >
+  </li>
+  <li>
+    <a href="{{ url_for('admin.reportes') }}"
+      ><i class="fa-solid fa-clipboard-list"></i> Reportes</a
+    >
+  </li>
+  <li>
+    <a href="{{ url_for('admin.listar_articulos') }}"><i class="fa-solid fa-box"></i> Articulos</a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.crear_articulo') }}"
+      ><i class="fa-solid fa-plus"></i> Nuevo Articulo</a
+    >
+  </li>
+  <li>
+    <a href="{{ url_for('admin.normativas') }}"
+      ><i class="fa-solid fa-clipboard-list"></i> Normativas</a
+    >
+  </li>
+  <li>
+    <a href="{{ url_for('admin.usuarios') }}"><i class="fa-solid fa-users"></i> Usuarios</a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.reporte_morosidad') }}"
+      ><i class="fa-solid fa-chart-column"></i> Morosidad</a
+    >
+  </li>
+{% endblock %}
+
+{% block dashboard_content %}
+  <div class="breadcrumb reveal">
+    <a href="{{ url_for('admin.dashboard') }}">Admin</a> <i class="fa-solid fa-chevron-right"></i>
+    <span>Dashboard</span>
   </div>
-  <div class="history-table-wrapper">
-    <table class="history-table">
-      <thead>
-        <tr>
-          <th>Usuario</th>
-          <th>Artículo</th>
-          <th>Fecha Límite</th>
-          <th>Estado</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Erick</td>
-          <td>Osciloscopio</td>
-          <td>2026-06-05</td>
-          <td><span class="badge badge-success">A tiempo</span></td>
-        </tr>
-      </tbody>
-    </table>
+  <div class="dashboard-content reveal">
+    <h2>Bienvenido al panel de administración</h2>
+    <p>Desde aquí puedes gestionar tus reservas, reportes, artículos, normativas y usuarios.</p>
+    <div class="dashboard-cards">
+      <div class="dashboard-card">
+        <i class="fa-solid fa-gauge"></i>
+        <h3>Mis reservas</h3>
+        <p>Consulta y administra tus reservas activas.</p>
+        <a href="{{ url_for('admin.dashboard') }}" class="dashboard-card-link">Ver reservas</a>
+      </div>
+      <div class="dashboard-card">
+        <i class="fa-solid fa-clipboard-list"></i>
+        <h3>Reportes</h3>
+        <p>Visualiza reportes de uso y estadísticas del sistema.</p>
+        <a href="{{ url_for('admin.reportes') }}" class="dashboard-card-link">Ver reportes</a>
+      </div>
+      <div class="dashboard-card">
+        <i class="fa-solid fa-box"></i>
+        <h3>Artículos</h3>
+        <p>Gestiona los artículos disponibles para préstamo.</p>
+        <a href="{{ url_for('admin.listar_articulos') }}" class="dashboard-card-link"
+          >Ver artículos</a
+        >
+      </div>
+      <div class="dashboard-card">
+        <i class="fa-solid fa-clipboard-list"></i>
+        <h3>Normativas</h3>
+        <p>Administra las normativas del sistema.</p>
+        <a href="{{ url_for('admin.normativas') }}" class="dashboard-card-link"> Ver normativas</a>
+      </div>
+      <div class="dashboard-card">
+        <i class="fa-solid fa-users"></i>
+        <h3>Usuarios</h3>
+        <p>Consulta y administra los usuarios registrados.</p>
+        <a href="{{ url_for('admin.usuarios') }}" class="dashboard-card-link">Ver usuarios</a>
+      </div>
+      <div class="dashboard-card">
+        <i class="fa-solid fa-chart-column"></i>
+        <h3>Morosidad</h3>
+        <p>Visualiza prestamos vencidos y usuarios con penalizaciones activas.</p>
+        <a href="{{ url_for('admin.reporte_morosidad') }}" class="dashboard-card-link"
+          >Ver morosidad</a
+        >
+      </div>
+    </div>
   </div>
-</div>
 {% endblock %}
