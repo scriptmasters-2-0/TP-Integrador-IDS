@@ -1,10 +1,10 @@
 {% extends "layouts/base_dashboard.html" %}
 
-{% block user_name %}Alumno{% endblock %}
+{% block usuario_name %}Alumno{% endblock %}
 
 {% block sidebar_links %}
   <li>
-    <a href="{{ url_for('alumno.perfil') }}"><i class="fa-solid fa-user"></i> Perfil</a>
+    <a href="{{ url_for('alumno.perfil') }}"><i class="fa-solid fa-usuario"></i> Perfil</a>
   </li>
   <li>
     <a href="{{ url_for('alumno.historial') }}" class="active"
@@ -52,23 +52,23 @@
             </tr>
           </thead>
           <tbody>
-            {% for prestamo in historial %}
+            {% for reserva in historial %}
               <tr>
                 <td>
                   <div class="date-cell">
                     <i class="fa-regular fa-calendar"></i>
-                    <span>{{ prestamo.fecha }}</span>
+                    <span>{{ reserva.fecha }}</span>
                   </div>
                 </td>
                 <td>
-                  <strong>{{ prestamo.nombre_equipo }}</strong>
-                  <br /><span class="text-sm text-grey">ID: {{ prestamo.id_equipo }}</span>
+                  <strong>{{ reserva.nombre_equipo }}</strong>
+                  <br /><span class="text-sm text-grey">ID: {{ reserva.id_equipo }}</span>
                 </td>
-                <td>{{ prestamo.sede }}</td>
-                <td><span class="badge badge-success">{{ prestamo.estado_texto }}</span></td>
+                <td>{{ reserva.sede }}</td>
+                <td><span class="badge badge-exito">{{ reserva.estado_texto }}</span></td>
                 <td class="action-cell text-center">
                   <a
-                    href="{{ url_for('alumno.prestamo_detalle', id=prestamo.id) }}"
+                    href="{{ url_for('alumno.reserva_detalle', id=reserva.id) }}"
                     class="btn-icon"
                     title="Ver detalle">
                     <i class="fa-solid fa-eye"></i>

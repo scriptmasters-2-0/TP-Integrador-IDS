@@ -2,28 +2,28 @@
 
 from flask import Blueprint, redirect, render_template, request, session, url_for
 
-from services import items_service
-from services.api_client import get_json, obtener_detalle_prestamo, post_json
-from services.normativas_service import (
+from servicios import articulos_servicio
+from servicios.api_client import get_json, obtener_detalle_reserva, post_json
+from servicios.normativas_servicio import (
     actualizar_normativa,
     crear_normativa,
     eliminar_normativa,
     obtener_normativas,
 )
-from services.reports_service import obtener_reportes
+from servicios.reports_servicio import obtener_reportes
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
-@admin_bp.route("/prestamos/<int:id>", methods=["GET", "POST"])
-def prestamo_detalle(id):
+@admin_bp.route("/reservas/<int:id>", methods=["GET", "POST"])
+def reserva_detalle(id):
     """Renderiza y procesa la vista de detalle de préstamo para administradores."""
     if request.method == "POST":
-        return redirect(url_for("admin.prestamo_detalle", id=id))
+        return redirect(url_for("admin.reserva_detalle", id=id))
 
     try:
-        datos_api = obtener_detalle_prestamo(id)
-        prestamo = {
+        datos_api = obtener_detalle_reserva(id)
+        reserva = {
             "id": datos_api.get("id", id),
             "estado_general": datos_api.get("estado_reserva", "pendiente"),
             "estado_texto": datos_api.get("estado_reserva", "Pendiente"),
@@ -39,7 +39,7 @@ def prestamo_detalle(id):
             "fecha_limite": datos_api.get("fecha_regreso", "N/A"),
         }
     except Exception:
-        prestamo = {
+        reserva = {
             "id": id,
             "estado_general": "en_curso",
             "estado_texto": "En curso (Retirado)",
@@ -53,13 +53,13 @@ def prestamo_detalle(id):
             "fecha_limite": "15 May 2026 - 18:00 hs",
         }
 
-    return render_template("admin/prestamo_detalle.html", prestamo=prestamo)
+    return render_template("admin/reserva_detalle.html", reserva=reserva)
 
 
 @admin_bp.route("/articulos")
 def listar_articulos():
     """Renderiza la vista de listado de artículos para administradores."""
-    articulos = items_service.obtener_items()
+    articulos = articulos_servicio.obtener_articulos()
 
     return render_template(
         "admin/articulos.html",
@@ -74,13 +74,13 @@ def crear_articulo():
         "admin/articulos_form.html",
         articulo=None,
         form_error=request.args.get("error"),
-        form_success=request.args.get("success"),
+        form_exito=request.args.get("exito"),
     )
 
 
 @admin_bp.route("/articulos/guardar", methods=["POST"])
 def guardar_articulo():
-    """Crea un artículo consumiendo el endpoint backend /api/items."""
+    """Crea un artículo consumiendo el endpoint backend /api/articulos."""
     token = session.get("token")
     payload = {
         "nombre_art": request.form.get("nombre"),
@@ -91,13 +91,13 @@ def guardar_articulo():
         "necesita_reparacion": False,
     }
 
-    _, error, _ = post_json("/api/items", payload, token=token)
+    _, error, _ = post_json("/api/articulos", payload, token=token)
 
     if error:
         return redirect(url_for("admin.crear_articulo", error=error))
 
     return redirect(
-        url_for("admin.crear_articulo", success="Artículo creado correctamente")
+        url_for("admin.crear_articulo", exito="Artículo creado correctamente")
     )
 
 
@@ -168,7 +168,7 @@ def eliminar_norm():
 def usuarios():
     """Renderiza la vista de gestión de usuarios para administradores."""
     token = session.get("token")
-    usuarios, error = get_json("/api/user", token=token)
+    usuarios, error = get_json("/api/usuario", token=token)
     return render_template(
         "admin/usuarios.html",
         usuarios=usuarios if isinstance(usuarios, list) else [],
@@ -180,34 +180,34 @@ def usuarios():
 def reporte_morosidad():
     """Renderiza la vista de reporte de morosidad para administradores."""
     token = session.get("token")
-    penalties, error = get_json("/api/penalties", token=token)
+    penalizaciones, error = get_json("/api/penalizaciones", token=token)
 
     rows = []
-    if isinstance(penalties, list):
-        for penalty in penalties:
+    if isinstance(penalizaciones, list):
+        for penalty in penalizaciones:
             rows.append(
                 {
-                    "usuario": penalty.get("id_usuario") or penalty.get("userId"),
-                    "articulo": penalty.get("id_reserva") or penalty.get("loanId"),
+                    "usuario": penalty.get("id_usuario") or penalty.get("usuarioId"),
+                    "articulo": penalty.get("id_reserva") or penalty.get("reservaId"),
                     "vencimiento": penalty.get("fecha_fin")
                     or penalty.get("resolvedAt"),
                     "estado": "Activa" if penalty.get("activa", True) else "Levantada",
                 }
             )
 
-    return render_template("admin/morosidad.html", penalties=rows, fetch_error=error)
+    return render_template("admin/morosidad.html", penalizaciones=rows, fetch_error=error)
 
 
 @admin_bp.route("/articulos/<int:id>/editar", methods=["GET", "POST"])
 def editar_articulo(id):
     """Formulario de edición de artículo: muestra datos y permite actualizarlos."""
     token = session.get("token")
-    role = session.get("role")
+    rol = session.get("rol")
 
     if not token:
         return redirect(url_for("public.login"))
 
-    if role not in ["admin", "bibliotecario"]:
+    if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
     if request.method == "POST":
@@ -238,16 +238,16 @@ def editar_articulo(id):
     )
 
 
-@admin_bp.route("/prestamos", methods=["GET"])
-def lista_prestamos():
+@admin_bp.route("/reservas", methods=["GET"])
+def lista_reservas():
     """Lista todos los préstamos con filtros por estado, fecha o usuario."""
     token = session.get("token")
-    role = session.get("role")
+    rol = session.get("rol")
 
     if not token:
         return redirect(url_for("public.login"))
 
-    if role not in ["admin", "bibliotecario"]:
+    if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
     estado = request.args.get("estado")
@@ -267,12 +267,12 @@ def lista_prestamos():
     if lista_filtros:
         query_params = "?" + "&".join(lista_filtros)
 
-    url_final = f"/api/loans{query_params}"
-    prestamos, error = get_json(url_final, token=token)
+    url_final = f"/api/reservas{query_params}"
+    reservas, error = get_json(url_final, token=token)
 
     return render_template(
-        "admin/prestamos.html",
-        prestamos=prestamos or [],
+        "admin/reservas.html",
+        reservas=reservas or [],
         fetch_error=error,
     )
 
@@ -281,25 +281,25 @@ def lista_prestamos():
 def listar_penalizaciones():
     """Lista las penalizaciones activas."""
     token = session.get("token")
-    role = session.get("role")
+    rol = session.get("rol")
 
     if not token:
         return redirect(url_for("public.login"))
 
-    if role not in ["admin", "bibliotecario"]:
+    if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
-    penalties, error = get_json("/api/penalties", token=token)
+    penalizaciones, error = get_json("/api/penalizaciones", token=token)
 
     lista_penalizaciones = []
 
-    if isinstance(penalties, list):
-        for p in penalties:
+    if isinstance(penalizaciones, list):
+        for p in penalizaciones:
             lista_penalizaciones.append(
                 {
                     "id": p.get("id"),
                     "usuario_nombre": p.get("nombre_usuario", "Desconocido"),
-                    "severity": p.get("severity", "Media"),
+                    "severidad": p.get("severidad", "Media"),
                     "fecha_inicio": p.get("fecha_inicio", "N/A"),
                     "activa": p.get("activa", True),
                 }
@@ -316,5 +316,5 @@ def listar_penalizaciones():
 def levantar_penalizacion(id):
     """Acción para levantar una penalización manualmente."""
     token = session.get("token")
-    post_json(f"/api/penalties/{id}/resolve", {}, token=token)
+    post_json(f"/api/penalizaciones/{id}/resolve", {}, token=token)
     return redirect(url_for("admin.listar_penalizaciones"))

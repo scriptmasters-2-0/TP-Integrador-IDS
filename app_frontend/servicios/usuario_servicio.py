@@ -1,5 +1,5 @@
-# user_service.py
-# Funciones de servicio para consumir endpoints /users
+# usuario_servicio.py
+# Funciones de servicio para consumir endpoints /usuarios
 import requests
 from requests.exceptions import RequestException
 
@@ -9,11 +9,11 @@ TIMEOUT = 5
 
 
 def obtener_usuarios(params=None):
-    """GET /users
+    """GET /usuarios
     params: diccionario opcional para parámetros de consulta
     Devuelve una lista en caso de éxito, [] en caso de fallo.
     """
-    url = f"{BACKEND_URL}/users"
+    url = f"{BACKEND_URL}/usuarios"
     try:
         resp = requests.get(url, params=params, timeout=TIMEOUT)
         resp.raise_for_status()
@@ -24,14 +24,14 @@ def obtener_usuarios(params=None):
         return []
 
 
-def crear_usuario(user_data):
-    """POST /users
-    user_data: dict
+def crear_usuario(usuario_data):
+    """POST /usuarios
+    usuario_data: dict
     Devuelve el JSON parseado en caso de éxito, {} en caso de fallo.
     """
-    url = f"{BACKEND_URL}/users"
+    url = f"{BACKEND_URL}/usuarios"
     try:
-        resp = requests.post(url, json=user_data, timeout=TIMEOUT)
+        resp = requests.post(url, json=usuario_data, timeout=TIMEOUT)
         resp.raise_for_status()
         return resp.json()
     except RequestException:
@@ -40,11 +40,11 @@ def crear_usuario(user_data):
         return {}
 
 
-def obtener_usuario(user_id):
-    """GET /users/{id}
+def obtener_usuario(usuario_id):
+    """GET /usuarios/{id}
     Devuelve el JSON del usuario en caso de éxito, {} en caso de fallo.
     """
-    url = f"{BACKEND_URL}/users/{user_id}"
+    url = f"{BACKEND_URL}/usuarios/{usuario_id}"
     try:
         resp = requests.get(url, timeout=TIMEOUT)
         resp.raise_for_status()
@@ -55,13 +55,13 @@ def obtener_usuario(user_id):
         return {}
 
 
-def actualizar_usuario(user_id, user_data):
-    """PUT /users/{id}
+def actualizar_usuario(usuario_id, usuario_data):
+    """PUT /usuarios/{id}
     Devuelve el JSON actualizado en caso de éxito, {} en caso de fallo.
     """
-    url = f"{BACKEND_URL}/users/{user_id}"
+    url = f"{BACKEND_URL}/usuarios/{usuario_id}"
     try:
-        resp = requests.put(url, json=user_data, timeout=TIMEOUT)
+        resp = requests.put(url, json=usuario_data, timeout=TIMEOUT)
         resp.raise_for_status()
         return resp.json()
     except RequestException:
@@ -70,11 +70,11 @@ def actualizar_usuario(user_id, user_data):
         return {}
 
 
-def eliminar_usuario(user_id):
-    """DELETE /users/{id}
+def eliminar_usuario(usuario_id):
+    """DELETE /usuarios/{id}
     Devuelve True en caso de éxito, {} en caso de fallo.
     """
-    url = f"{BACKEND_URL}/users/{user_id}"
+    url = f"{BACKEND_URL}/usuarios/{usuario_id}"
     try:
         resp = requests.delete(url, timeout=TIMEOUT)
         resp.raise_for_status()
@@ -85,12 +85,12 @@ def eliminar_usuario(user_id):
         return {}
 
 
-def establecer_estado_usuario(user_id, status_data):
-    """PATCH /users/{id}/status
+def establecer_estado_usuario(usuario_id, status_data):
+    """PATCH /usuarios/{id}/status
     status_data: dict (ej., {"active": True})
     Devuelve True en caso de éxito, {} en caso de fallo.
     """
-    url = f"{BACKEND_URL}/users/{user_id}/status"
+    url = f"{BACKEND_URL}/usuarios/{usuario_id}/status"
     try:
         resp = requests.patch(url, json=status_data, timeout=TIMEOUT)
         resp.raise_for_status()
@@ -101,11 +101,11 @@ def establecer_estado_usuario(user_id, status_data):
         return {}
 
 
-def obtener_prestamos_usuario(user_id, params=None):
-    """GET /users/{id}/loans
+def obtener_reservas_usuario(usuario_id, params=None):
+    """GET /usuarios/{id}/reservas
     Devuelve una lista de préstamos del usuario en caso de éxito, [] en caso de fallo.
     """
-    url = f"{BACKEND_URL}/users/{user_id}/loans"
+    url = f"{BACKEND_URL}/usuarios/{usuario_id}/reservas"
     try:
         resp = requests.get(url, params=params, timeout=TIMEOUT)
         resp.raise_for_status()
@@ -116,11 +116,11 @@ def obtener_prestamos_usuario(user_id, params=None):
         return []
 
 
-def obtener_penalizaciones_usuario(user_id, params=None):
-    """GET /users/{id}/penalties
+def obtener_penalizaciones_usuario(usuario_id, params=None):
+    """GET /usuarios/{id}/penalizaciones
     Devuelve una lista de penalizaciones del usuario en caso de éxito, [] en caso de fallo.
     """
-    url = f"{BACKEND_URL}/users/{user_id}/penalties"
+    url = f"{BACKEND_URL}/usuarios/{usuario_id}/penalizaciones"
     try:
         resp = requests.get(url, params=params, timeout=TIMEOUT)
         resp.raise_for_status()

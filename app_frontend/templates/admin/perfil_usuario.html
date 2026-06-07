@@ -1,6 +1,6 @@
 {% extends 'layouts/base_dashboard.html' %}
 
-{% block user_name %}Admin{% endblock %}
+{% block usuario_name %}Admin{% endblock %}
 
 {% block sidebar_links %}
   <li>
@@ -27,7 +27,7 @@
     >
   </li>
   <li>
-    <a href="{{ url_for('admin.usuarios') }}"><i class="fa-solid fa-users"></i> Usuarios</a>
+    <a href="{{ url_for('admin.usuarios') }}"><i class="fa-solid fa-usuarios"></i> Usuarios</a>
   </li>
   <li>
     <a href="{{ url_for('admin.reporte_morosidad') }}"
@@ -42,12 +42,12 @@
   <div class="admin-detail-layout reveal" style="transition-delay: 0.1s;">
     <!-- COLUMNA IZQUIERDA: DATOS DEL USUARIO -->
     <div class="profile-card">
-      <div class="user-card">
-        <div class="user-card-avatar">
-          <i class="fa-solid fa-user"></i>
+      <div class="usuario-card">
+        <div class="usuario-card-avatar">
+          <i class="fa-solid fa-usuario"></i>
         </div>
-        <h3 class="user-card-name">{{ usuario.nombre }}</h3>
-        <span class="badge badge-success mb-3">{{ usuario.rol }}</span>
+        <h3 class="usuario-card-name">{{ usuario.nombre }}</h3>
+        <span class="badge badge-exito mb-3">{{ usuario.rol }}</span>
       </div>
       <div class="data-grid mt-data-grid">
         <div class="data-group">
@@ -60,7 +60,7 @@
         </div>
         <div class="data-group">
           <label>Score</label>
-          <div class="data-value highlight-value">{{ usuario.score }}</div>
+          <div class="data-value highlight-value">{{ usuario.puntaje }}</div>
         </div>
         <div class="data-group">
           <label>Rol actual</label>

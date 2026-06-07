@@ -1,20 +1,20 @@
-# loans_service.py
-# Funciones de servicio para consumir endpoints /loans
+# reservas_servicio.py
+# Funciones de servicio para consumir endpoints /reservas
 import requests
 from flask import session
 from requests.exceptions import RequestException
 
 from config import BACKEND_URL
-from services.api_client import get_json
+from servicios.api_client import get_json
 
 TIMEOUT = 5
 
 
-def obtener_prestamos(params=None):
-    """GET /loans
+def obtener_reservas(params=None):
+    """GET /reservas
     Devuelve una lista en caso de éxito, [] en caso de fallo.
     """
-    url = f"{BACKEND_URL}/loans"
+    url = f"{BACKEND_URL}/reservas"
     try:
         resp = requests.get(url, params=params, timeout=TIMEOUT)
         resp.raise_for_status()
@@ -25,16 +25,16 @@ def obtener_prestamos(params=None):
         return []
 
 
-def crear_prestamo(loan_data):
-    """POST /loans
+def crear_reserva(reserva_data):
+    """POST /reservas
     Devuelve el JSON del préstamo creado en caso de éxito, {} en caso de fallo.
     """
-    url = f"{BACKEND_URL}/loans"
+    url = f"{BACKEND_URL}/reservas"
     try:
         resp = requests.post(
             url,
             headers={"authorization": f"Bearer {session.get('token', '')}"},
-            json=loan_data,
+            json=reserva_data,
             timeout=TIMEOUT,
         )
         resp.raise_for_status()
@@ -45,11 +45,11 @@ def crear_prestamo(loan_data):
         return {}
 
 
-def obtener_prestamo(loan_id):
-    """GET /loans/{id}
+def obtener_reserva(reserva_id):
+    """GET /reservas/{id}
     Devuelve el JSON del préstamo en caso de éxito, {} en caso de fallo.
     """
-    url = f"{BACKEND_URL}/loans/{loan_id}"
+    url = f"{BACKEND_URL}/reservas/{reserva_id}"
     try:
         resp = requests.get(url, timeout=TIMEOUT)
         resp.raise_for_status()
@@ -60,12 +60,12 @@ def obtener_prestamo(loan_id):
         return {}
 
 
-def establecer_estado_prestamo(loan_id, status_data):
-    """PATCH /loans/{id}/status
+def establecer_estado_reserva(reserva_id, status_data):
+    """PATCH /reservas/{id}/status
     status_data: dict (ej., {"status": "returned"})
     Devuelve True en caso de éxito, {} en caso de fallo.
     """
-    url = f"{BACKEND_URL}/loans/{loan_id}/status"
+    url = f"{BACKEND_URL}/reservas/{reserva_id}/status"
     try:
         resp = requests.patch(url, json=status_data, timeout=TIMEOUT)
         resp.raise_for_status()
@@ -77,5 +77,5 @@ def establecer_estado_prestamo(loan_id, status_data):
 
 
 def obtener_qr_reserva(id_reserva):
-    url = f"/qr/loans/{id_reserva}"
+    url = f"/qr/reservas/{id_reserva}"
     return get_json(url)

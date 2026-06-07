@@ -1,10 +1,10 @@
 {% extends 'layouts/base_dashboard.html' %}
 
-{% block user_name %}Alumno{% endblock %}
+{% block usuario_name %}Alumno{% endblock %}
 
 {% block sidebar_links %}
   <li>
-    <a href="#"><i class="fa-solid fa-user"></i> Perfil</a>
+    <a href="#"><i class="fa-solid fa-usuario"></i> Perfil</a>
   </li>
   <li>
     <a href="{{ url_for('alumno.alumno_mis_reservas') }}" class="active"
@@ -33,7 +33,7 @@
               <td>{{ reserva.nombre_art }}</td>
               <td>
                 <span
-                  class="badge {% if reserva.estado_reserva == 'pendiente' %}badge-warning{% elif reserva.estado_reserva == 'devuelto' %}badge-success{% else %}badge-success{% endif %}">
+                  class="badge {% if reserva.estado_reserva == 'pendiente' %}badge-warning{% elif reserva.estado_reserva == 'devuelto' %}badge-exito{% else %}badge-exito{% endif %}">
                   {{ reserva.estado_reserva }}
                 </span>
               </td>
@@ -56,7 +56,7 @@
     </div>
   {% else %}
     <div class="empty-state reveal">
-      <i class="icon-success fa-solid fa-circle-check empty-icon"></i>
+      <i class="icon-exito fa-solid fa-circle-check empty-icon"></i>
       <h3>¡No tenés reservas vigentes!</h3>
       <p>Tu historial está limpio.</p>
     </div>

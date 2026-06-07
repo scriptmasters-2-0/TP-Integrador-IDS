@@ -8,25 +8,25 @@ from flask_swagger_ui import get_swaggerui_blueprint
 import config
 from database import init_database
 from routes.auth_route import auth_bp
-from routes.items_route import items_bp
-from routes.loans_route import loans_bp
+from routes.articulos_route import articulos_bp
+from routes.reservas_route import reservas_bp
 from routes.normativas_route import normativas_bp
-from routes.penalties_route import penalties_bp
+from routes.penalizaciones_route import penalizaciones_bp
 from routes.qr_route import qr_bp
 from routes.reportes_route import reportes_bp
 from routes.salud_route import salud_bp
-from routes.users_routes import users_bp
+from routes.usuarios_routes import usuarios_bp
 
 app = Flask(__name__)
 
 init_database()
 
 app.register_blueprint(auth_bp)
-app.register_blueprint(items_bp)
-app.register_blueprint(loans_bp)
-app.register_blueprint(penalties_bp)
+app.register_blueprint(articulos_bp)
+app.register_blueprint(reservas_bp)
+app.register_blueprint(penalizaciones_bp)
 app.register_blueprint(salud_bp)
-app.register_blueprint(users_bp)
+app.register_blueprint(usuarios_bp)
 app.register_blueprint(qr_bp)
 app.register_blueprint(reportes_bp)
 app.register_blueprint(normativas_bp)

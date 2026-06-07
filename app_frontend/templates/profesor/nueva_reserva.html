@@ -1,7 +1,7 @@
-{% extends "layouts/base_dashboard.html" %} {% block user_name %}Profesor{% endblock %}
+{% extends "layouts/base_dashboard.html" %} {% block usuario_name %}Profesor{% endblock %}
 {% block sidebar_links %}
   <li>
-    <a href="/profesor/perfil"><i class="fa-solid fa-user"></i> Perfil</a>
+    <a href="/profesor/perfil"><i class="fa-solid fa-usuario"></i> Perfil</a>
   </li>
   <li>
     <a href="/profesor/mis-reservas"><i class="fa-solid fa-list-check"></i> Mis reservas</a>
@@ -22,7 +22,7 @@
   <div class="history-container">
     <div class="history-header">
       <h2>Nueva reserva</h2>
-      <p>Selecciona el articulo y define el horario para tu prestamo.</p>
+      <p>Selecciona el articulo y define el horario para tu reserva.</p>
     </div>
 
     <form
@@ -36,8 +36,8 @@
           <label for="articulo">Articulo</label>
           <select id="articulo" name="articulo" class="admin-select" required>
             <option value="">Seleccionar</option>
-            {% for item in items %}
-              <option value="{{ item.id }}">{{ item.nombre_art }} (stock: {{ item.stock }})</option>
+            {% for articulo in articulos %}
+              <option value="{{ articulo.id }}">{{ articulo.nombre_art }} (stock: {{ articulo.stock }})</option>
             {% endfor %}
           </select>
         </div>
@@ -63,7 +63,7 @@
         <a
           href="/profesor/historial"
           class="login-btn"
-          style="text-decoration: none; display: inline-flex; align-items: center"
+          style="text-decoration: none; display: inline-flex; align-articulos: center"
           >Cancelar</a
         >
       </div>

@@ -1,12 +1,12 @@
 {% extends "layouts/base_dashboard.html" %}
 
-{% block user_name %}
-  {{ session.get('user', {}).get('nombre', 'Alumno') }}
+{% block usuario_name %}
+  {{ session.get('usuario', {}).get('nombre', 'Alumno') }}
 {% endblock %}
 
 {% block sidebar_links %}
   <li>
-    <a href="{{ url_for('alumno.perfil') }}"><i class="fa-solid fa-user"></i> Perfil</a>
+    <a href="{{ url_for('alumno.perfil') }}"><i class="fa-solid fa-usuario"></i> Perfil</a>
   </li>
   <li>
     <a href="{{ url_for('alumno.historial') }}"
@@ -40,7 +40,7 @@
 
     <div class="card p-3">
       <h4>Score</h4>
-      <p>{{ dashboard.score if dashboard.score is defined else 'N/A' }}</p>
+      <p>{{ dashboard.puntaje if dashboard.puntaje is defined else 'N/A' }}</p>
     </div>
 
     <div class="card p-3">

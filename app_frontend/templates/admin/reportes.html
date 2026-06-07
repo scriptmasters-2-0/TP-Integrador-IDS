@@ -1,6 +1,6 @@
 {% extends "layouts/base_dashboard.html" %}
 
-{% block user_name %}Administrador{% endblock %}
+{% block usuario_name %}Administrador{% endblock %}
 
 {% block sidebar_links %}
   <li>
@@ -12,13 +12,13 @@
   </li>
 
   <li>
-    <a href="{{ url_for('admin.lista_prestamos') }}"
+    <a href="{{ url_for('admin.lista_reservas') }}"
       ><i class="fa-solid fa-clipboard-list"></i> Préstamos</a
     >
   </li>
 
   <li>
-    <a href="/admin/usuarios"> <i class="fa-solid fa-users"></i> Usuarios </a>
+    <a href="/admin/usuarios"> <i class="fa-solid fa-usuarios"></i> Usuarios </a>
   </li>
 
   <li>
@@ -49,10 +49,10 @@
             <div class="reportes-bar-container">
               <div
                 class="reportes-bar"
-                style="width: {{ carrera.cantidad_prestamos * 25 }}px;"></div>
+                style="width: {{ carrera.cantidad_reservas * 25 }}px;"></div>
             </div>
 
-            <div class="reportes-bar-value">{{ carrera.cantidad_prestamos }}</div>
+            <div class="reportes-bar-value">{{ carrera.cantidad_reservas }}</div>
           </div>
         {% endfor %}
       {% else %}

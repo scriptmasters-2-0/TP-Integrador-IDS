@@ -1,6 +1,6 @@
 {% extends "layouts/base_dashboard.html" %}
 
-{% block user_name %}Administrador{% endblock %}
+{% block usuario_name %}Administrador{% endblock %}
 
 {% block sidebar_links %}
   <li>
@@ -10,12 +10,12 @@
     <a href="/admin/articulos"><i class="fa-solid fa-box"></i> Articulos</a>
   </li>
   <li>
-    <a href="{{ url_for('admin.lista_prestamos') }}"
+    <a href="{{ url_for('admin.lista_reservas') }}"
       ><i class="fa-solid fa-clipboard-list"></i> Préstamos</a
     >
   </li>
   <li>
-    <a href="/admin/usuarios" class="active"><i class="fa-solid fa-users"></i> Usuarios</a>
+    <a href="/admin/usuarios" class="active"><i class="fa-solid fa-usuarios"></i> Usuarios</a>
   </li>
   <li>
     <a href="/admin/reportes/morosidad"><i class="fa-solid fa-chart-column"></i> Morosidad</a>
@@ -46,12 +46,12 @@
         </thead>
         <tbody>
           {% if usuarios %}
-            {% for user in usuarios %}
+            {% for usuario in usuarios %}
               <tr>
-                <td>{{ user.username if user.username is defined else user.nombre }}</td>
-                <td>{{ user.email if user.email is defined else user.mail }}</td>
-                <td>{{ user.role if user.role is defined else user.rol }}</td>
-                <td><span class="badge badge-success">Activo</span></td>
+                <td>{{ usuario.usuarioname if usuario.usuarioname is defined else usuario.nombre }}</td>
+                <td>{{ usuario.email if usuario.email is defined else usuario.mail }}</td>
+                <td>{{ usuario.rol if usuario.rol is defined else usuario.rol }}</td>
+                <td><span class="badge badge-exito">Activo</span></td>
               </tr>
             {% endfor %}
           {% else %}

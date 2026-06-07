@@ -1,4 +1,4 @@
-{% extends "layouts/base_dashboard.html" %} {% block user_name %}Administrador{% endblock %}
+{% extends "layouts/base_dashboard.html" %} {% block usuario_name %}Administrador{% endblock %}
 {% block sidebar_links %}
   <li>
     <a href="/admin/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a>
@@ -7,12 +7,12 @@
     <a href="/admin/articulos" class="active"><i class="fa-solid fa-box"></i> Artículos</a>
   </li>
   <li>
-    <a href="{{ url_for('admin.lista_prestamos') }}"
+    <a href="{{ url_for('admin.lista_reservas') }}"
       ><i class="fa-solid fa-clipboard-list"></i> Préstamos</a
     >
   </li>
   <li>
-    <a href="/admin/usuarios"><i class="fa-solid fa-users"></i> Usuarios</a>
+    <a href="/admin/usuarios"><i class="fa-solid fa-usuarios"></i> Usuarios</a>
   </li>
   <li>
     <a href="/admin/reportes/morosidad"><i class="fa-solid fa-chart-column"></i> Morosidad</a>
@@ -27,7 +27,7 @@
   <div class="history-container">
     <div
       class="history-header"
-      style="display: flex; justify-content: space-between; align-items: center">
+      style="display: flex; justify-content: space-between; align-articulos: center">
       <div>
         <h1>Gestión de Artículos</h1>
         <p>Administra el inventario de la biblioteca.</p>
@@ -69,14 +69,14 @@
         </thead>
         <tbody>
           {% if articulos %}
-            {% for item in articulos %}
+            {% for articulo in articulos %}
               <tr>
-                <td>{{ item.nombre_art }}</td>
-                <td>{{ item.tipo }}</td>
-                <td>{{ item.stock }}</td>
+                <td>{{ articulo.nombre_art }}</td>
+                <td>{{ articulo.tipo }}</td>
+                <td>{{ articulo.stock }}</td>
                 <td>
-                  {% if item.stock and item.stock > 0 and not item.necesita_reparacion %}
-                    <span class="badge badge-success">Disponible</span>
+                  {% if articulo.stock and articulo.stock > 0 and not articulo.necesita_reparacion %}
+                    <span class="badge badge-exito">Disponible</span>
                   {% else %}
                     <span class="badge" style="background: #ffe5e5; color: #c0392b"
                       >No disponible</span
@@ -87,7 +87,7 @@
                   <button
                     class="btn-icon"
                     title="Editar"
-                    onclick="window.location.href='{{ url_for('admin.editar_articulo', id=item.id) }}'">
+                    onclick="window.location.href='{{ url_for('admin.editar_articulo', id=articulo.id) }}'">
                     <i class="fa-solid fa-pen"></i>
                   </button>
                   <button class="btn-icon" title="Eliminar" style="color: #ff4d4d">

@@ -1,6 +1,6 @@
 {% extends "layouts/base_dashboard.html" %}
 
-{% block user_name %}Admin{% endblock %}
+{% block usuario_name %}Admin{% endblock %}
 
 {% block sidebar_links %}
   <li>
@@ -27,7 +27,7 @@
     >
   </li>
   <li>
-    <a href="{{ url_for('admin.usuarios') }}"><i class="fa-solid fa-users"></i> Usuarios</a>
+    <a href="{{ url_for('admin.usuarios') }}"><i class="fa-solid fa-usuarios"></i> Usuarios</a>
   </li>
   <li>
     <a href="{{ url_for('admin.reporte_morosidad') }}"
@@ -40,18 +40,18 @@
   <div class="breadcrumb reveal">
     <a href="{{ url_for('admin.dashboard') }}">Admin</a> <i class="fa-solid fa-chevron-right"></i>
     <a href="{{ url_for('admin.listar_articulos') }}">Préstamos</a>
-    <i class="fa-solid fa-chevron-right"></i> <span>Detalle #RES-{{ prestamo.id }}</span>
+    <i class="fa-solid fa-chevron-right"></i> <span>Detalle #RES-{{ reserva.id }}</span>
   </div>
 
   <div
     class="admin-header reveal"
-    style="transition-delay: 0.1s; display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px;">
+    style="transition-delay: 0.1s; display: flex; justify-content: space-between; align-articulos: flex-end; margin-bottom: 30px;">
     <div>
       <h2 style="margin-top: 10px; margin-bottom: 15px; font-size: 28px;">Detalle de Préstamo</h2>
       <div
-        class="ticket-status {{ prestamo.estado_clase }}"
+        class="ticket-status {{ reserva.estado_clase }}"
         style="display: inline-flex; font-size: 14px; padding: 6px 15px;">
-        {{ prestamo.estado_texto }}
+        {{ reserva.estado_texto }}
       </div>
     </div>
     <button class="res-btn btn-secondary">
@@ -66,31 +66,31 @@
         <div class="data-group full-width">
           <label>Equipo / Material</label>
           <div class="data-value highlight-value">
-            {{ prestamo.equipo_nombre }} (ID: {{ prestamo.equipo_id }})
+            {{ reserva.equipo_nombre }} (ID: {{ reserva.equipo_id }})
           </div>
         </div>
 
         <div class="data-group">
           <label>Titular (Alumno)</label>
           <div class="data-value">
-            {{ prestamo.titular_nombre }} ({{ prestamo.titular_legajo }})
+            {{ reserva.titular_nombre }} ({{ reserva.titular_legajo }})
           </div>
         </div>
 
         <div class="data-group">
           <label>Carrera</label>
-          <div class="data-value">{{ prestamo.titular_carrera }}</div>
+          <div class="data-value">{{ reserva.titular_carrera }}</div>
         </div>
 
         <div class="data-group">
           <label>Fecha de Retiro</label>
-          <div class="data-value">{{ prestamo.fecha_retiro }}</div>
+          <div class="data-value">{{ reserva.fecha_retiro }}</div>
         </div>
 
         <div class="data-group">
           <label>Fecha Límite Devolución</label>
           <div class="data-value" style="color: #d32f2f; font-weight: 700;">
-            {{ prestamo.fecha_limite }}
+            {{ reserva.fecha_limite }}
           </div>
         </div>
       </div>
@@ -101,7 +101,7 @@
       style="height: fit-content; background: #fafbfc; border: 2px solid var(--border-color);">
       <h3><i class="fa-solid fa-sliders"></i> Panel de Acciones</h3>
       <form
-        action="{{ url_for('admin.prestamo_detalle', id=prestamo.id) }}"
+        action="{{ url_for('admin.reserva_detalle', id=reserva.id) }}"
         method="POST"
         class="admin-form">
         <div class="form-group mb-4">

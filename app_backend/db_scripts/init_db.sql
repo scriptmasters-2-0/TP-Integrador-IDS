@@ -1,11 +1,11 @@
 CREATE TABLE IF NOT EXISTS usuario (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(50) NOT NULL,
-  mail VARCHAR(50) UNIQUE NOT NULL,
-  score INT DEFAULT 0,
+  email VARCHAR(50) UNIQUE NOT NULL,
+  puntaje INT DEFAULT 0,
   rol enum('alumno', 'profesor', 'bibliotecario', 'admin') NOT NULL DEFAULT 'alumno',
   carrera VARCHAR(50),
-  password_hash VARCHAR(255) DEFAULT '',
+  contrasenia_hash VARCHAR(255) DEFAULT '',
   activo BOOLEAN DEFAULT TRUE
 );
 
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS penalizacion (
   fecha_inicio DATETIME,
   fecha_fin DATETIME,
   activa BOOLEAN DEFAULT TRUE,
-  severity enum('baja', 'media', 'alta') NOT NULL DEFAULT 'media',
+  severidad enum('baja', 'media', 'alta') NOT NULL DEFAULT 'media',
   FOREIGN KEY (id_usuario) REFERENCES usuario(id),
   FOREIGN KEY (id_reserva) REFERENCES reserva(id)
 );

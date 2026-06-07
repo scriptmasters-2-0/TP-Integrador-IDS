@@ -100,7 +100,7 @@ def obtener_reserva_por_id(id_reserva):
     return reserva
 
 
-@qr_bp.route("/api/qr/loans/<int:id_reserva>", methods=["GET"])
+@qr_bp.route("/api/qr/reservas/<int:id_reserva>", methods=["GET"])
 def obtener_qr_reserva(id_reserva):
     """Genera y devuelve el QR correspondiente a una reserva.
 

@@ -1,5 +1,5 @@
-# items_service.py
-# Funciones de servicio para consumir endpoints /items
+# articulos_servicio.py
+# Funciones de servicio para consumir endpoints /articulos
 import requests
 from requests.exceptions import RequestException
 
@@ -8,11 +8,11 @@ from config import BACKEND_URL
 TIMEOUT = 5
 
 
-def obtener_items(params=None):
-    """GET /items
+def obtener_articulos(params=None):
+    """GET /articulos
     Devuelve una lista en caso de éxito, [] en caso de fallo.
     """
-    url = f"{BACKEND_URL}/items"
+    url = f"{BACKEND_URL}/articulos"
     try:
         resp = requests.get(url, params=params, timeout=TIMEOUT)
         resp.raise_for_status()
@@ -23,13 +23,13 @@ def obtener_items(params=None):
         return []
 
 
-def crear_item(item_data):
-    """POST /items
+def crear_articulo(articulo_data):
+    """POST /articulos
     Devuelve el JSON creado en caso de éxito, {} en caso de fallo.
     """
-    url = f"{BACKEND_URL}/items"
+    url = f"{BACKEND_URL}/articulos"
     try:
-        resp = requests.post(url, json=item_data, timeout=TIMEOUT)
+        resp = requests.post(url, json=articulo_data, timeout=TIMEOUT)
         resp.raise_for_status()
         return resp.json()
     except RequestException:
@@ -38,11 +38,11 @@ def crear_item(item_data):
         return {}
 
 
-def obtener_item(item_id):
-    """GET /items/{id}
+def obtener_articulo(articulo_id):
+    """GET /articulos/{id}
     Devuelve el JSON del ítem en caso de éxito, {} en caso de fallo.
     """
-    url = f"{BACKEND_URL}/items/{item_id}"
+    url = f"{BACKEND_URL}/articulos/{articulo_id}"
     try:
         resp = requests.get(url, timeout=TIMEOUT)
         resp.raise_for_status()
@@ -53,13 +53,13 @@ def obtener_item(item_id):
         return {}
 
 
-def actualizar_item(item_id, item_data):
-    """PUT /items/{id}
+def actualizar_articulo(articulo_id, articulo_data):
+    """PUT /articulos/{id}
     Devuelve el JSON actualizado en caso de éxito, {} en caso de fallo.
     """
-    url = f"{BACKEND_URL}/items/{item_id}"
+    url = f"{BACKEND_URL}/articulos/{articulo_id}"
     try:
-        resp = requests.put(url, json=item_data, timeout=TIMEOUT)
+        resp = requests.put(url, json=articulo_data, timeout=TIMEOUT)
         resp.raise_for_status()
         return resp.json()
     except RequestException:
@@ -68,11 +68,11 @@ def actualizar_item(item_id, item_data):
         return {}
 
 
-def eliminar_item(item_id):
-    """DELETE /items/{id}
+def eliminar_articulo(articulo_id):
+    """DELETE /articulos/{id}
     Devuelve True en caso de éxito, {} en caso de fallo.
     """
-    url = f"{BACKEND_URL}/items/{item_id}"
+    url = f"{BACKEND_URL}/articulos/{articulo_id}"
     try:
         resp = requests.delete(url, timeout=TIMEOUT)
         resp.raise_for_status()
@@ -83,12 +83,12 @@ def eliminar_item(item_id):
         return {}
 
 
-def establecer_condicion_item(item_id, condition_data):
-    """PATCH /items/{id}/condition
+def establecer_condicion_articulo(articulo_id, condition_data):
+    """PATCH /articulos/{id}/condition
     condition_data: dict (ej., {"condition": "good"})
     Devuelve True en caso de éxito, {} en caso de fallo.
     """
-    url = f"{BACKEND_URL}/items/{item_id}/condition"
+    url = f"{BACKEND_URL}/articulos/{articulo_id}/condition"
     try:
         resp = requests.patch(url, json=condition_data, timeout=TIMEOUT)
         resp.raise_for_status()

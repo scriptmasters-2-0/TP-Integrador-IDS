@@ -3,9 +3,9 @@
 
 from flask import Blueprint, redirect, render_template, request, session, url_for
 
-from services import items_service, loans_service
-from services.api_client import get_json
-from services.loans_service import obtener_qr_reserva
+from servicios import articulos_servicio, reservas_servicio
+from servicios.api_client import get_json
+from servicios.reservas_servicio import obtener_qr_reserva
 
 profesor_bp = Blueprint("profesor", __name__, url_prefix="/profesor")
 
@@ -13,32 +13,32 @@ profesor_bp = Blueprint("profesor", __name__, url_prefix="/profesor")
 @profesor_bp.route("/perfil")
 def perfil():
     """Renderiza la vista de perfil del profesor."""
-    return render_template("profesor/perfil.html", perfil=session.get("user", {}))
+    return render_template("profesor/perfil.html", perfil=session.get("usuario", {}))
 
 
 @profesor_bp.route("/dashboard")
 def dashboard():
     """Renderiza el panel de control del profesor."""
     token = session.get("token")
-    user_id = (session.get("user") or {}).get("id")
+    usuario_id = (session.get("usuario") or {}).get("id")
 
     reservas = []
     error = None
-    if user_id:
-        payload, error = get_json(f"/users/{user_id}/loans", token=token)
+    if usuario_id:
+        payload, error = get_json(f"/usuarios/{usuario_id}/reservas", token=token)
         if isinstance(payload, list):
-            for item in payload:
+            for articulo in payload:
                 reservas.append(
                     {
-                        "id": item.get("id"),
+                        "id": articulo.get("id"),
                         "estado_clase": "status-active"
-                        if item.get("estado_reserva") != "pendiente"
+                        if articulo.get("estado_reserva") != "pendiente"
                         else "status-pending",
-                        "estado_texto": item.get("estado_reserva", "Pendiente"),
-                        "equipo": item.get(
-                            "nombre_art", f"Artículo {item.get('id_reservado') or ''}"
+                        "estado_texto": articulo.get("estado_reserva", "Pendiente"),
+                        "equipo": articulo.get(
+                            "nombre_art", f"Artículo {articulo.get('id_reservado') or ''}"
                         ),
-                        "fecha": item.get("fecha_retiro", "Desconocida"),
+                        "fecha": articulo.get("fecha_retiro", "Desconocida"),
                         "ubicacion": "Sede FIUBA",
                         "acciones": ["Cancelar", "Ver QR"],
                     }
@@ -73,22 +73,22 @@ def historial():
 @profesor_bp.route("/nueva", methods=["GET"])
 def nueva_reserva():
     """Renderiza el formulario para crear una nueva reserva."""
-    items = items_service.obtener_items()
+    articulos = articulos_servicio.obtener_articulos()
 
     return render_template(
         "profesor/nueva_reserva.html",
-        items=items,
+        articulos=articulos,
     )
 
 
 @profesor_bp.route("/guardar", methods=["POST"])
 def guardar_reserva():
     """Lógica para guardar la nueva reserva."""
-    user_id = (session.get("user") or {}).get("id")
-    item_id = request.form.get("articulo")
+    usuario_id = (session.get("usuario") or {}).get("id")
+    articulo_id = request.form.get("articulo")
 
-    if user_id and item_id:
-        loans_service.crear_prestamo({"user_id": user_id, "item_id": item_id})
+    if usuario_id and articulo_id:
+        reservas_servicio.crear_reserva({"usuario_id": usuario_id, "articulo_id": articulo_id})
 
     return redirect(url_for("profesor.mis_reservas"))
 
@@ -100,18 +100,18 @@ def historial_reserva():
 
     if error:
         return render_template(
-            "profesor/historial_reservas.html", prestamos=[], error=error
+            "profesor/historial_reservas.html", reservas=[], error=error
         )
 
-    user_id = usuario["user"]["id"]
-    prestamos, error = get_json(f"/users/{user_id}/loans")
+    usuario_id = usuario["usuario"]["id"]
+    reservas, error = get_json(f"/usuarios/{usuario_id}/reservas")
 
     return render_template(
-        "profesor/historial_reservas.html", prestamos=prestamos or [], error=error
+        "profesor/historial_reservas.html", reservas=reservas or [], error=error
     )
 
 
-@profesor_bp.route("/prestamos/<int:id>/comprobante", methods=["GET"])
+@profesor_bp.route("/reservas/<int:id>/comprobante", methods=["GET"])
 def comprobante(id):
     """Muestra el comprobante de reserva."""
     qr, error = obtener_qr_reserva(id)

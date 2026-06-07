@@ -3,9 +3,9 @@
 from flask import Blueprint, redirect, render_template, request, session, url_for
 
 from http_codes_and_messages import HTTP_UNAUTHORIZED
-from services import auth_service, normativas_service
-from services.api_client import get_json, post_json
-from services.items_service import obtener_items
+from servicios import auth_servicio, normativas_servicio
+from servicios.api_client import get_json, post_json
+from servicios.articulos_servicio import obtener_articulos
 
 public_bp = Blueprint("public", __name__)
 
@@ -20,10 +20,10 @@ def home():
 def logup():
     """Renderiza la página de registro de nuevos usuarios."""
     if session.get("token"):
-        role = session.get("role", "alumno")
-        if role in ("admin", "bibliotecario"):
+        rol = session.get("rol", "alumno")
+        if rol in ("admin", "bibliotecario"):
             return redirect(url_for("admin.dashboard"))
-        if role in ("profesor", "docente"):
+        if rol in ("profesor", "profesor"):
             return redirect(url_for("profesor.mis_reservas"))
         return redirect(url_for("alumno.perfil"))
 
@@ -33,13 +33,13 @@ def logup():
 @public_bp.route("/logup", methods=["POST"])
 def logup_submit():
     """Procesa logup contra backend."""
-    username = (request.form.get("email") or "").strip()
+    usuarioname = (request.form.get("email") or "").strip()
     email = (request.form.get("email") or "").strip()
     carrera = request.form.get("carrera") or ""
-    password = request.form.get("password") or ""
+    contrasenia = request.form.get("contrasenia") or ""
 
-    respuesta = auth_service.crear_usuario(
-        {"nombre": username, "mail": email, "carrera": carrera, "password": password},
+    respuesta = auth_servicio.crear_usuario(
+        {"nombre": usuarioname, "email": eemail, "carrera": carrera, "contrasenia": contrasenia},
     )
 
     if not respuesta:
@@ -59,10 +59,10 @@ def logup_submit():
 def login():
     """Renderiza la página de inicio de sesión."""
     if session.get("token"):
-        role = session.get("role", "alumno")
-        if role in ("admin", "bibliotecario"):
+        rol = session.get("rol", "alumno")
+        if rol in ("admin", "bibliotecario"):
             return redirect(url_for("admin.dashboard"))
-        if role in ("profesor", "docente"):
+        if rol in ("profesor", "profesor"):
             return redirect(url_for("profesor.mis_reservas"))
         return redirect(url_for("alumno.perfil"))
 
@@ -73,10 +73,10 @@ def login():
 def login_submit():
     """Procesa login contra backend y guarda sesión local."""
     email = (request.form.get("email") or "").strip()
-    password = request.form.get("password") or ""
+    contrasenia = request.form.get("contrasenia") or ""
 
     payload, error, status_code = post_json(
-        "/auth/login", {"email": email, "password": password}
+        "/auth/login", {"email": eemail, "contrasenia": contrasenia}
     )
 
     if error:
@@ -90,14 +90,14 @@ def login_submit():
             HTTP_UNAUTHORIZED,
         )
 
-    role = (payload or {}).get("role", "alumno")
+    rol = (payload or {}).get("rol", "alumno")
     session["token"] = (payload or {}).get("token")
-    session["role"] = role
-    session["user"] = (payload or {}).get("user", {})
+    session["rol"] = rol
+    session["usuario"] = (payload or {}).get("usuario", {})
 
-    if role in ("admin", "bibliotecario"):
+    if rol in ("admin", "bibliotecario"):
         return redirect(url_for("admin.dashboard"))
-    if role in ("profesor", "docente"):
+    if rol in ("profesor", "profesor"):
         return redirect(url_for("profesor.mis_reservas"))
     return redirect(url_for("alumno.perfil"))
 
@@ -119,7 +119,7 @@ def registro():
 
 @public_bp.route("/normas", methods=["GET"])
 def normas():
-    normativas = normativas_service.obtener_normativas()
+    normativas = normativas_servicio.obtener_normativas()
     return render_template("public/normas.html", normativas=normativas)
 
 
@@ -134,7 +134,7 @@ def mostrar_catalogo():
     if seccion_actual:
         filtros["seccion"] = seccion_actual
 
-    articulos = obtener_items(filtros)
+    articulos = obtener_articulos(filtros)
 
     return render_template(
         "public/catalogo.html",
@@ -149,10 +149,10 @@ def mostrar_faq():
     return render_template("public/faq.html")
 
 
-@public_bp.route("/articulos/<int:item_id>")
-def get_article_details(item_id):
+@public_bp.route("/articulos/<int:articulo_id>")
+def get_article_details(articulo_id):
     """Muestra el detalle público de un artículo."""
-    articulo, fetch_error = get_json(f"/api/items/{item_id}")
+    articulo, fetch_error = get_json(f"/api/articulos/{articulo_id}")
 
     return render_template(
         "public/article_details.html", articulo=articulo, fetch_error=fetch_error

@@ -25,14 +25,14 @@ PORT = int(os.environ.get("BACKEND_PORT", "5001"))
 DB_HOST = os.environ.get("DB_HOST", "127.0.0.1")
 DB_PORT = int(os.environ.get("DB_PORT", "3306"))
 DB_NAME = os.environ.get("DB_NAME", "sistema_prestamos")
-DB_ROOT_PASSWORD = os.environ.get("DB_ROOT_PASSWORD", "password")
+DB_ROOT_PASSWORD = os.environ.get("DB_ROOT_PASSWORD", "contrasenia")
 DB_USER = os.environ.get("DB_USER", "tp_integrador")
-DB_PASSWORD = os.environ.get("DB_PASSWORD", "password")
+DB_PASSWORD = os.environ.get("DB_PASSWORD", "contrasenia")
 
 # JWT settings
-JWT_SECRET = os.environ.get("JWT_SECRET", "secret")
-JWT_EXPIRATION_HORAS = int(os.environ.get("JWT_EXPIRATION_HORAS", "8"))
-JWT_ALGORITHM = os.environ.get("JWT_ALGORITHM", "HS256")
+JWT_SECRETO = os.environ.get("JWT_SECRETO", "secret")
+JWT_HORAS_DE_EXPIRACION = int(os.environ.get("JWT_HORAS_DE_EXPIRACION", "8"))
+JWT_ALGORITMO = os.environ.get("JWT_ALGORITMO", "HS256")
 
 # QR settings
 QR_BORDE = int(os.environ.get("QR_BORDER", "4"))

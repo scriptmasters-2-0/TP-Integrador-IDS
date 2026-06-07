@@ -1,4 +1,4 @@
-# reports_service.py
+# reports_servicio.py
 # Funciones de servicio para consumir endpoints/reportes
 
 import requests
