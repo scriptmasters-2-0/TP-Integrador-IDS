@@ -20,7 +20,7 @@ Esto es algo que habíamos estado conversando con Erick
 | `GET` | `/articulos` | Detalle público de un artículo: nombre, tipo, sección, stock disponible |
 | `GET` | `/normas` | Normativas completas  |
 | `GET` | `/faq` | Preguntas frecuentes |
-| `GET` | `/registro` | Formulario de registro (nombre, mail, carrera, contraseña). Al enviar, crea usuario con rol `alumno` por defecto y redirige a `/login`. |
+| `GET` | `/registro` | Formulario de registro (nombre, email, carrera, contraseña). Al enviar, crea usuario con rol `alumno` por defecto y redirige a `/login`. |
 | `GET` | `/login` | Formulario de inicio de sesión. Al enviar, valida credenciales y redirige según rol. |
 | `GET` | `/logout` | Cierra sesión activa y redirige a `/` |
 
@@ -30,14 +30,14 @@ Esto es algo que habíamos estado conversando con Erick
 
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| `GET` | `/alumno/dashboard` | Panel principal: reservas activas, score, alertas de penalización |
-| `GET` | `/alumno/perfil` | Datos personales: nombre, mail, carrera, score |
+| `GET` | `/alumno/dashboard` | Panel principal: reservas activas, puntaje, alertas de penalización |
+| `GET` | `/alumno/perfil` | Datos personales: nombre, email, carrera, puntaje |
 | `GET` | `/alumno/mis-reservas` | Reservas activas con estado (`pendiente` / `entregado` / `devuelto`). Incluye acción de cancelar reservas pendientes (acción backend). |
 | `GET` | `/alumno/mis-reservas/nueva` | Formulario para crear nueva reserva (valida stock y penalizaciones activas). Al enviar, envía la solicitud al backend. |
 | `GET` | `/alumno/historial` | Historial completo de reservas pasadas |
-| `GET` | `/alumno/penalizaciones` | Penalizaciones activas: motivo, severity (`baja`/`media`/`alta`), fecha inicio/fin |
-| `GET` | `/alumno/prestamos/{id}` | Detalle de reserva: estado, fecha retiro/regreso, QR |
-| `GET` | `/alumno/prestamos/{id}/comprobante` | Ticket de reserva con código QR dinámico (tabla `qr`) |
+| `GET` | `/alumno/penalizaciones` | Penalizaciones activas: motivo, severidad (`baja`/`media`/`alta`), fecha inicio/fin |
+| `GET` | `/alumno/reservas/{id}` | Detalle de reserva: estado, fecha retiro/regreso, QR |
+| `GET` | `/alumno/reservas/{id}/comprobante` | Ticket de reserva con código QR dinámico (tabla `qr`) |
 
 ---
 
@@ -46,12 +46,12 @@ Esto es algo que habíamos estado conversando con Erick
 | Método | Ruta | Descripción |
 |--------|------|-------------|
 | `GET` | `/profesor/dashboard` | Panel principal: reservas activas, accesos rápidos |
-| `GET` | `/profesor/perfil` | Datos personales: nombre, mail |
+| `GET` | `/profesor/perfil` | Datos personales: nombre, email |
 | `GET` | `/profesor/mis-reservas` | Reservas activas con estado. Incluye acción de cancelar reservas pendientes (acción backend). |
 | `GET` | `/profesor/mis-reservas/nueva` | Formulario para crear nueva reserva (sin límites ni restricciones por penalización). Al enviar, envía la solicitud al backend. |
 | `GET` | `/profesor/historial` | Historial completo de reservas pasadas |
-| `GET` | `/profesor/prestamos/{id}` | Detalle de reserva: estado, fecha retiro/regreso, QR |
-| `GET` | `/profesor/prestamos/{id}/comprobante` | Ticket de reserva con código QR dinámico |
+| `GET` | `/profesor/reservas/{id}` | Detalle de reserva: estado, fecha retiro/regreso, QR |
+| `GET` | `/profesor/reservas/{id}/comprobante` | Ticket de reserva con código QR dinámico |
 
 ---
 
@@ -63,11 +63,11 @@ Esto es algo que habíamos estado conversando con Erick
 | `GET` | `/admin/articulos` | ABM de artículos: listado con filtros por tipo/sección. Permite eliminar artículos y acceder a formularios de alta/edición (acciones backend). |
 | `GET` | `/admin/articulos/nuevo` | Formulario alta: nombre, tipo, sección, prestación máxima, stock. Al enviar, guarda el nuevo artículo (acción backend). |
 | `GET` | `/admin/articulos/{id}/editar` | Formulario edición de artículo para el artículo con id: muestra datos y permite editar. Al enviar, actualiza datos del artículo (incluye `necesita_reparacion`) (acción backend). |
-| `GET` | `/admin/prestamos` | Lista todos los préstamos con filtros por estado/fecha/usuario |
-| `GET` | `/admin/prestamos/{id}` | Detalle del préstamo; permite cambiar estado y registrar devolución (`estado_devuelto`) |
-| `GET` | `/admin/usuarios` | ABM de usuarios: listado con rol, carrera, score. Permite editar usuarios (acción backend) y acceder a perfiles. |
-| `GET` | `/admin/usuarios/{id}` | Perfil completo: historial, penalizaciones, score. Desde aquí se pueden modificar datos o rol (acción backend). |
-| `GET` | `/admin/penalizaciones` | Lista penalizaciones activas con severity (campo en el que se define la gravedad) y fechas. Se pueden levantar manualmente (acción backend). |
+| `GET` | `/admin/reservas` | Lista todos los préstamos con filtros por estado/fecha/usuario |
+| `GET` | `/admin/reservas/{id}` | Detalle del préstamo; permite cambiar estado y registrar devolución (`estado_devuelto`) |
+| `GET` | `/admin/usuarios` | ABM de usuarios: listado con rol, carrera, puntaje. Permite editar usuarios (acción backend) y acceder a perfiles. |
+| `GET` | `/admin/usuarios/{id}` | Perfil completo: historial, penalizaciones, puntaje. Desde aquí se pueden modificar datos o rol (acción backend). |
+| `GET` | `/admin/penalizaciones` | Lista penalizaciones activas con severidad (campo en el que se define la gravedad) y fechas. Se pueden levantar manualmente (acción backend). |
 | `GET` | `/admin/normativas` | ABM de normativas (tabla `normativa`). Permite crear y editar normativas (acciones backend). |
 | `GET` | `/admin/reportes` | Panel de reportes: gráficos de demanda por carrera |
 | `GET` | `/admin/reportes/morosidad` | Reporte de morosidad exportable en PDF |

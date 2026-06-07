@@ -1,6 +1,6 @@
 {% extends "layouts/base_dashboard.html" %}
 
-{% block user_name %}Administrador{% endblock %}
+{% block usuario_name %}Administrador{% endblock %}
 
 {% block sidebar_links %}
   <li>
@@ -10,12 +10,12 @@
     <a href="/admin/articulos"><i class="fa-solid fa-box"></i> Artículos</a>
   </li>
   <li>
-    <a href="{{ url_for('admin.lista_prestamos') }}" class="active"
+    <a href="{{ url_for('admin.lista_reservas') }}" class="active"
       ><i class="fa-solid fa-clipboard-list"></i> Préstamos</a
     >
   </li>
   <li>
-    <a href="/admin/usuarios"><i class="fa-solid fa-users"></i> Usuarios</a>
+    <a href="/admin/usuarios"><i class="fa-solid fa-usuarios"></i> Usuarios</a>
   </li>
   <li>
     <a href="/admin/reportes/morosidad"><i class="fa-solid fa-chart-column"></i> Morosidad</a>
@@ -70,8 +70,8 @@
           </tr>
         </thead>
         <tbody>
-          {% if prestamos %}
-            {% for p in prestamos %}
+          {% if reservas %}
+            {% for p in reservas %}
               <tr>
                 <td>{{ p.id }}</td>
                 <td>{{ p.usuario_nombre }}</td>
@@ -80,7 +80,7 @@
                 <td>{{ p.fecha }}</td>
                 <td class="text-center">
                   <a
-                    href="{{ url_for('admin.prestamo_detalle', id=p.id) }}"
+                    href="{{ url_for('admin.reserva_detalle', id=p.id) }}"
                     class="btn-icon"
                     title="Ver Detalle">
                     <i class="fa-solid fa-eye"></i>

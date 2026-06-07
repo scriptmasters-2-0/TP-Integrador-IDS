@@ -1,6 +1,6 @@
 {% extends "layouts/base_dashboard.html" %}
 
-{% block user_name %}Administrador{% endblock %}
+{% block usuario_name %}Administrador{% endblock %}
 
 {% block sidebar_links %}
   <li>
@@ -12,7 +12,7 @@
     </a>
   </li>
   <li>
-    <a href="{{ url_for('admin.usuarios') }}"> <i class="fa-solid fa-users"></i> Usuarios </a>
+    <a href="{{ url_for('admin.usuarios') }}"> <i class="fa-solid fa-usuarios"></i> Usuarios </a>
   </li>
   <li>
     <a href="{{ url_for('admin.reportes') }}">

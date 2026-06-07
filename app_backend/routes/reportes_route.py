@@ -96,12 +96,12 @@ def obtener_reporte_db(tipo_reporte):
         cursor.execute("""
             SELECT
                 usuario.carrera,
-                COUNT(*) AS cantidad_prestamos
+                COUNT(*) AS cantidad_reservas
             FROM reserva
             JOIN usuario
                 ON reserva.id_usuario = usuario.id
             GROUP BY usuario.carrera
-            ORDER BY cantidad_prestamos DESC
+            ORDER BY cantidad_reservas DESC
         """)
 
     for fila in cursor:

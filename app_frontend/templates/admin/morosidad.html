@@ -1,6 +1,6 @@
 {% extends "layouts/base_dashboard.html" %}
 
-{% block user_name %}Administrador{% endblock %}
+{% block usuario_name %}Administrador{% endblock %}
 
 {% block sidebar_links %}
   <li>
@@ -10,12 +10,12 @@
     <a href="/admin/articulos"><i class="fa-solid fa-box"></i> Articulos</a>
   </li>
   <li>
-    <a href="{{ url_for('admin.lista_prestamos') }}"
+    <a href="{{ url_for('admin.lista_reservas') }}"
       ><i class="fa-solid fa-clipboard-list"></i> Préstamos</a
     >
   </li>
   <li>
-    <a href="/admin/usuarios"><i class="fa-solid fa-users"></i> Usuarios</a>
+    <a href="/admin/usuarios"><i class="fa-solid fa-usuarios"></i> Usuarios</a>
   </li>
   <li>
     <a href="/admin/reportes/morosidad" class="active"
@@ -33,7 +33,7 @@
   <div class="history-container">
     <div class="history-header">
       <h2>Reporte de morosidad</h2>
-      <p>Visualiza prestamos vencidos y usuarios con penalizaciones activas.</p>
+      <p>Visualiza reservas vencidos y usuarios con penalizaciones activas.</p>
     </div>
 
     <div class="history-table-wrapper">
@@ -48,8 +48,8 @@
           </tr>
         </thead>
         <tbody>
-          {% if penalties %}
-            {% for p in penalties %}
+          {% if penalizaciones %}
+            {% for p in penalizaciones %}
               <tr>
                 <td>{{ p.usuario }}</td>
                 <td>{{ p.articulo }}</td>

@@ -1,10 +1,10 @@
 {% extends 'layouts/base_dashboard.html' %}
 
-{% block user_name %}Alumno{% endblock %}
+{% block usuario_name %}Alumno{% endblock %}
 
 {% block sidebar_links %}
   <li>
-    <a href="#"><i class="fa-solid fa-user"></i> Perfil</a>
+    <a href="#"><i class="fa-solid fa-usuario"></i> Perfil</a>
   </li>
   <li>
     <a href="{{ url_for('alumno.alumno_mis_reservas') }}"
@@ -38,7 +38,7 @@
               <td>{{ penalizacion.motivo }}</td>
               <td>
                 <span
-                  class="badge {% if penalizacion.severidad == 'alta' %}badge-danger{% elif penalizacion.severidad == 'media' %}badge-warning{% else %}badge-success{% endif %}">
+                  class="badge {% if penalizacion.severidad == 'alta' %}badge-danger{% elif penalizacion.severidad == 'media' %}badge-warning{% else %}badge-exito{% endif %}">
                   {{ penalizacion.severidad }}
                 </span>
               </td>

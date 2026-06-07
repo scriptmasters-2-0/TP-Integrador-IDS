@@ -4,9 +4,9 @@ import logging
 
 from flask import Blueprint, redirect, render_template, request, session, url_for
 
-from services.api_client import (
+from servicios.api_client import (
     get_json,
-    obtener_detalle_prestamo,
+    obtener_detalle_reserva,
     obtener_perfil_usuario,
     post_json,
 )
@@ -22,7 +22,7 @@ def perfil():
     try:
         usuario = obtener_perfil_usuario()
     except Exception as e:
-        logger.error(f"Error fetching user profile: {e}")
+        logger.error(f"Error fetching usuario profile: {e}")
         usuario = None
 
     return render_template("alumno/perfil.html", usuario=usuario)
@@ -32,25 +32,25 @@ def perfil():
 def historial():
     """Renderiza el historial de préstamos del alumno."""
     token = session.get("token")
-    user_id = (session.get("user") or {}).get("id")
+    usuario_id = (session.get("usuario") or {}).get("id")
 
     historial_datos = []
     error = None
-    if user_id:
-        payload, error = get_json(f"/api/users/{user_id}/loans", token=token)
+    if usuario_id:
+        payload, error = get_json(f"/api/usuarios/{usuario_id}/reservas", token=token)
         if isinstance(payload, list):
-            for prestamo in payload:
+            for reserva in payload:
                 historial_datos.append(
                     {
-                        "fecha": prestamo.get("fecha_retiro", "Desconocida"),
-                        "nombre_equipo": prestamo.get("nombre_art", "Artículo"),
-                        "id_equipo": prestamo.get("id_reservado"),
-                        "sede": prestamo.get("seccion", "Sede FIUBA"),
-                        "estado_texto": prestamo.get("estado_reserva", "Pendiente"),
+                        "fecha": reserva.get("fecha_retiro", "Desconocida"),
+                        "nombre_equipo": reserva.get("nombre_art", "Artículo"),
+                        "id_equipo": reserva.get("id_reservado"),
+                        "sede": reserva.get("seccion", "Sede FIUBA"),
+                        "estado_texto": reserva.get("estado_reserva", "Pendiente"),
                         "estado_clase": (
                             "badge-warning"
-                            if prestamo.get("estado_reserva") == "pendiente"
-                            else "badge-success"
+                            if reserva.get("estado_reserva") == "pendiente"
+                            else "badge-exito"
                         ),
                     }
                 )
@@ -64,34 +64,34 @@ def historial():
 def nueva_reserva():
     """Renderiza y procesa el formulario de nueva reserva para alumnos."""
     token = session.get("token")
-    user_id = (session.get("user") or {}).get("id")
+    usuario_id = (session.get("usuario") or {}).get("id")
 
     if request.method == "POST":
-        item_id = request.form.get("articulo_id")
-        if user_id and item_id:
+        articulo_id = request.form.get("articulo_id")
+        if usuario_id and articulo_id:
             post_json(
-                "/api/loans",
-                {"user_id": user_id, "item_id": item_id},
+                "/api/reservas",
+                {"usuario_id": usuario_id, "articulo_id": articulo_id},
                 token=token,
             )
         return redirect(url_for("alumno.historial"))
 
-    items_payload, fetch_error = get_json("/api/items", token=token)
-    items = items_payload if isinstance(items_payload, list) else []
+    articulos_payload, fetch_error = get_json("/api/articulos", token=token)
+    articulos = articulos_payload if isinstance(articulos_payload, list) else []
 
     return render_template(
         "alumno/nueva_reserva.html",
-        items=items,
+        articulos=articulos,
         fetch_error=fetch_error,
     )
 
 
-@alumno_bp.route("/prestamos/<int:id>/comprobante")
+@alumno_bp.route("/reservas/<int:id>/comprobante")
 def comprobante(id):
     """Renderiza el comprobante de un préstamo específico para el alumno."""
     try:
-        datos_api = obtener_detalle_prestamo(id)
-        prestamo = {
+        datos_api = obtener_detalle_reserva(id)
+        reserva = {
             "id": datos_api.get("id", id),
             "estado_texto": datos_api.get("estado_reserva", "Pendiente"),
             "estado_clase": "status-active",
@@ -105,8 +105,8 @@ def comprobante(id):
             "titular_legajo": datos_api.get("id_usuario", "N/A"),
         }
     except Exception as e:
-        logger.error(f"Error retrieving loan detail for ID {id}: {e}")
-        prestamo = {
+        logger.error(f"Error retrieving reserva detail for ID {id}: {e}")
+        reserva = {
             "id": id,
             "estado_texto": "Error al cargar",
             "estado_clase": "status-error",
@@ -120,34 +120,34 @@ def comprobante(id):
             "titular_legajo": "N/A",
         }
 
-    return render_template("alumno/comprobante.html", prestamo=prestamo)
+    return render_template("alumno/comprobante.html", reserva=reserva)
 
 
-@alumno_bp.route("/prestamos/id/comprobante")
+@alumno_bp.route("/reservas/id/comprobante")
 def comprobante_sin_id():
-    """Renderiza el comprobante de un prestamo especifico para el alumno (sin id)."""
+    """Renderiza el comprobante de un reserva especifico para el alumno (sin id)."""
     return render_template("alumno/comprobante.html")
 
 
 # TODO: Implement POST handlers for profile management
 # These handlers are placeholders for features to be implemented:
-# - @alumno_bp.route("/perfil/cambiar-contrasena", methods=["POST"]) - Change password
+# - @alumno_bp.route("/perfil/cambiar-contrasena", methods=["POST"]) - Change contrasenia
 # - @alumno_bp.route("/perfil/solicitar-correccion", methods=["POST"]) - Request data correction
 # Currently, these buttons are disabled in the template (alumno/perfil.html)
-# Backend endpoints in /api/users/*/password and /api/users/*/corrections should be created
+# Backend endpoints in /api/usuarios/*/contrasenia and /api/usuarios/*/corrections should be created
 
 
 @alumno_bp.route("/dashboard")
 def dashboard():
-    """Panel principal: reservas activas, score, alertas de penalización."""
+    """Panel principal: reservas activas, puntaje, alertas de penalización."""
     token = session.get("token")
-    user = session.get("user")
+    usuario = session.get("usuario")
 
-    if not token or not user:
+    if not token or not usuario:
         return redirect(url_for("public.login"))
 
     dashboard_data, error = get_json(
-        f"/api/alumno/dashboard/{user.get('id')}", token=token
+        f"/api/alumno/dashboard/{usuario.get('id')}", token=token
     )
 
     return render_template(
@@ -155,21 +155,21 @@ def dashboard():
     )
 
 
-@alumno_bp.route("/prestamos/<int:id>", methods=["GET"])
-def prestamo_detalle(id):
+@alumno_bp.route("/reservas/<int:id>", methods=["GET"])
+def reserva_detalle(id):
     """Detalle de reserva: estado, fecha retiro/regreso, QR."""
     token = session.get("token")
     if not token:
         return redirect(url_for("public.login"))
 
-    datos_api, error = get_json(f"/api/loans/{id}", token=token)
+    datos_api, error = get_json(f"/api/reservas/{id}", token=token)
 
     if error:
         return render_template(
-            "alumno/prestamo_detalle_alumno.html", prestamo=None, fetch_error=error
+            "alumno/reserva_detalle_alumno.html", reserva=None, fetch_error=error
         )
 
-    prestamo = {
+    reserva = {
         "id": datos_api.get("id"),
         "estado": datos_api.get("estado_reserva"),
         "fecha_retiro": datos_api.get("fecha_retiro"),
@@ -177,4 +177,4 @@ def prestamo_detalle(id):
         "qr_url": f"https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=FIUBA-RES-{datos_api.get('id')}",
     }
 
-    return render_template("alumno/prestamo_detalle_alumno.html", prestamo=prestamo)
+    return render_template("alumno/reserva_detalle_alumno.html", reserva=reserva)

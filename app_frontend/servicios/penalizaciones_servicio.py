@@ -1,5 +1,5 @@
-# penalties_service.py
-# Funciones de servicio para consumir endpoints /penalties
+# penalizaciones_servicio.py
+# Funciones de servicio para consumir endpoints /penalizaciones
 import requests
 from requests.exceptions import RequestException
 
@@ -9,10 +9,10 @@ TIMEOUT = 5
 
 
 def obtener_penalizaciones(params=None):
-    """GET /penalties
+    """GET /penalizaciones
     Devuelve una lista en caso de éxito, [] en caso de fallo.
     """
-    url = f"{BACKEND_URL}/penalties"
+    url = f"{BACKEND_URL}/penalizaciones"
     try:
         resp = requests.get(url, params=params, timeout=TIMEOUT)
         resp.raise_for_status()
@@ -24,10 +24,10 @@ def obtener_penalizaciones(params=None):
 
 
 def crear_penalizacion(penalty_data):
-    """POST /penalties
+    """POST /penalizaciones
     Devuelve el JSON de la penalización creada en caso de éxito, {} en caso de fallo.
     """
-    url = f"{BACKEND_URL}/penalties"
+    url = f"{BACKEND_URL}/penalizaciones"
     try:
         resp = requests.post(url, json=penalty_data, timeout=TIMEOUT)
         resp.raise_for_status()
@@ -39,10 +39,10 @@ def crear_penalizacion(penalty_data):
 
 
 def obtener_penalizacion(penalty_id):
-    """GET /penalties/{id}
+    """GET /penalizaciones/{id}
     Devuelve el JSON de la penalización en caso de éxito, {} en caso de fallo.
     """
-    url = f"{BACKEND_URL}/penalties/{penalty_id}"
+    url = f"{BACKEND_URL}/penalizaciones/{penalty_id}"
     try:
         resp = requests.get(url, timeout=TIMEOUT)
         resp.raise_for_status()
@@ -54,10 +54,10 @@ def obtener_penalizacion(penalty_id):
 
 
 def actualizar_penalizacion(penalty_id, penalty_data):
-    """PUT /penalties/{id}
+    """PUT /penalizaciones/{id}
     Devuelve el JSON actualizado en caso de éxito, {} en caso de fallo.
     """
-    url = f"{BACKEND_URL}/penalties/{penalty_id}"
+    url = f"{BACKEND_URL}/penalizaciones/{penalty_id}"
     try:
         resp = requests.put(url, json=penalty_data, timeout=TIMEOUT)
         resp.raise_for_status()
@@ -69,10 +69,10 @@ def actualizar_penalizacion(penalty_id, penalty_data):
 
 
 def actualizar_parcial_penalizacion(penalty_id, patch_data):
-    """PATCH /penalties/{id}
+    """PATCH /penalizaciones/{id}
     Devuelve True en caso de éxito, {} en caso de fallo.
     """
-    url = f"{BACKEND_URL}/penalties/{penalty_id}"
+    url = f"{BACKEND_URL}/penalizaciones/{penalty_id}"
     try:
         resp = requests.patch(url, json=patch_data, timeout=TIMEOUT)
         resp.raise_for_status()

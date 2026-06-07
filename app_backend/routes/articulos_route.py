@@ -18,12 +18,12 @@ from http_codes_and_messages import (
     MSG_NOT_FOUND,
 )
 from routes.auth_route import requiere_auth
-from validators import valid_id, valid_item, valid_item_filters, valid_item_update
+from validators import valid_id, valid_articulo, valid_articulo_filters, valid_articulo_update
 
-items_bp = Blueprint("items", __name__)
+articulos_bp = Blueprint("articulos", __name__)
 
 
-def format_item(row):
+def format_articulo(row):
     """Formatea una fila de artículo de la base de datos como respuesta de la API.
 
     Args:
@@ -45,8 +45,8 @@ def format_item(row):
     }
 
 
-@items_bp.route("/api/items", methods=["GET"])
-def get_items():  # noqa: PLR0912
+@articulos_bp.route("/api/articulos", methods=["GET"])
+def get_articulos():
     """Retorna artículos del inventario, opcionalmente filtrados por query.
 
     Los filtros disponibles son: tipo, sección, disponibilidad y
@@ -63,7 +63,7 @@ def get_items():  # noqa: PLR0912
         "necesita_reparacion": request.args.get("necesita_reparacion"),
     }
 
-    is_valid, error, parsed_filters = valid_item_filters(filters)
+    is_valid, error, parsed_filters = valid_articulo_filters(filters)
     if not is_valid:
         return jsonify({"error": MSG_BAD_REQUEST, "detail": error}), HTTP_BAD_REQUEST
 
@@ -114,9 +114,9 @@ def get_items():  # noqa: PLR0912
     try:
         cursor = conn.cursor(dictionary=True)
         cursor.execute(sql, values)
-        items = [format_item(row) for row in cursor.fetchall()]
+        articulos = [format_articulo(row) for row in cursor.fetchall()]
 
-        return jsonify(items), HTTP_OK
+        return jsonify(articulos), HTTP_OK
 
     except mysql.connector.Error:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
@@ -136,9 +136,9 @@ def get_items():  # noqa: PLR0912
             pass
 
 
-@items_bp.route("/api/items", methods=["POST"])
+@articulos_bp.route("/api/articulos", methods=["POST"])
 @requiere_auth(roles=["admin", "bibliotecario", "profesor"])
-def create_item():
+def create_articulo():
     """Crea un nuevo artículo en el inventario.
 
     Recibe los datos del artículo en el cuerpo de la petición como JSON,
@@ -157,7 +157,7 @@ def create_item():
     except Exception:
         data = None
 
-    is_valid, error = valid_item(data)
+    is_valid, error = valid_articulo(data)
     if not is_valid:
         return jsonify({"error": MSG_BAD_REQUEST, "detail": error}), HTTP_BAD_REQUEST
 
@@ -193,7 +193,7 @@ def create_item():
         cursor.execute(sql, values)
         conn.commit()
 
-        item_id = cursor.lastrowid
+        articulo_id = cursor.lastrowid
         cursor.execute(
             """
             SELECT id,
@@ -204,13 +204,13 @@ def create_item():
                    stock,
                    necesita_reparacion
             FROM articulos
-            WHERE id = %(item_id)s
+            WHERE id = %(articulo_id)s
             """,
-            {"item_id": item_id},
+            {"articulo_id": articulo_id},
         )
-        item = cursor.fetchone()
+        articulo = cursor.fetchone()
 
-        return jsonify(format_item(item)), HTTP_CREATED
+        return jsonify(format_articulo(articulo)), HTTP_CREATED
 
     except mysql.connector.Error:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
@@ -230,16 +230,16 @@ def create_item():
             pass
 
 
-@items_bp.route("/api/items/<int:item_id>", methods=["PUT"])
+@articulos_bp.route("/api/articulos/<int:articulo_id>", methods=["PUT"])
 @requiere_auth(roles=["admin", "bibliotecario", "profesor"])
-def update_item(item_id):  # noqa: PLR0911, PLR0912
+def update_articulo(articulo_id):
     """Actualiza un artículo existente del inventario.
 
     Recibe el ID del artículo como parámetro de ruta y los campos a
     actualizar en el cuerpo de la petición como JSON.
 
     Args:
-        item_id (int): Identificador único del artículo a actualizar.
+        articulo_id (int): Identificador único del artículo a actualizar.
 
     Returns:
         tuple: JSON con el artículo actualizado y el código HTTP correspondiente.
@@ -249,7 +249,7 @@ def update_item(item_id):  # noqa: PLR0911, PLR0912
     if conn is None:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
 
-    if valid_id(item_id) is None:
+    if valid_id(articulo_id) is None:
         return jsonify({"error": MSG_BAD_REQUEST}), HTTP_BAD_REQUEST
 
     try:
@@ -257,7 +257,7 @@ def update_item(item_id):  # noqa: PLR0911, PLR0912
     except Exception:
         data = None
 
-    is_valid, error = valid_item_update(data)
+    is_valid, error = valid_articulo_update(data)
     if not is_valid:
         return jsonify({"error": MSG_BAD_REQUEST, "detail": error}), HTTP_BAD_REQUEST
 
@@ -271,13 +271,13 @@ def update_item(item_id):  # noqa: PLR0911, PLR0912
             values[field] = data.get(field)
 
     set_clause = ", ".join([f"{field} = %({field})s" for field in values])
-    values["item_id"] = item_id
+    values["articulo_id"] = articulo_id
 
     cursor = None
 
     try:
         cursor = conn.cursor(dictionary=True)
-        sql = f"UPDATE articulos SET {set_clause} WHERE id = %(item_id)s"
+        sql = f"UPDATE articulos SET {set_clause} WHERE id = %(articulo_id)s"
         cursor.execute(sql, values)
         conn.commit()
 
@@ -291,16 +291,16 @@ def update_item(item_id):  # noqa: PLR0911, PLR0912
                    stock,
                    necesita_reparacion
             FROM articulos
-            WHERE id = %(item_id)s
+            WHERE id = %(articulo_id)s
             """,
-            {"item_id": item_id},
+            {"articulo_id": articulo_id},
         )
-        item = cursor.fetchone()
+        articulo = cursor.fetchone()
 
-        if not item:
+        if not articulo:
             return jsonify({"message": MSG_NOT_FOUND}), HTTP_NOT_FOUND
 
-        return jsonify(format_item(item)), HTTP_OK
+        return jsonify(format_articulo(articulo)), HTTP_OK
 
     except mysql.connector.Error:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
@@ -320,21 +320,21 @@ def update_item(item_id):  # noqa: PLR0911, PLR0912
             pass
 
 
-@items_bp.route("/api/items/<int:item_id>/condition", methods=["PATCH"])
+@articulos_bp.route("/api/articulos/<int:articulo_id>/condition", methods=["PATCH"])
 @requiere_auth(roles=["admin", "bibliotecario", "profesor"])
-def actualizar_condicion(item_id):
+def actualizar_condicion(articulo_id):
     """Actualiza la condición o estado de un artículo.
 
     Recibe el ID del artículo y un JSON con el nuevo estado ('disponible', 'dañado', 'reparacion', 'dado de baja').
 
     Args:
-        item_id (int): ID único del artículo a actualizar.
+        articulo_id (int): ID único del artículo a actualizar.
 
     Returns:
         tuple: JSON con el artículo actualizado y el código HTTP correspondiente.
 
     """
-    if item_id <= 0:
+    if articulo_id <= 0:
         return jsonify({"error": MSG_BAD_REQUEST}), HTTP_BAD_REQUEST
 
     try:
@@ -362,18 +362,18 @@ def actualizar_condicion(item_id):
 
         if nuevo_estado in ["reparacion", "dañado"]:
             cursor.execute(
-                "UPDATE articulos SET necesita_reparacion = 1 WHERE id = %s", (item_id,)
+                "UPDATE articulos SET necesita_reparacion = 1 WHERE id = %s", (articulo_id,)
             )
 
         elif nuevo_estado == "dado de baja":
             cursor.execute(
                 "UPDATE articulos SET stock = 0, necesita_reparacion = 1 WHERE id = %s",
-                (item_id,),
+                (articulo_id,),
             )
 
         else:
             cursor.execute(
-                "UPDATE articulos SET necesita_reparacion = 0 WHERE id = %s", (item_id,)
+                "UPDATE articulos SET necesita_reparacion = 0 WHERE id = %s", (articulo_id,)
             )
 
         conn.commit()
@@ -387,11 +387,11 @@ def actualizar_condicion(item_id):
             FROM articulos
             WHERE id = %s
         """,
-            (item_id,),
+            (articulo_id,),
         )
 
-        item = cursor.fetchone()
-        return jsonify(format_item(item)), HTTP_OK
+        articulo = cursor.fetchone()
+        return jsonify(format_articulo(articulo)), HTTP_OK
 
     except Exception:
         return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
@@ -402,19 +402,19 @@ def actualizar_condicion(item_id):
         conn.close()
 
 
-@items_bp.route("/api/items/<int:item_id>", methods=["DELETE"])
+@articulos_bp.route("/api/articulos/<int:articulo_id>", methods=["DELETE"])
 @requiere_auth(roles=["admin", "bibliotecario", "profesor"])
-def eliminar_item(item_id):
+def eliminar_articulo(articulo_id):
     """Realiza la baja lógica de un artículo en el inventario.
 
     Args:
-        item_id (int): Identificador único del artículo a dar de baja.
+        articulo_id (int): Identificador único del artículo a dar de baja.
 
     Returns:
         tuple: JSON con mensaje de éxito o error y el código HTTP correspondiente.
 
     """
-    if item_id <= 0:
+    if articulo_id <= 0:
         return jsonify({"error": MSG_BAD_REQUEST}), HTTP_BAD_REQUEST
 
     conn = obtener_conexion()
@@ -432,7 +432,7 @@ def eliminar_item(item_id):
             WHERE id = %s
         """
 
-        cursor.execute(sql, (item_id,))
+        cursor.execute(sql, (articulo_id,))
         conn.commit()
 
         if cursor.rowcount == 0:
@@ -449,20 +449,20 @@ def eliminar_item(item_id):
         conn.close()
 
 
-@items_bp.route("/api/items/<int:item_id>", methods=["GET"])
-def get_item_by_id(item_id):
+@articulos_bp.route("/api/articulos/<int:articulo_id>", methods=["GET"])
+def get_articulo_by_id(articulo_id):
     """Obtiene los datos de un artículo por su identificador.
 
     Args:
-        item_id (int): Identificador único del artículo a consultar.
+        articulo_id (int): Identificador único del artículo a consultar.
 
     Returns:
         tuple: JSON con el artículo encontrado y código HTTP 200,
             o un error con su código correspondiente.
 
     """
-    if valid_id(item_id) is None:
-        return jsonify({"error": "Invalid item ID format"}), HTTP_BAD_REQUEST
+    if valid_id(articulo_id) is None:
+        return jsonify({"error": "Invalid articulo ID format"}), HTTP_BAD_REQUEST
 
     conn = obtener_conexion()
     if conn is None:
@@ -476,18 +476,18 @@ def get_item_by_id(item_id):
             "SELECT id, nombre_art, tipo, seccion, prestacion_maxima, stock, necesita_reparacion "
             "FROM articulos WHERE id = %s"
         )
-        cursor.execute(query, (item_id,))
-        item = cursor.fetchone()
+        cursor.execute(query, (articulo_id,))
+        articulo = cursor.fetchone()
 
-        if not item:
+        if not articulo:
             return jsonify(
-                {"error": f"Item with ID {item_id} not found"}
+                {"error": f"Item with ID {articulo_id} not found"}
             ), HTTP_NOT_FOUND
 
-        return jsonify(item), HTTP_OK
+        return jsonify(articulo), HTTP_OK
 
     except mysql.connector.Error as query_err:
-        logging.error(f"Database query error in get_item_by_id: {query_err}")
+        logging.error(f"Database query error in get_articulo_by_id: {query_err}")
 
         return jsonify(
             {"error": "Internal server error: Database query failed"}

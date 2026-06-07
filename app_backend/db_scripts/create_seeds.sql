@@ -33,11 +33,11 @@ SET
 INSERT INTO
   usuario (
     nombre,
-    mail,
-    score,
+    email,
+    puntaje,
     rol,
     carrera,
-    password_hash,
+    contrasenia_hash,
     activo
   )
 VALUES
@@ -1414,7 +1414,7 @@ INSERT INTO
     fecha_inicio,
     fecha_fin,
     activa,
-    severity
+    severidad
   )
 VALUES
   (
@@ -1720,7 +1720,7 @@ VALUES
   ),
   (
     'Política de Retrasos y Sanciones',
-    'Especifica el sistema de pérdida de puntos (score) y los tiempos de inhabilitación por entregas fuera de término.',
+    'Especifica el sistema de pérdida de puntos (puntaje) y los tiempos de inhabilitación por entregas fuera de término.',
     DATE_SUB(NOW(), INTERVAL 390 DAY)
   ),
   (
@@ -1745,7 +1745,7 @@ VALUES
   ),
   (
     'Préstamos Excepcionales de Fin de Semana',
-    'Los retiros de día viernes requieren aprobación de un docente responsable del proyecto.',
+    'Los retiros de día viernes requieren aprobación de un profesor responsable del proyecto.',
     DATE_SUB(NOW(), INTERVAL 340 DAY)
   ),
   (

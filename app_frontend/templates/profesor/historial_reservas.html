@@ -1,6 +1,6 @@
 {% extends "layouts/base_dashboard.html" %}
 
-{% block user_name %}Profesor{% endblock %}
+{% block usuario_name %}Profesor{% endblock %}
 
 {% block dashboard_content %}
   <div class="history-container">
@@ -19,9 +19,9 @@
         </thead>
 
         <tbody>
-          {% if prestamos %}
+          {% if reservas %}
 
-            {% for p in prestamos %}
+            {% for p in reservas %}
               <tr>
                 <td>{{ p.nombre_art }}</td>
                 <td>{{ p.estado }}</td>

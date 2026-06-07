@@ -1,5 +1,5 @@
 {% extends "layouts/base_dashboard.html" %}
-{% block user_name %}Admin{% endblock %}
+{% block usuario_name %}Admin{% endblock %}
 
 {% block sidebar_links %}
   <li>
@@ -13,7 +13,7 @@
     >
   </li>
   <li>
-    <a href="{{ url_for('admin.lista_prestamos') }}"
+    <a href="{{ url_for('admin.lista_reservas') }}"
       ><i class="fa-solid fa-clipboard-list"></i> Préstamos</a
     >
   </li>
@@ -31,7 +31,7 @@
     >
   </li>
   <li>
-    <a href="{{ url_for('admin.usuarios') }}"><i class="fa-solid fa-users"></i> Usuarios</a>
+    <a href="{{ url_for('admin.usuarios') }}"><i class="fa-solid fa-usuarios"></i> Usuarios</a>
   </li>
   <li>
     <a href="{{ url_for('admin.reporte_morosidad') }}"
@@ -76,7 +76,7 @@
         <a href="{{ url_for('admin.normativas') }}" class="dashboard-card-link"> Ver normativas</a>
       </div>
       <div class="dashboard-card">
-        <i class="fa-solid fa-users"></i>
+        <i class="fa-solid fa-usuarios"></i>
         <h3>Usuarios</h3>
         <p>Consulta y administra los usuarios registrados.</p>
         <a href="{{ url_for('admin.usuarios') }}" class="dashboard-card-link">Ver usuarios</a>
@@ -84,7 +84,7 @@
       <div class="dashboard-card">
         <i class="fa-solid fa-chart-column"></i>
         <h3>Morosidad</h3>
-        <p>Visualiza prestamos vencidos y usuarios con penalizaciones activas.</p>
+        <p>Visualiza reservas vencidos y usuarios con penalizaciones activas.</p>
         <a href="{{ url_for('admin.reporte_morosidad') }}" class="dashboard-card-link"
           >Ver morosidad</a
         >

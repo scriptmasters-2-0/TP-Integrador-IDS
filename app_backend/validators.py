@@ -34,11 +34,11 @@ def valid_id(value):
     return val
 
 
-def valid_user(data):  # noqa: PLR0911
+def valid_usuario(data):
     """Valida el payload de creación de usuario.
 
-    Verifica que los campos requeridos (nombre, mail, carrera) estén
-    presentes y que los campos opcionales (rol, score) tengan valores válidos.
+    Verifica que los campos requeridos (nombre, email, carrera) estén
+    presentes y que los campos opcionales (rol, puntaje) tengan valores válidos.
 
     Args:
         data (dict): Diccionario con los datos del usuario a crear.
@@ -51,7 +51,7 @@ def valid_user(data):  # noqa: PLR0911
     if not isinstance(data, dict):
         return False, "payload_must_be_object"
 
-    required = ["nombre", "mail", "carrera"]
+    required = ["nombre", "email", "carrera"]
     for f in required:
         v = data.get(f)
         if v is None:
@@ -59,23 +59,23 @@ def valid_user(data):  # noqa: PLR0911
         if isinstance(v, str) and v.strip() == "":
             return False, f"empty:{f}"
 
-    mail = data.get("mail")
-    if not isinstance(mail, str) or "@" not in mail or "." not in mail.split("@")[-1]:
-        return False, "invalid:mail"
+    email = data.get("email")
+    if not isinstance(email, str) or "@" not in email or "." not in email.split("@")[-1]:
+        return False, "invalid:email"
 
     rol = data.get("rol")
-    allowed = ["alumno", "docente", "bibliotecario", "admin"]
+    allowed = ["alumno", "profesor", "bibliotecario", "admin"]
     if rol not in allowed and rol is not None:
         return False, "invalid:rol"
 
-    score = data.get("score")
-    if score is not None:
+    puntaje = data.get("puntaje")
+    if puntaje is not None:
         try:
-            s = int(score)
+            s = int(puntaje)
             if s < 0:
-                return False, "invalid:score"
+                return False, "invalid:puntaje"
         except (ValueError, TypeError):
-            return False, "invalid:score"
+            return False, "invalid:puntaje"
 
     carrera = data.get("carrera")
     if carrera is not None and not isinstance(carrera, str):
@@ -84,7 +84,7 @@ def valid_user(data):  # noqa: PLR0911
     return True, None
 
 
-def valid_user_update(data):  # noqa: PLR0911, PLR0912
+def valid_usuario_update(data):
     """Valida el payload de actualización de usuario.
 
     Verifica que al menos un campo actualizable esté presente y que
@@ -101,7 +101,7 @@ def valid_user_update(data):  # noqa: PLR0911, PLR0912
     if not isinstance(data, dict):
         return False, "payload_must_be_object"
 
-    allowed = ["nombre", "mail", "rol", "carrera", "score"]
+    allowed = ["nombre", "email", "rol", "carrera", "puntaje"]
     if not any(k in data for k in allowed):
         return False, "no_updatable_fields"
 
@@ -113,15 +113,15 @@ def valid_user_update(data):  # noqa: PLR0911, PLR0912
         if data["nombre"].strip() == "":
             return False, "empty:nombre"
 
-    if "mail" in data:
-        if data["mail"] is None:
-            return False, "null:mail"
-        if not isinstance(data["mail"], str):
-            return False, "invalid_type:mail"
-        if data["mail"].strip() == "":
-            return False, "empty:mail"
-        if "@" not in data["mail"] or "." not in data["mail"].split("@")[-1]:
-            return False, "invalid_format:mail"
+    if "email" in data:
+        if data["email"] is None:
+            return False, "null:email"
+        if not isinstance(data["email"], str):
+            return False, "invalid_type:email"
+        if data["email"].strip() == "":
+            return False, "empty:email"
+        if "@" not in data["email"] or "." not in data["email"].split("@")[-1]:
+            return False, "invalid_format:email"
 
     if "rol" in data:
         if data["rol"] is None:
@@ -130,19 +130,19 @@ def valid_user_update(data):  # noqa: PLR0911, PLR0912
             return False, "invalid_type:rol"
         if data["rol"].strip() == "":
             return False, "empty:rol"
-        allowed_roles = ["alumno", "docente", "bibliotecario", "admin"]
+        allowed_roles = ["alumno", "profesor", "bibliotecario", "admin"]
         if data["rol"] not in allowed_roles:
             return False, "invalid_value:rol"
 
-    if "score" in data:
-        if data["score"] is None:
-            return False, "null:score"
+    if "puntaje" in data:
+        if data["puntaje"] is None:
+            return False, "null:puntaje"
         try:
-            s = int(data["score"])
+            s = int(data["puntaje"])
         except (ValueError, TypeError):
-            return False, "invalid_type:score"
+            return False, "invalid_type:puntaje"
         if s < 0:
-            return False, "invalid_value:score"
+            return False, "invalid_value:puntaje"
 
     if "carrera" in data:
         if data.get("carrera") is None:
@@ -155,10 +155,10 @@ def valid_user_update(data):  # noqa: PLR0911, PLR0912
     return True, None
 
 
-def valid_login(data):  # noqa: PLR0911
+def valid_login(data):
     """Valida el payload de inicio de sesión.
 
-    Verifica que los campos email y password estén presentes,
+    Verifica que los campos email y contrasenia estén presentes,
     sean cadenas no vacías y que email tenga formato básico válido.
 
     Args:
@@ -182,12 +182,12 @@ def valid_login(data):  # noqa: PLR0911
     if "@" not in email or "." not in email.split("@")[-1]:
         return False, "invalid_value:email"
 
-    if data.get("password") is None:
-        return False, "missing:password"
-    if not isinstance(data.get("password"), str):
-        return False, "invalid_type:password"
-    if data.get("password").strip() == "":
-        return False, "empty:password"
+    if data.get("contrasenia") is None:
+        return False, "missing:contrasenia"
+    if not isinstance(data.get("contrasenia"), str):
+        return False, "invalid_type:contrasenia"
+    if data.get("contrasenia").strip() == "":
+        return False, "empty:contrasenia"
 
     return True, None
 
@@ -323,7 +323,7 @@ def _valid_optional_bool(data, field):
     return True, None
 
 
-def valid_item(data):  # noqa: PLR0911
+def valid_articulo(data):
     """Valida el payload de creación de un ítem.
 
     Verifica que los campos requeridos (nombre_art, tipo, seccion,
@@ -364,7 +364,7 @@ def valid_item(data):  # noqa: PLR0911
     return True, None
 
 
-def valid_item_update(data):  # noqa: PLR0911
+def valid_articulo_update(data):
     """Valida el payload de actualización de un ítem.
 
     Verifica que al menos un campo actualizable esté presente,
@@ -417,7 +417,7 @@ def valid_item_update(data):  # noqa: PLR0911
     return True, None
 
 
-def valid_item_filters(filters):
+def valid_articulo_filters(filters):
     """Valida y parsea los filtros de consulta de ítems.
 
     Procesa los filtros de tipo, sección, disponibilidad y
@@ -459,10 +459,10 @@ def valid_item_filters(filters):
     return True, None, parsed_filters
 
 
-def valid_penalty_patch(data):  # noqa: PLR0911, PLR0912
+def valid_penalty_patch(data):
     """Valida el payload de actualización parcial de una penalidad.
 
-    Verifica que al menos un campo actualizable (status, severity, notes)
+    Verifica que al menos un campo actualizable (status, severidad, notes)
     esté presente y que los valores proporcionados sean válidos.
 
     Args:
@@ -476,7 +476,7 @@ def valid_penalty_patch(data):  # noqa: PLR0911, PLR0912
     if not isinstance(data, dict):
         return False, "payload_must_be_object"
 
-    allowed = ["status", "severity", "notes"]
+    allowed = ["status", "severidad", "notes"]
     if not any(k in data for k in allowed):
         return False, "no_updatable_fields"
 
@@ -488,13 +488,13 @@ def valid_penalty_patch(data):  # noqa: PLR0911, PLR0912
         if data.get("status") not in ("Activa", "Levantada"):
             return False, "invalid_value:status"
 
-    if "severity" in data:
-        if data.get("severity") is None:
-            return False, "null:severity"
-        if not isinstance(data.get("severity"), str):
-            return False, "invalid_type:severity"
-        if data.get("severity").strip() == "":
-            return False, "empty:severity"
+    if "severidad" in data:
+        if data.get("severidad") is None:
+            return False, "null:severidad"
+        if not isinstance(data.get("severidad"), str):
+            return False, "invalid_type:severidad"
+        if data.get("severidad").strip() == "":
+            return False, "empty:severidad"
 
     if "notes" in data:
         if data.get("notes") is None:
@@ -507,7 +507,7 @@ def valid_penalty_patch(data):  # noqa: PLR0911, PLR0912
     return True, None
 
 
-def valid_loan_status_update(data):
+def valid_reserva_status_update(data):
     """Valida el payload de actualización de estado de un préstamo.
 
     Verifica que el campo estado_reserva esté presente, sea una cadena
@@ -536,10 +536,10 @@ def valid_loan_status_update(data):
     return True, None
 
 
-def valid_loan_create(data):
+def valid_reserva_create(data):
     """Valida el payload de creación de préstamo.
 
-    Verifica que los campos user_id e item_id estén presentes
+    Verifica que los campos usuario_id e articulo_id estén presentes
     y que sean identificadores enteros positivos.
 
     Args:
@@ -553,42 +553,42 @@ def valid_loan_create(data):
     if not isinstance(data, dict):
         return False, "payload_must_be_object", None
 
-    if data.get("user_id") is None:
-        return False, "missing:user_id", None
-    if data.get("item_id") is None:
-        return False, "missing:item_id", None
+    if data.get("usuario_id") is None:
+        return False, "missing:usuario_id", None
+    if data.get("articulo_id") is None:
+        return False, "missing:articulo_id", None
 
-    user_id = valid_id(data.get("user_id"))
-    if user_id is None:
-        return False, "invalid_value:user_id", None
+    usuario_id = valid_id(data.get("usuario_id"))
+    if usuario_id is None:
+        return False, "invalid_value:usuario_id", None
 
-    item_id = valid_id(data.get("item_id"))
-    if item_id is None:
-        return False, "invalid_value:item_id", None
+    articulo_id = valid_id(data.get("articulo_id"))
+    if articulo_id is None:
+        return False, "invalid_value:articulo_id", None
 
-    return True, None, {"user_id": user_id, "item_id": item_id}
+    return True, None, {"usuario_id": usuario_id, "articulo_id": articulo_id}
 
 
-def valid_user_id_query(filters):
-    """Valida y parsea query params que requieren user_id.
+def valid_usuario_id_query(filters):
+    """Valida y parsea query params que requieren usuario_id.
 
     Args:
         filters: Objeto con query params (por ejemplo request.args).
 
     Returns:
-        tuple: (True, None, int) con user_id parseado si es válido,
+        tuple: (True, None, int) con usuario_id parseado si es válido,
             o (False, str, None) con detalle del error.
 
     """
     if filters is None:
-        return False, "missing:user_id", None
+        return False, "missing:usuario_id", None
 
-    raw_user_id = filters.get("user_id")
-    if raw_user_id is None:
-        return False, "missing:user_id", None
+    raw_usuario_id = filters.get("usuario_id")
+    if raw_usuario_id is None:
+        return False, "missing:usuario_id", None
 
-    user_id = valid_id(raw_user_id)
-    if user_id is None:
-        return False, "invalid_value:user_id", None
+    usuario_id = valid_id(raw_usuario_id)
+    if usuario_id is None:
+        return False, "invalid_value:usuario_id", None
 
-    return True, None, user_id
+    return True, None, usuario_id

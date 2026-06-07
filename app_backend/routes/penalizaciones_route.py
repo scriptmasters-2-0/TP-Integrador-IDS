@@ -22,9 +22,9 @@ from http_codes_and_messages import (
     MSG_NOT_FOUND,
 )
 from routes.auth_route import requiere_auth
-from validators import valid_id, valid_penalty_patch, valid_user_id_query
+from validators import valid_id, valid_penalty_patch, valid_usuario_id_query
 
-penalties_bp = Blueprint("penalties", __name__)
+penalizaciones_bp = Blueprint("penalizaciones", __name__)
 
 
 def usuario_existe(id_usuario):
@@ -107,11 +107,11 @@ def format_penalty(row):
     """
     return {
         "id": row.get("id"),
-        "userId": row.get("id_usuario"),
-        "loanId": row.get("id_reserva"),
+        "usuarioId": row.get("id_usuario"),
+        "reservaId": row.get("id_reserva"),
         "reason": row.get("motivo"),
         "status": "Activa" if row.get("activa") else "Levantada",
-        "severity": row.get("severity"),
+        "severidad": row.get("severidad"),
         "notes": row.get("motivo"),
         "createdAt": (
             row.get("fecha_inicio").isoformat() if row.get("fecha_inicio") else None
@@ -142,7 +142,7 @@ def obtener_penalizacion_por_id(id_penalizacion):
     return penalizacion
 
 
-@penalties_bp.route("/api/penalties/<int:penalty_id>", methods=["GET"])
+@penalizaciones_bp.route("/api/penalizaciones/<int:penalty_id>", methods=["GET"])
 def get_penalty(penalty_id):
     """Obtiene una penalización por su identificador.
 
@@ -177,7 +177,7 @@ def get_penalty(penalty_id):
                    fecha_inicio,
                    fecha_fin,
                    activa,
-                   severity
+                   severidad
             FROM penalizacion
             WHERE id = %(penalty_id)s
             """,
@@ -210,9 +210,9 @@ def get_penalty(penalty_id):
             pass
 
 
-@penalties_bp.route("/api/penalties/<int:penalty_id>", methods=["PATCH"])
+@penalizaciones_bp.route("/api/penalizaciones/<int:penalty_id>", methods=["PATCH"])
 @requiere_auth(roles=["admin", "bibliotecario", "profesor"])
-def patch_penalty(penalty_id):  # noqa: PLR0911, PLR0912
+def patch_penalty(penalty_id):
     """Actualiza parcialmente una penalización existente.
 
     Permite modificar campos individuales de una penalización. Si se
@@ -282,7 +282,7 @@ def patch_penalty(penalty_id):  # noqa: PLR0911, PLR0912
                    fecha_inicio,
                    fecha_fin,
                    activa,
-                   severity
+                   severidad
             FROM penalizacion
             WHERE id = %(penalty_id)s
             """,
@@ -316,7 +316,7 @@ def patch_penalty(penalty_id):  # noqa: PLR0911, PLR0912
             pass
 
 
-@penalties_bp.route("/api/penalties", methods=["GET"])
+@penalizaciones_bp.route("/api/penalizaciones", methods=["GET"])
 def listar_penalizaciones():
     """Lista todas las penalizaciones del sistema.
 
@@ -331,13 +331,13 @@ def listar_penalizaciones():
     return jsonify(penalizaciones), HTTP_OK
 
 
-@penalties_bp.route("/api/penalties", methods=["POST"])
+@penalizaciones_bp.route("/api/penalizaciones", methods=["POST"])
 @requiere_auth(roles=["admin", "bibliotecario", "profesor"])
 def crear_penalizacion():
     """Crea una nueva penalización para un usuario.
 
     Requiere un JWT válido con rol admin y un cuerpo JSON con los
-    campos 'user_id' y 'reason'.
+    campos 'usuario_id' y 'reason'.
 
     Returns:
         tuple: Respuesta JSON con la penalización creada y código
@@ -347,10 +347,10 @@ def crear_penalizacion():
     """
     datos = request.get_json()
 
-    if not datos or not datos.get("user_id") or not datos.get("reason"):
-        return jsonify({"error": "user_id y reason son requeridos"}), HTTP_BAD_REQUEST
+    if not datos or not datos.get("usuario_id") or not datos.get("reason"):
+        return jsonify({"error": "usuario_id y reason son requeridos"}), HTTP_BAD_REQUEST
 
-    id_usuario = datos["user_id"]
+    id_usuario = datos["usuario_id"]
     motivo = datos["reason"]
 
     if not usuario_existe(id_usuario):
@@ -365,19 +365,19 @@ def crear_penalizacion():
 logging.basicConfig(level=logging.ERROR)
 
 
-@penalties_bp.route("/api/penalties", methods=["GET"])
-def get_user_penalties():
+@penalizaciones_bp.route("/api/penalizaciones", methods=["GET"])
+def get_usuario_penalizaciones():
     """Obtiene penalizaciones asociadas a un usuario mediante query param.
 
     Query Params:
-        user_id (str): Identificador del usuario a consultar.
+        usuario_id (str): Identificador del usuario a consultar.
 
     Returns:
         tuple: JSON con la lista de penalizaciones y código HTTP 200,
             o un error con su código correspondiente.
 
     """
-    is_valid, error, user_id = valid_user_id_query(request.args)
+    is_valid, error, usuario_id = valid_usuario_id_query(request.args)
     if not is_valid:
         return jsonify(
             {"error": "Invalid query params", "detail": error}
@@ -391,20 +391,20 @@ def get_user_penalties():
 
     try:
         cursor = conn.cursor(dictionary=True)
-        user_check_query = "SELECT id FROM usuario WHERE id = %s"
-        cursor.execute(user_check_query, (user_id,))
-        user_exists = cursor.fetchone()
+        usuario_check_query = "SELECT id FROM usuario WHERE id = %s"
+        cursor.execute(usuario_check_query, (usuario_id,))
+        usuario_exists = cursor.fetchone()
 
-        if not user_exists:
+        if not usuario_exists:
             return jsonify(
-                {"error": f"User with ID {user_id} not found"}
+                {"error": f"User with ID {usuario_id} not found"}
             ), HTTP_NOT_FOUND
 
-        penalties_query = "SELECT * FROM penalizacion WHERE id_usuario = %s"
-        cursor.execute(penalties_query, (user_id,))
-        penalties = cursor.fetchall()
+        penalizaciones_query = "SELECT * FROM penalizacion WHERE id_usuario = %s"
+        cursor.execute(penalizaciones_query, (usuario_id,))
+        penalizaciones = cursor.fetchall()
 
-        return jsonify(penalties), HTTP_OK
+        return jsonify(penalizaciones), HTTP_OK
 
     except mysql.connector.Error as query_err:
         logging.error(f"Database query execution error: {query_err}")

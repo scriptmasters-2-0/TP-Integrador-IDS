@@ -1,83 +1,83 @@
 ### Autenticación y Accesos (`/api/auth`)
 
 * **`POST /api/auth/login`**
-Inicia sesión utilizando **flask-login**. Valida credenciales y establece la sesión indicando el rol (alumno/docente, bibliotecario/admin).
+Inicia sesión utilizando **flask-login**. Valida credenciales y establece la sesión indicando el rol (alumno/profesor, bibliotecario/admin).
 * **`POST /api/auth/logout`**
 Cierra la sesión activa del usuario.
 * **`GET /api/auth/me`**
 Devuelve los datos de perfil y el rol del usuario actualmente autenticado.
 
-### Usuarios (`/api/users`)
+### Usuarios (`/api/usuarios`)
 
-* **`GET /api/users`**
+* **`GET /api/usuarios`**
 Lista los usuarios registrados. **(Solo Admin)**.
-* **`POST /api/users`**
+* **`POST /api/usuarios`**
 Alta (ABM) de un nuevo usuario. **(Solo Admin)**.
-* **`GET /api/users/{id}`**
+* **`GET /api/usuarios/{id}`**
 Obtiene los detalles de un usuario específico.
-* **`PUT /api/users/{id}`**
+* **`PUT /api/usuarios/{id}`**
 Modifica los datos de un usuario existente (reemplazo completo).
-* **`DELETE /api/users/{id}`**
+* **`DELETE /api/usuarios/{id}`**
 Baja o desactivación lógica de un usuario (Opción 1).
-* **`PATCH /api/users/{id}/status`**
+* **`PATCH /api/usuarios/{id}/status`**
 Activa o desactiva a un usuario (Opción 2).
-* **`GET /api/users/{id}/loans`**
-Obtiene el historial personal de préstamos/pedidos de un alumno y sus estados.
-* **`GET /api/users/{id}/penalties`**
+* **`GET /api/usuarios/{id}/reservas`**
+Obtiene el historial personal de préstamos/reservas de un alumno y sus estados.
+* **`GET /api/usuarios/{id}/penalizaciones`**
 Obtiene las penalizaciones vigentes e históricas de un alumno.
 
-### Compatibilidad de Endpoints (`/api/user`)
+### Compatibilidad de Endpoints (`/api/usuario`)
 
-* **`GET /api/user`**
-Lista usuarios desde la tabla `users` (endpoint agregado en cambios recientes).
-* **`GET /api/user/<int:user_id>`**
-Obtiene un usuario puntual desde la tabla `users` por su identificador.
+* **`GET /api/usuario`**
+Lista usuarios desde la tabla `usuarios` (endpoint agregado en cambios recientes).
+* **`GET /api/usuario/<int:usuario_id>`**
+Obtiene un usuario puntual desde la tabla `usuarios` por su identificador.
 
-### Inventario y Materiales (`/api/items`)
+### Inventario y Materiales (`/api/articulos`)
 
-* **`GET /api/items`**
+* **`GET /api/articulos`**
 Lista el material disponible. Incluye soporte para **filtros por tipo, estado y disponibilidad**. Este endpoint es de **Acceso público** (sin autenticación requerida).
-* **`POST /api/items`**
+* **`POST /api/articulos`**
 Ingreso/creación de un nuevo ítem al inventario. **(Solo Admin)**.
-* **`GET /api/items/{id}`**
+* **`GET /api/articulos/{id}`**
 Consulta el detalle, normativas específicas y estado de un ítem particular.
-* **`PUT /api/items/{id}`**
+* **`PUT /api/articulos/{id}`**
 Actualiza la información general de un ítem. **(Solo Admin)**.
-* **`PATCH /api/items/{id}/condition`**
+* **`PATCH /api/articulos/{id}/condition`**
 Actualiza específicamente el estado o condición física del ítem (ej. disponible, dañado, reparación, dado de baja).
-* **`DELETE /api/items/{id}`**
+* **`DELETE /api/articulos/{id}`**
 Baja definitiva o lógica del ítem del inventario. **(Solo Admin)**.
 
-### Préstamos y Solicitudes (`/api/loans`)
+### Préstamos y Solicitudes (`/api/reservas`)
 
-* **`GET /api/loans`**
+* **`GET /api/reservas`**
 Lista los préstamos. **Admin ve todos, el alumno ve los propios**. Permite filtrar por estado, fechas o disponibilidad.
-* **`POST /api/loans`**
+* **`POST /api/reservas`**
 Crea una nueva solicitud de reserva. Valida disponibilidad, sanciones y límites.
-* **`GET /api/loans/{id}`**
+* **`GET /api/reservas/{id}`**
 Obtiene los detalles completos de un préstamo o solicitud específica.
-* **`PATCH /api/loans/{id}/status`**
+* **`PATCH /api/reservas/{id}/status`**
 Cambia el estado del préstamo (ej. Pendiente -> Aprobado -> Entregado -> Devuelto). **(Solo Admin)**.
 
 ### Códigos QR (`/api/qr`)
 
-* **`GET /api/qr/loans/{loan_id}`**
+* **`GET /api/qr/reservas/{reserva_id}`**
 Genera o devuelve el código QR dinámico asociado al préstamo aprobado.
 
-### Penalizaciones (`/api/penalties`)
+### Penalizaciones (`/api/penalizaciones`)
 
-* **`GET /api/penalties`**
+* **`GET /api/penalizaciones`**
 Lista general de penalizaciones activas e históricas. **(Solo Admin)**.
-* **`POST /api/penalties`**
+* **`POST /api/penalizaciones`**
 Genera una nueva penalización manual a un alumno. **(Solo Admin)**.
-* **`GET /api/penalties/{id}`**
+* **`GET /api/penalizaciones/{id}`**
 Obtiene el detalle de una penalización específica.
-* **`PUT /api/penalties/{id}`**
+* **`PUT /api/penalizaciones/{id}`**
 Modifica o levanta una penalización reemplazando el registro completo.
-* **`PATCH /api/penalties/{id}`**
+* **`PATCH /api/penalizaciones/{id}`**
 Actualiza parcialmente los datos de una penalización (ej. ajusta la severidad, agrega notas o la marca como resuelta).
-* **`GET /api/penalties?user_id={id}`**
-Retorna penalizaciones filtradas por usuario usando query param `user_id`.
+* **`GET /api/penalizaciones?usuario_id={id}`**
+Retorna penalizaciones filtradas por usuario usando query param `usuario_id`.
 
 ### Reportes y Estadísticas (`/api/reports`)
 

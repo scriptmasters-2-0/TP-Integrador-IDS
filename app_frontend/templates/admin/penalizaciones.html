@@ -8,12 +8,12 @@
     <a href="/admin/articulos"><i class="fa-solid fa-box"></i> Artículos</a>
   </li>
   <li>
-    <a href="{{ url_for('admin.lista_prestamos') }}"
+    <a href="{{ url_for('admin.lista_reservas') }}"
       ><i class="fa-solid fa-clipboard-list"></i> Préstamos</a
     >
   </li>
   <li>
-    <a href="/admin/usuarios"><i class="fa-solid fa-users"></i> Usuarios</a>
+    <a href="/admin/usuarios"><i class="fa-solid fa-usuarios"></i> Usuarios</a>
   </li>
   <li>
     <a href="/admin/penalizaciones" class="active"
@@ -50,7 +50,7 @@
             <tr>
               <td>{{ p.id }}</td>
               <td>{{ p.usuario_nombre }}</td>
-              <td><span class="badge">{{ p.severity }}</span></td>
+              <td><span class="badge">{{ p.severidad }}</span></td>
               <td>{{ p.fecha_inicio }}</td>
               <td class="text-center">
                 <form action="{{ url_for('admin.levantar_penalizacion', id=p.id) }}" method="POST">

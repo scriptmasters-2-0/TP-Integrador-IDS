@@ -13,7 +13,7 @@ import mysql.connector
 from flask import Blueprint, jsonify, request
 from mysql.connector import errorcode
 
-from config import JWT_ALGORITHM, JWT_SECRET
+from config import JWT_ALGORITMO, JWT_SECRETO
 from database import obtener_conexion
 from http_codes_and_messages import (
     HTTP_BAD_REQUEST,
@@ -30,50 +30,50 @@ from http_codes_and_messages import (
     MSG_NOT_FOUND,
     MSG_UNAUTHORIZED,
 )
-from validators import valid_login, valid_user
+from validators import valid_login, valid_usuario
 
 auth_bp = Blueprint("auth", __name__)
 
 
-def hashear_password(password):
+def hashear_contrasenia(contrasenia):
     """Genera el hash de una contraseña usando bcrypt.
 
     Args:
-        password (str): Contraseña en texto plano a hashear.
+        contrasenia (str): Contraseña en texto plano a hashear.
 
     Returns:
         str: Hash de la contraseña codificado en UTF-8.
 
     """
-    hash_bytes = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
+    hash_bytes = bcrypt.hashpw(contrasenia.encode("utf-8"), bcrypt.gensalt())
 
     return hash_bytes.decode("utf-8")
 
 
-def validar_password(password, password_hash):
+def validar_contrasenia(contrasenia, contrasenia_hash):
     """Verifica si una contraseña coincide con su hash.
 
     Args:
-        password (str): Contraseña en texto plano a verificar.
-        password_hash (str): Hash almacenado contra el cual comparar.
+        contrasenia (str): Contraseña en texto plano a verificar.
+        contrasenia_hash (str): Hash almacenado contra el cual comparar.
 
     Returns:
         bool: True si la contraseña coincide con el hash, False en caso contrario.
 
     """
     try:
-        return bcrypt.checkpw(password.encode("utf-8"), password_hash.encode("utf-8"))
+        return bcrypt.checkpw(contrasenia.encode("utf-8"), contrasenia_hash.encode("utf-8"))
 
     except (ValueError, TypeError):
         print("Error al verificar la contraseña")
         return False
 
 
-def generar_token(user_id, rol):
+def generar_token(usuario_id, rol):
     """Genera un token JWT con el ID de usuario y su rol.
 
     Args:
-        user_id (int): Identificador único del usuario.
+        usuario_id (int): Identificador único del usuario.
         rol (str): Rol del usuario en el sistema.
 
     Returns:
@@ -81,11 +81,11 @@ def generar_token(user_id, rol):
 
     """
     payload = {
-        "user_id": user_id,
+        "usuario_id": usuario_id,
         "rol": rol,
     }
 
-    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    return jwt.encode(payload, JWT_SECRETO, algorithm=JWT_ALGORITMO)
 
 
 def decodificar_token(token):
@@ -102,7 +102,7 @@ def decodificar_token(token):
 
     """
     try:
-        return jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM]), "Valid"
+        return jwt.decode(token, JWT_SECRETO, algorithms=[JWT_ALGORITMO]), "Valid"
 
     except jwt.ExpiredSignatureError:
         return None, "Expired"
@@ -163,8 +163,8 @@ def requiere_auth(roles):
             if payload.get("rol") not in roles:
                 return jsonify({"error": MSG_UNAUTHORIZED}), HTTP_UNAUTHORIZED
 
-            request.user_id = payload.get("user_id")
-            request.user_rol = payload.get("rol")
+            request.usuario_id = payload.get("usuario_id")
+            request.usuario_rol = payload.get("rol")
 
             return route(*args, **kwargs)
 
@@ -198,7 +198,7 @@ def login():
         return jsonify({"error": MSG_BAD_REQUEST, "detail": error}), HTTP_BAD_REQUEST
 
     email = data.get("email")
-    password = data.get("password")
+    contrasenia = data.get("contrasenia")
 
     conn = obtener_conexion()
     if conn is None:
@@ -210,28 +210,28 @@ def login():
         cursor = conn.cursor(dictionary=True)
 
         sql_query = """
-            SELECT id, nombre, mail, score, rol, carrera, password_hash
+            SELECT id, nombre, email, puntaje, rol, carrera, contrasenia_hash
             FROM usuario
-            WHERE mail = %(value)s
+            WHERE email = %(value)s
             LIMIT 1
         """
         value = {"value": email}
 
         cursor.execute(sql_query, value)
 
-        user = cursor.fetchone()
-        if not user:
+        usuario = cursor.fetchone()
+        if not usuario:
             return (
                 jsonify({"error": MSG_UNAUTHORIZED, "detail": "invalid_credentials"}),
                 HTTP_UNAUTHORIZED,
             )
 
-        password_hash = user.get("password_hash", "")
+        contrasenia_hash = usuario.get("contrasenia_hash", "")
 
-        if not validar_password(password, password_hash) and password_hash != "":
+        if not validar_contrasenia(contrasenia, contrasenia_hash) and contrasenia_hash != "":
             print(
-                validar_password(
-                    "password",
+                validar_contrasenia(
+                    "contrasenia",
                     "$2b$12$KIXe8T3G/R/y1P.4yHxz/e/N.t.C79.A8aZ3vA.j1gX.oDkM3p6X2",
                 )
             )
@@ -240,18 +240,18 @@ def login():
                 HTTP_UNAUTHORIZED,
             )
 
-        user_profile = {
-            "id": user.get("id"),
-            "nombre": user.get("nombre"),
-            "mail": user.get("mail"),
-            "score": user.get("score"),
-            "rol": user.get("rol"),
-            "carrera": user.get("carrera"),
+        usuario_profile = {
+            "id": usuario.get("id"),
+            "nombre": usuario.get("nombre"),
+            "email": usuario.get("email"),
+            "puntaje": usuario.get("puntaje"),
+            "rol": usuario.get("rol"),
+            "carrera": usuario.get("carrera"),
         }
 
-        token = generar_token(user.get("id"), user.get("rol"))
+        token = generar_token(usuario.get("id"), usuario.get("rol"))
 
-        return jsonify({"token": token, "role": user.get("rol"), "user": user_profile}), HTTP_OK
+        return jsonify({"token": token, "rol": usuario.get("rol"), "usuario": usuario_profile}), HTTP_OK
 
     except Exception:
         return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
@@ -309,32 +309,32 @@ def obtener_perfil():
         cursor = conn.cursor(dictionary=True)
 
         sql_query = """
-            SELECT id, nombre, mail, score, rol, carrera, password_hash
+            SELECT id, nombre, email, puntaje, rol, carrera, contrasenia_hash
             FROM usuario
-            WHERE id = %(user_id)s
+            WHERE id = %(usuario_id)s
             LIMIT 1
         """
-        value = {"user_id": request.user_id}
+        value = {"usuario_id": request.usuario_id}
 
         cursor.execute(sql_query, value)
 
-        user = cursor.fetchone()
-        if not user:
+        usuario = cursor.fetchone()
+        if not usuario:
             return (
                 jsonify({"error": MSG_NOT_FOUND}),
                 HTTP_NOT_FOUND,
             )
 
-        user_profile = {
-            "id": user.get("id"),
-            "nombre": user.get("nombre"),
-            "mail": user.get("mail"),
-            "score": user.get("score"),
-            "rol": user.get("rol"),
-            "carrera": user.get("carrera"),
+        usuario_profile = {
+            "id": usuario.get("id"),
+            "nombre": usuario.get("nombre"),
+            "email": usuario.get("email"),
+            "puntaje": usuario.get("puntaje"),
+            "rol": usuario.get("rol"),
+            "carrera": usuario.get("carrera"),
         }
 
-        return jsonify({"user": user_profile}), HTTP_OK
+        return jsonify({"usuario": usuario_profile}), HTTP_OK
 
     except Exception:
         return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
@@ -368,15 +368,15 @@ def logup():
     if not data:
         return jsonify({"error": MSG_BAD_REQUEST}), HTTP_BAD_REQUEST
 
-    is_valid, error = valid_user(data)
+    is_valid, error = valid_usuario(data)
     if not is_valid:
         return jsonify({"error": MSG_BAD_REQUEST, "detail": error}), HTTP_BAD_REQUEST
 
-    password = data.get("password")
-    if password is None or not isinstance(password, str) or password.strip() == "":
-        return jsonify({"error": MSG_BAD_REQUEST, "detail": "missing:password"}), HTTP_BAD_REQUEST
+    contrasenia = data.get("contrasenia")
+    if contrasenia is None or not isinstance(contrasenia, str) or contrasenia.strip() == "":
+        return jsonify({"error": MSG_BAD_REQUEST, "detail": "missing:contrasenia"}), HTTP_BAD_REQUEST
 
-    password_hash = hashear_password(password)
+    contrasenia_hash = hashear_contrasenia(contrasenia)
 
     conn = obtener_conexion()
     if conn is None:
@@ -387,33 +387,33 @@ def logup():
     try:
         cursor = conn.cursor()
         sql = """
-            INSERT INTO usuario (nombre, mail, score, rol, carrera, password_hash)
-            VALUES (%(nombre)s, %(mail)s, %(score)s, %(rol)s, %(carrera)s, %(password_hash)s)
+            INSERT INTO usuario (nombre, email, puntaje, rol, carrera, contrasenia_hash)
+            VALUES (%(nombre)s, %(email),s, %(puntaje)s, %(rol)s, %(carrera)s, %(contrasenia_hash)s)
         """
         values = {
             "nombre": data.get("nombre"),
-            "mail": data.get("mail"),
-            "score": 0,
+            "email": data.get("email"),
+            "puntaje": 0,
             "rol": "alumno",
             "carrera": data.get("carrera"),
-            "password_hash": password_hash,
+            "contrasenia_hash": contrasenia_hash,
         }
         cursor.execute(sql, values)
         conn.commit()
-        user_id = cursor.lastrowid
+        usuario_id = cursor.lastrowid
 
-        user_profile = {
-            "id": user_id,
+        usuario_profile = {
+            "id": usuario_id,
             "nombre": data.get("nombre"),
-            "mail": data.get("mail"),
-            "score": 0,
+            "email": data.get("email"),
+            "puntaje": 0,
             "rol": "alumno",
             "carrera": data.get("carrera"),
         }
 
-        token = generar_token(user_id, "alumno")
+        token = generar_token(usuario_id, "alumno")
 
-        return jsonify({"token": token, "role": "alumno", "user": user_profile}), HTTP_CREATED
+        return jsonify({"token": token, "rol": "alumno", "usuario": usuario_profile}), HTTP_CREATED
 
     except mysql.connector.Error as err:
         try:

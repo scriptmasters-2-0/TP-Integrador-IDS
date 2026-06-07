@@ -86,21 +86,21 @@ def obtener_perfil_usuario():
     if error:
         raise Exception(error)
     if isinstance(payload, dict):
-        return payload.get("user", payload)
+        return payload.get("usuario", payload)
     raise Exception("Respuesta inválida del backend")
 
 
-def obtener_prestamos():
+def obtener_reservas():
     """Obtiene la lista de préstamos disponibles para el usuario autenticado."""
-    payload, error = get_json("/loans")
+    payload, error = get_json("/reservas")
     if error:
         raise Exception(error)
     return payload
 
 
-def obtener_detalle_prestamo(loan_id):
+def obtener_detalle_reserva(reserva_id):
     """Obtiene el detalle de un préstamo específico."""
-    payload, error = get_json(f"/loans/{loan_id}")
+    payload, error = get_json(f"/reservas/{reserva_id}")
     if error:
         raise Exception(error)
     return payload

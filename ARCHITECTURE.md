@@ -14,13 +14,13 @@
 │   ├── routes
 │   │   ├── __init__.py
 │   │   ├── auth_route.py
-│   │   ├── items_route.py
-│   │   ├── loans_route.py
-│   │   ├── penalties_route.py
+│   │   ├── articulos_route.py
+│   │   ├── reservas_route.py
+│   │   ├── penalizaciones_route.py
 │   │   ├── qr_route.py
 │   │   ├── reportes_route.py
 │   │   ├── salud_route.py
-│   │   └── users_routes.py
+│   │   └── usuarios_routes.py
 │   ├── swagger.yaml
 │   ├── uv.lock
 │   └── validators.py
@@ -38,7 +38,7 @@
 │   │   ├── alumno_routes.py
 │   │   ├── profesor_routes.py
 │   │   └── public_routes.py
-│   ├── services
+│   ├── servicios
 │   ├── static
 │   │   ├── css
 │   │   │   └── style.css
@@ -54,7 +54,7 @@
 │   │   ├── admin
 │   │   │   ├── articulos.html
 │   │   │   ├── dashboard.html
-│   │   │   └── prestamo_detalle.html
+│   │   │   └── reserva_detalle.html
 │   │   ├── alumno
 │   │   │   ├── comprobante.html
 │   │   │   ├── historial.html
@@ -79,16 +79,16 @@
 
 # DB schema
 
-This database schema is designed for a library or equipment management system. It follows a relational structure focused on tracking users, the items available for loan, the transactions (reservations), and the subsequent management of returns and potential penalties.
+This database schema is designed for a library or equipment management system. It follows a relational structure focused on tracking usuarios, the articulos available for reserva, the transactions (reservations), and the subsequent management of returns and potential penalizaciones.
 
 ### Database Schema Description
 
-* **`usuario`**: The core entity representing any person interacting with the system. It uses an `ENUM` to define access levels (`rol`) and includes authentication fields (`password_hash`) and status tracking (`activo`).
-* **`articulos`**: Stores the inventory. It tracks item categorization (`tipo`, `seccion`) and availability (`stock`, `necesita_reparacion`).
-* **`reserva`**: The central transactional table connecting `usuario` and `articulos`. It manages the timeline of the loan (`fecha_retiro`, `fecha_regreso`).
+* **`usuario`**: The core entity representing any person interacting with the system. It uses an `ENUM` to define access levels (`rol`) and includes authentication fields (`contrasenia_hash`) and status tracking (`activo`).
+* **`articulos`**: Stores the inventory. It tracks articulo categorization (`tipo`, `seccion`) and availability (`stock`, `necesita_reparacion`).
+* **`reserva`**: The central transactional table connecting `usuario` and `articulos`. It manages the timeline of the reserva (`fecha_retiro`, `fecha_regreso`).
 * **`estado_devuelto`**: A child table of `reserva` that records the quality of return, specifically noting `dias_retraso` for potential enforcement.
-* **`penalizacion`**: Linked to both `usuario` and `reserva`. It tracks disciplinary actions taken against users, including the duration and severity of the sanction.
-* **`qr`**: A utility table for verifying transactions. Each reservation generates a unique code that can be flagged as `escaneado` upon successful pickup or return.
+* **`penalizacion`**: Linked to both `usuario` and `reserva`. It tracks disciplinary actions taken against usuarios, including the duration and severidad of the sanction.
+* **`qr`**: A utility table for verifying transactions. Each reservation generates a unique code that can be flagged as `escaneado` upon exitoful pickup or return.
 * **`normativa`**: An independent table used to store institutional policies or rules, serving as reference material for the system.
 
 ---
@@ -131,7 +131,7 @@ erDiagram
         int id
         int id_usuario
         int id_reserva
-        enum severity
+        enum severidad
     }
     qr {
         int id
@@ -143,67 +143,67 @@ erDiagram
 
 ### Technical Observations
 
-* **Normalization**: The schema is well-normalized for a relational system, effectively decoupling the transactional record (`reserva`) from supplementary data like returns or penalties.
+* **Normalization**: The schema is well-normalized for a relational system, effectively decoupling the transactional record (`reserva`) from supplementary data like returns or penalizaciones.
 * **Extensibility**: The inclusion of a `normativa` table suggests that the system expects dynamic updates to rules.
 * **Constraints**: You are using appropriate foreign key constraints to ensure referential integrity, preventing orphans in the `reserva` or `penalizacion` tables.
 
 # Endpoints
 
-This API provides a centralized system for managing inventory, loans, penalties, and user administration. Below is a structured summary of the endpoints.
+This API provides a centralized system for managing inventory, reservas, penalizaciones, and usuario administration. Below is a structured summary of the endpoints.
 
 ### 1. Authentication
 
-Handles user sessions.
+Handles usuario sessions.
 
-* **`POST /auth/login`**: Authenticates user credentials and establishes a session.
-* *Payload:* `LoginRequest` (username, password)
+* **`POST /auth/login`**: Authenticates usuario credentials and establishes a session.
+* *Payload:* `LoginRequest` (usuarioname, contrasenia)
 
 
 * **`POST /auth/logout`**: Closes the active session.
-* **`GET /auth/me`**: Retrieves the current user's profile and role.
+* **`GET /auth/me`**: Retrieves the current usuario's profile and rol.
 
 ---
 
 ### 2. Users
 
-Management of registered users.
+Management of registered usuarios.
 
-* **`GET /users`**: Lists all users (Admin).
-* **`POST /users`**: Creates a new user (Admin).
+* **`GET /usuarios`**: Lists all usuarios (Admin).
+* **`POST /usuarios`**: Creates a new usuario (Admin).
 * *Payload:* `UserCreate`
 
 
-* **`GET /users/{id}`**: Gets details of a specific user.
-* **`PUT /users/{id}`**: Updates complete user profile (Admin).
+* **`GET /usuarios/{id}`**: Gets details of a specific usuario.
+* **`PUT /usuarios/{id}`**: Updates complete usuario profile (Admin).
 * *Payload:* `UserUpdate`
 
 
-* **`DELETE /users/{id}`**: Performs a logical deletion (deactivation) of a user.
-* **`PATCH /users/{id}/status`**: Partially updates only the active status.
+* **`DELETE /usuarios/{id}`**: Performs a logical deletion (deactivation) of a usuario.
+* **`PATCH /usuarios/{id}/status`**: Partially updates only the active status.
 * *Payload:* `UserStatusUpdate`
 
 
-* **`GET /users/{id}/loans`**: Fetches the personal loan history for a user.
-* **`GET /users/{id}/penalties`**: Fetches the penalty history for a user.
+* **`GET /usuarios/{id}/reservas`**: Fetches the personal reserva history for a usuario.
+* **`GET /usuarios/{id}/penalizaciones`**: Fetches the penalty history for a usuario.
 
 ---
 
 ### 3. Inventory & Materials
 
-Manages catalog and item stock.
+Manages catalog and articulo stock.
 
-* **`GET /items`**: Retrieves item catalog. Supports query filters: `category`, `condition`, `available`.
-* **`POST /items`**: Adds a new item to inventory (Admin).
+* **`GET /articulos`**: Retrieves articulo catalog. Supports query filters: `category`, `condition`, `available`.
+* **`POST /articulos`**: Adds a new articulo to inventory (Admin).
 * *Payload:* `ItemCreate`
 
 
-* **`GET /items/{id}`**: Detailed view of a specific item.
-* **`PUT /items/{id}`**: Updates full item information (Admin).
+* **`GET /articulos/{id}`**: Detailed view of a specific articulo.
+* **`PUT /articulos/{id}`**: Updates full articulo information (Admin).
 * *Payload:* `ItemUpdate`
 
 
-* **`DELETE /items/{id}`**: Deletes an item from inventory (Admin).
-* **`PATCH /items/{id}/condition`**: Updates the physical condition/repair status of an item.
+* **`DELETE /articulos/{id}`**: Deletes an articulo from inventory (Admin).
+* **`PATCH /articulos/{id}/condition`**: Updates the physical condition/repair status of an articulo.
 * *Payload:* `ItemConditionUpdate`
 
 
@@ -212,15 +212,15 @@ Manages catalog and item stock.
 
 ### 4. Loans & Reservations
 
-Manages the loan lifecycle.
+Manages the reserva lifecycle.
 
-* **`GET /loans`**: Lists loans. Admins see all, users see their own. Supports filters: `status`, `startDate`, `endDate`.
-* **`POST /loans`**: Creates a new reservation request.
+* **`GET /reservas`**: Lists reservas. Admins see all, usuarios see their own. Supports filters: `status`, `startDate`, `endDate`.
+* **`POST /reservas`**: Creates a new reservation request.
 * *Payload:* `LoanCreate`
 
 
-* **`GET /loans/{id}`**: Gets full details of a specific loan.
-* **`PATCH /loans/{id}/status`**: Updates the reservation state (Admin).
+* **`GET /reservas/{id}`**: Gets full details of a specific reserva.
+* **`PATCH /reservas/{id}/status`**: Updates the reservation state (Admin).
 * *Payload:* `LoanStatusUpdate`
 
 
@@ -229,7 +229,7 @@ Manages the loan lifecycle.
 
 ### 5. QR Codes
 
-* **`GET /qr/loans/{loan_id}`**: Generates or retrieves the dynamic QR code for an approved loan.
+* **`GET /qr/reservas/{reserva_id}`**: Generates or retrieves the dynamic QR code for an approved reserva.
 
 ---
 
@@ -237,17 +237,17 @@ Manages the loan lifecycle.
 
 Management of disciplinary records.
 
-* **`GET /penalties`**: Lists all penalties (Admin).
-* **`POST /penalties`**: Manually creates a penalty (Admin).
+* **`GET /penalizaciones`**: Lists all penalizaciones (Admin).
+* **`POST /penalizaciones`**: Manually creates a penalty (Admin).
 * *Payload:* `PenaltyCreate`
 
 
-* **`GET /penalties/{id}`**: Gets details of a specific penalty.
-* **`PUT /penalties/{id}`**: Replaces the full penalty record.
+* **`GET /penalizaciones/{id}`**: Gets details of a specific penalty.
+* **`PUT /penalizaciones/{id}`**: Replaces the full penalty record.
 * *Payload:* `PenaltyUpdate`
 
 
-* **`PATCH /penalties/{id}`**: Partially updates severity, notes, or resolution status.
+* **`PATCH /penalizaciones/{id}`**: Partially updates severidad, notes, or resolution status.
 * *Payload:* `PenaltyPatchUpdate`
 
 

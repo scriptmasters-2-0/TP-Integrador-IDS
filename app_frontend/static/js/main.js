@@ -8,9 +8,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (mode === "login") {
           const email = form.querySelector("#email");
-          const password = form.querySelector("#password");
+          const contrasenia = form.querySelector("#contrasenia");
           const emailValue = email ? email.value.trim() : "";
-          const passwordValue = password ? password.value : "";
+          const contraseniaValue = contrasenia ? contrasenia.value : "";
 
           if (!emailValue || !emailValue.includes("@") || !emailValue.includes(".")) {
             event.preventDefault();
@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
           }
 
-          if (passwordValue.length < 2) {
+          if (contraseniaValue.length < 2) {
             event.preventDefault();
             alert("La contrasena debe tener al menos 2 caracteres.");
             return;
@@ -28,10 +28,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (mode === "register") {
           const nombre = form.querySelector("#nombre");
           const email = form.querySelector("#email");
-          const password = form.querySelector("#password");
+          const contrasenia = form.querySelector("#contrasenia");
           const nombreValue = nombre ? nombre.value.trim() : "";
           const emailValue = email ? email.value.trim() : "";
-          const passwordValue = password ? password.value : "";
+          const contraseniaValue = contrasenia ? contrasenia.value : "";
 
           if (nombreValue.length < 3) {
             event.preventDefault();
@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
           }
 
-          if (passwordValue.length < 8) {
+          if (contraseniaValue.length < 8) {
             event.preventDefault();
             alert("La contrasena debe tener al menos 8 caracteres.");
             return;
@@ -114,15 +114,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   attachSimpleFormValidations();
 
-  const faqItems = document.querySelectorAll(".faq-item");
+  const faqItems = document.querySelectorAll(".faq-articulo");
 
   // Default to open for the demo as shown in screenshots
-  faqItems.forEach((item) => {
-    item.classList.add("active"); // Since screenshots show them open
+  faqItems.forEach((articulo) => {
+    articulo.classList.add("active"); // Since screenshots show them open
 
-    const questionBtn = item.querySelector(".faq-question");
+    const questionBtn = articulo.querySelector(".faq-question");
     questionBtn.addEventListener("click", () => {
-      item.classList.toggle("active");
+      articulo.classList.toggle("active");
     });
   });
 
@@ -141,10 +141,10 @@ document.addEventListener("DOMContentLoaded", () => {
       greeting = "Buenas tardes";
     }
 
-    const userNameElement = document.getElementById("dashboard-user-name");
-    const userName = userNameElement ? userNameElement.textContent.trim() : "Usuario";
+    const usuarioNameElement = document.getElementById("dashboard-usuario-name");
+    const usuarioName = usuarioNameElement ? usuarioNameElement.textContent.trim() : "Usuario";
 
-    greetingElement.textContent = `${greeting}, ${userName}`;
+    greetingElement.textContent = `${greeting}, ${usuarioName}`;
 
     const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
     // Primera letra mayúscula para el día
@@ -155,7 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Auto-add reveal class and staggered delays to elements
   const elementsToReveal = document.querySelectorAll(
-    ".step-card, .benefit-card, .rule-item, .faq-item, section h2, .subtitle"
+    ".step-card, .benefit-card, .rule-articulo, .faq-articulo, section h2, .subtitle"
   );
   elementsToReveal.forEach((el) => {
     el.classList.add("reveal");

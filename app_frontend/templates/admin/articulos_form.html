@@ -1,4 +1,4 @@
-{% extends "layouts/base_dashboard.html" %} {% block user_name %}Administrador{% endblock %}
+{% extends "layouts/base_dashboard.html" %} {% block usuario_name %}Administrador{% endblock %}
 {% block sidebar_links %}
   <li>
     <a href="/admin/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a>
@@ -7,12 +7,12 @@
     <a href="/admin/articulos" class="active"><i class="fa-solid fa-box"></i> Artículos</a>
   </li>
   <li>
-    <a href="{{ url_for('admin.lista_prestamos') }}"
+    <a href="{{ url_for('admin.lista_reservas') }}"
       ><i class="fa-solid fa-clipboard-list"></i> Préstamos</a
     >
   </li>
   <li>
-    <a href="/admin/usuarios"><i class="fa-solid fa-users"></i> Usuarios</a>
+    <a href="/admin/usuarios"><i class="fa-solid fa-usuarios"></i> Usuarios</a>
   </li>
   <li>
     <a href="/admin/reportes/morosidad"><i class="fa-solid fa-chart-column"></i> Morosidad</a>
@@ -32,8 +32,8 @@
       {% if form_error %}
         <p style="color: #c0392b; font-weight: 700; margin-top: 8px;">{{ form_error }}</p>
       {% endif %}
-      {% if form_success %}
-        <p style="color: #2e7d32; font-weight: 700; margin-top: 8px;">{{ form_success }}</p>
+      {% if form_exito %}
+        <p style="color: #2e7d32; font-weight: 700; margin-top: 8px;">{{ form_exito }}</p>
       {% endif %}
     </div>
 
@@ -44,8 +44,8 @@
         {% if form_error %}
           <p style="color: #c0392b; font-weight: 700; margin-top: 8px;">{{ form_error }}</p>
         {% endif %}
-        {% if form_success %}
-          <p style="color: #2e7d32; font-weight: 700; margin-top: 8px;">{{ form_success }}</p>
+        {% if form_exito %}
+          <p style="color: #2e7d32; font-weight: 700; margin-top: 8px;">{{ form_exito }}</p>
         {% endif %}
       </div>
 
