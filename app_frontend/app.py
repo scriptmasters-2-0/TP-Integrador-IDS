@@ -1,8 +1,8 @@
 """Punto de entrada de la aplicacion frontend."""
 
-import config
 from flask import Flask
 
+import config
 from routes.admin_routes import admin_bp
 from routes.alumno_routes import alumno_bp
 from routes.profesor_routes import profesor_bp

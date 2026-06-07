@@ -5,6 +5,7 @@ de usuarios en el sistema.
 """
 
 import logging
+
 import mysql.connector
 from flask import Blueprint, jsonify, request
 
@@ -22,7 +23,6 @@ from http_codes_and_messages import (
 )
 from routes.auth_route import requiere_auth
 from validators import valid_id, valid_penalty_patch, valid_user_id_query
-
 
 penalties_bp = Blueprint("penalties", __name__)
 
@@ -361,9 +361,11 @@ def crear_penalizacion():
 
     return jsonify(penalizacion), HTTP_CREATED
 
+
 logging.basicConfig(level=logging.ERROR)
 
-@penalties_bp.route('/api/penalties', methods=['GET'])
+
+@penalties_bp.route("/api/penalties", methods=["GET"])
 def get_user_penalties():
     """Obtiene penalizaciones asociadas a un usuario mediante query param.
 
@@ -377,7 +379,9 @@ def get_user_penalties():
     """
     is_valid, error, user_id = valid_user_id_query(request.args)
     if not is_valid:
-        return jsonify({"error": "Invalid query params", "detail": error}), HTTP_BAD_REQUEST
+        return jsonify(
+            {"error": "Invalid query params", "detail": error}
+        ), HTTP_BAD_REQUEST
 
     conn = obtener_conexion()
     if conn is None:
@@ -390,9 +394,11 @@ def get_user_penalties():
         user_check_query = "SELECT id FROM usuario WHERE id = %s"
         cursor.execute(user_check_query, (user_id,))
         user_exists = cursor.fetchone()
-        
+
         if not user_exists:
-            return jsonify({"error": f"User with ID {user_id} not found"}), HTTP_NOT_FOUND
+            return jsonify(
+                {"error": f"User with ID {user_id} not found"}
+            ), HTTP_NOT_FOUND
 
         penalties_query = "SELECT * FROM penalizacion WHERE id_usuario = %s"
         cursor.execute(penalties_query, (user_id,))
@@ -403,7 +409,9 @@ def get_user_penalties():
     except mysql.connector.Error as query_err:
         logging.error(f"Database query execution error: {query_err}")
 
-        return jsonify({"error": "Internal server error: Database query failed"}), HTTP_INTERNAL_SERVER_ERROR
+        return jsonify(
+            {"error": "Internal server error: Database query failed"}
+        ), HTTP_INTERNAL_SERVER_ERROR
 
     finally:
         try:
@@ -415,4 +423,3 @@ def get_user_penalties():
             conn.close()
         except Exception:
             pass
-

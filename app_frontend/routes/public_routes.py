@@ -75,7 +75,9 @@ def login_submit():
     email = (request.form.get("email") or "").strip()
     password = request.form.get("password") or ""
 
-    payload, error, status_code = post_json("/auth/login", {"email": email, "password": password})
+    payload, error, status_code = post_json(
+        "/auth/login", {"email": email, "password": password}
+    )
 
     if error:
         print(error)
@@ -152,4 +154,6 @@ def get_article_details(item_id):
     """Muestra el detalle público de un artículo."""
     articulo, fetch_error = get_json(f"/api/items/{item_id}")
 
-    return render_template("public/article_details.html", articulo=articulo, fetch_error=fetch_error)
+    return render_template(
+        "public/article_details.html", articulo=articulo, fetch_error=fetch_error
+    )

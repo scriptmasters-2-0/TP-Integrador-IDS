@@ -1,13 +1,14 @@
 """Rutas del area de alumnos."""
 
 import logging
+
 from flask import Blueprint, redirect, render_template, request, session, url_for
 
 from services.api_client import (
     get_json,
-    post_json,
-    obtener_perfil_usuario,
     obtener_detalle_prestamo,
+    obtener_perfil_usuario,
+    post_json,
 )
 
 logger = logging.getLogger(__name__)
@@ -47,12 +48,16 @@ def historial():
                         "sede": prestamo.get("seccion", "Sede FIUBA"),
                         "estado_texto": prestamo.get("estado_reserva", "Pendiente"),
                         "estado_clase": (
-                            "badge-warning" if prestamo.get("estado_reserva") == "pendiente" else "badge-success"
+                            "badge-warning"
+                            if prestamo.get("estado_reserva") == "pendiente"
+                            else "badge-success"
                         ),
                     }
                 )
 
-    return render_template("alumno/historial.html", historial=historial_datos, fetch_error=error)
+    return render_template(
+        "alumno/historial.html", historial=historial_datos, fetch_error=error
+    )
 
 
 @alumno_bp.route("/mis-reservas/nueva", methods=["GET", "POST"])
@@ -141,9 +146,13 @@ def dashboard():
     if not token or not user:
         return redirect(url_for("public.login"))
 
-    dashboard_data, error = get_json(f"/api/alumno/dashboard/{user.get('id')}", token=token)
+    dashboard_data, error = get_json(
+        f"/api/alumno/dashboard/{user.get('id')}", token=token
+    )
 
-    return render_template("alumno/dashboard.html", dashboard=dashboard_data or {}, fetch_error=error)
+    return render_template(
+        "alumno/dashboard.html", dashboard=dashboard_data or {}, fetch_error=error
+    )
 
 
 @alumno_bp.route("/prestamos/<int:id>", methods=["GET"])
@@ -156,7 +165,9 @@ def prestamo_detalle(id):
     datos_api, error = get_json(f"/api/loans/{id}", token=token)
 
     if error:
-        return render_template("alumno/prestamo_detalle_alumno.html", prestamo=None, fetch_error=error)
+        return render_template(
+            "alumno/prestamo_detalle_alumno.html", prestamo=None, fetch_error=error
+        )
 
     prestamo = {
         "id": datos_api.get("id"),

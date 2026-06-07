@@ -10,12 +10,12 @@ from database import init_database
 from routes.auth_route import auth_bp
 from routes.items_route import items_bp
 from routes.loans_route import loans_bp
+from routes.normativas_route import normativas_bp
 from routes.penalties_route import penalties_bp
 from routes.qr_route import qr_bp
 from routes.reportes_route import reportes_bp
 from routes.salud_route import salud_bp
 from routes.users_routes import users_bp
-from routes.normativas_route import normativas_bp
 
 app = Flask(__name__)
 

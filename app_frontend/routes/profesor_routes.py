@@ -1,13 +1,10 @@
 """Rutas del area de profesores."""
 
-from datetime import datetime
 
 from flask import Blueprint, redirect, render_template, request, session, url_for
 
-from config import BACKEND_URL
 from services import items_service, loans_service
-from services.api_client import get_json, post_json
-from services.user_service import obtener_prestamos_usuario
+from services.api_client import get_json
 from services.loans_service import obtener_qr_reserva
 
 profesor_bp = Blueprint("profesor", __name__, url_prefix="/profesor")
@@ -98,27 +95,25 @@ def guardar_reserva():
 
 @profesor_bp.route("/historial", methods=["GET"])
 def historial_reserva():
-    "Muestra el historial completo de reservas historicas de un profesor"
-    
+    """Muestra el historial completo de reservas historicas de un profesor."""
     usuario, error = get_json("/auth/me")
-    
+
     if error:
-        return render_template("profesor/historial_reservas.html", prestamos=[], error=error)
+        return render_template(
+            "profesor/historial_reservas.html", prestamos=[], error=error
+        )
 
     user_id = usuario["user"]["id"]
     prestamos, error = get_json(f"/users/{user_id}/loans")
 
     return render_template(
-        "profesor/historial_reservas.html", 
-        prestamos=prestamos or [], 
-        error=error
+        "profesor/historial_reservas.html", prestamos=prestamos or [], error=error
     )
 
 
 @profesor_bp.route("/prestamos/<int:id>/comprobante", methods=["GET"])
 def comprobante(id):
-    """Muestra el comprobante de reserva"""
-
+    """Muestra el comprobante de reserva."""
     qr, error = obtener_qr_reserva(id)
-    
+
     return render_template("/profesor/comprobante.html", qr=qr)

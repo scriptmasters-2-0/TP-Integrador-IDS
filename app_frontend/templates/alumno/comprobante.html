@@ -3,73 +3,105 @@
 {% block user_name %}Alumno{% endblock %}
 
 {% block sidebar_links %}
-    <li><a href="{{ url_for('alumno.perfil') }}"><i class="fa-solid fa-user"></i> Perfil</a></li>
-    <li><a href="{{ url_for('alumno.historial') }}"><i class="fa-solid fa-list-check"></i> Mis reservas</a></li>
-    <li><a href="{{ url_for('alumno.nueva_reserva') }}"><i class="fa-solid fa-plus"></i> Nueva reserva</a></li>
-    <li><a href="{{ url_for('alumno.comprobante', id=prestamo.id if prestamo else 1) }}" class="active"><i class="fa-solid fa-file-invoice"></i> Comprobante</a></li>
+  <li>
+    <a href="{{ url_for('alumno.perfil') }}"><i class="fa-solid fa-user"></i> Perfil</a>
+  </li>
+  <li>
+    <a href="{{ url_for('alumno.historial') }}"
+      ><i class="fa-solid fa-list-check"></i> Mis reservas</a
+    >
+  </li>
+  <li>
+    <a href="{{ url_for('alumno.nueva_reserva') }}"
+      ><i class="fa-solid fa-plus"></i> Nueva reserva</a
+    >
+  </li>
+  <li>
+    <a href="{{ url_for('alumno.comprobante', id=prestamo.id if prestamo else 1) }}" class="active"
+      ><i class="fa-solid fa-file-invoice"></i> Comprobante</a
+    >
+  </li>
 {% endblock %}
 
 {% block dashboard_content %}
-    <div class="breadcrumb reveal">
-        <a href="{{ url_for('alumno.historial') }}">Historial</a> <i class="fa-solid fa-chevron-right"></i> <span>Comprobante de Reserva</span>
+  <div class="breadcrumb reveal">
+    <a href="{{ url_for('alumno.historial') }}">Historial</a>
+    <i class="fa-solid fa-chevron-right"></i> <span>Comprobante de Reserva</span>
+  </div>
+
+  <div class="ticket-container reveal" style="transition-delay: 0.2s;">
+    <div class="ticket">
+      <div class="ticket-top">
+        <div class="ticket-brand">
+          <img
+            src="{{ url_for('static', filename='images/logo-fiuba.png') }}"
+            alt="FIUBA"
+            class="ticket-logo" />
+          <span>Biblioteca Central</span>
+        </div>
+        <div class="ticket-title">Comprobante de Préstamo</div>
+      </div>
+
+      <div class="ticket-body">
+        <div class="ticket-info-grid">
+          <div class="ticket-info-item">
+            <span class="ticket-label">ID Reserva</span>
+            <span class="ticket-value highlight">#RES-{{ prestamo.id }}</span>
+          </div>
+          <div class="ticket-info-item text-right">
+            <span class="ticket-label">Fecha de Solicitud</span>
+            <span class="ticket-value">{{ prestamo.fecha_reserva | default('N/A') }}</span>
+          </div>
+
+          <div class="ticket-info-item full-width mt-3">
+            <span class="ticket-label">Equipo / Material Reservado</span>
+            <span class="ticket-value big-text">{{ prestamo.equipo_nombre }}</span>
+          </div>
+
+          <div class="ticket-info-item mt-3">
+            <span class="ticket-label">Fecha de Retiro</span>
+            <span class="ticket-value">{{ prestamo.fecha_retiro }}</span>
+          </div>
+          <div class="ticket-info-item text-right mt-3">
+            <span class="ticket-label">Sede</span>
+            <span class="ticket-value">{{ prestamo.sede }}</span>
+          </div>
+
+          <div class="ticket-info-item full-width mt-3">
+            <span class="ticket-label">Titular</span>
+            <span class="ticket-value"
+              >{{ prestamo.titular_nombre }} (Padrón: {{ prestamo.titular_legajo }})</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <div class="ticket-divider"></div>
+
+      <div class="ticket-qr-section">
+        <p class="qr-instruction">
+          Presenta este código desde tu celular al acercarte al mostrador de la biblioteca.
+        </p>
+        <div class="qr-code-box">
+          <img
+            src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=FIUBA-RES-{{ prestamo.id }}"
+            alt="Código QR de Reserva"
+            width="180"
+            height="180" />
+        </div>
+        <span class="ticket-status"
+          ><i class="fa-solid fa-circle-check"></i> Reserva Confirmada</span
+        >
+      </div>
     </div>
 
-    <div class="ticket-container reveal" style="transition-delay: 0.2s;">
-        <div class="ticket">
-            <div class="ticket-top">
-                <div class="ticket-brand">
-                    <img src="{{ url_for('static', filename='images/logo-fiuba.png') }}" alt="FIUBA" class="ticket-logo">
-                    <span>Biblioteca Central</span>
-                </div>
-                <div class="ticket-title">Comprobante de Préstamo</div>
-            </div>
-
-            <div class="ticket-body">
-                <div class="ticket-info-grid">
-                    <div class="ticket-info-item">
-                        <span class="ticket-label">ID Reserva</span>
-                        <span class="ticket-value highlight">#RES-{{ prestamo.id }}</span>
-                    </div>
-                    <div class="ticket-info-item text-right">
-                        <span class="ticket-label">Fecha de Solicitud</span>
-                        <span class="ticket-value">{{ prestamo.fecha_reserva | default('N/A') }}</span>
-                    </div>
-
-                    <div class="ticket-info-item full-width mt-3">
-                        <span class="ticket-label">Equipo / Material Reservado</span>
-                        <span class="ticket-value big-text">{{ prestamo.equipo_nombre }}</span>
-                    </div>
-
-                    <div class="ticket-info-item mt-3">
-                        <span class="ticket-label">Fecha de Retiro</span>
-                        <span class="ticket-value">{{ prestamo.fecha_retiro }}</span>
-                    </div>
-                    <div class="ticket-info-item text-right mt-3">
-                        <span class="ticket-label">Sede</span>
-                        <span class="ticket-value">{{ prestamo.sede }}</span>
-                    </div>
-
-                    <div class="ticket-info-item full-width mt-3">
-                        <span class="ticket-label">Titular</span>
-                        <span class="ticket-value">{{ prestamo.titular_nombre }} (Padrón: {{ prestamo.titular_legajo }})</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="ticket-divider"></div>
-
-            <div class="ticket-qr-section">
-                <p class="qr-instruction">Presenta este código desde tu celular al acercarte al mostrador de la biblioteca.</p>
-                <div class="qr-code-box">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=FIUBA-RES-{{ prestamo.id }}" alt="Código QR de Reserva" width="180" height="180">
-                </div>
-                <span class="ticket-status"><i class="fa-solid fa-circle-check"></i> Reserva Confirmada</span>
-            </div>
-        </div>
-
-        <div class="ticket-actions mt-4">
-            <button class="res-btn btn-secondary" onclick="window.print()"><i class="fa-solid fa-print"></i> Imprimir</button>
-            <button class="res-btn btn-primary"><i class="fa-solid fa-download"></i> Descargar PDF</button>
-        </div>
+    <div class="ticket-actions mt-4">
+      <button class="res-btn btn-secondary" onclick="window.print()">
+        <i class="fa-solid fa-print"></i> Imprimir
+      </button>
+      <button class="res-btn btn-primary">
+        <i class="fa-solid fa-download"></i> Descargar PDF
+      </button>
     </div>
+  </div>
 {% endblock %}

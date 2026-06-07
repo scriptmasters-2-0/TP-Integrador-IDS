@@ -1,6 +1,7 @@
 """Rutas para los endpoints de artículos del inventario."""
 
 import logging
+
 import mysql.connector
 from flask import Blueprint, jsonify, request
 
@@ -448,7 +449,7 @@ def eliminar_item(item_id):
         conn.close()
 
 
-@items_bp.route('/api/items/<int:item_id>', methods=['GET'])
+@items_bp.route("/api/items/<int:item_id>", methods=["GET"])
 def get_item_by_id(item_id):
     """Obtiene los datos de un artículo por su identificador.
 
@@ -479,14 +480,18 @@ def get_item_by_id(item_id):
         item = cursor.fetchone()
 
         if not item:
-            return jsonify({"error": f"Item with ID {item_id} not found"}), HTTP_NOT_FOUND
+            return jsonify(
+                {"error": f"Item with ID {item_id} not found"}
+            ), HTTP_NOT_FOUND
 
         return jsonify(item), HTTP_OK
 
     except mysql.connector.Error as query_err:
         logging.error(f"Database query error in get_item_by_id: {query_err}")
 
-        return jsonify({"error": "Internal server error: Database query failed"}), HTTP_INTERNAL_SERVER_ERROR
+        return jsonify(
+            {"error": "Internal server error: Database query failed"}
+        ), HTTP_INTERNAL_SERVER_ERROR
 
     finally:
         try:

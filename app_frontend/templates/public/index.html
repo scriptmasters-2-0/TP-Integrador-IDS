@@ -1,156 +1,176 @@
 {% extends "layouts/base.html" %}
 
 {% block content %}
-<main>
+  <main>
     <!-- HERO -->
     <section class="hero">
-        <div class="hero-content">
-            <h1 class="hero-title">
-                ¡Solicita lo<br>
-                que<br>
-                <span class="highlight">necesites!</span>
-            </h1>
-            <button onclick="window.location.href='{{ url_for('public.login') }}'" class="reserve-btn">RESERVA AQUÍ</button>
-        </div>
+      <div class="hero-content">
+        <h1 class="hero-title">
+          ¡Solicita lo<br />
+          que<br />
+          <span class="highlight">necesites!</span>
+        </h1>
+        <button onclick="window.location.href='{{ url_for('public.login') }}'" class="reserve-btn">
+          RESERVA AQUÍ
+        </button>
+      </div>
     </section>
 
     <!-- CÓMO FUNCIONA -->
     <section id="como-funciona" class="how-it-works">
-        <h2>¿Cómo funciona?</h2>
-        <p class="subtitle">¡A continuación de dejamos los pasos a seguir!</p>
-        <div class="steps-grid">
-            <div class="step-card">
-                <div class="step-number">01</div>
-                <h3>Ingresá a nuestro catálogo</h3>
-                <p>Allí podrás ver con lo que contamos</p>
-            </div>
-            <div class="step-card">
-                <div class="step-number">02</div>
-                <h3>Solicitá tu reserva</h3>
-                <p>Te solicitaremos unos datos por seguridad de la facultad</p>
-            </div>
-            <div class="step-card">
-                <div class="step-number">03</div>
-                <h3>Envío de QR y confirmación vía mail</h3>
-                <p>¡Listo con la confirmación generada podrás retirarlo en la librería!</p>
-            </div>
+      <h2>¿Cómo funciona?</h2>
+      <p class="subtitle">¡A continuación de dejamos los pasos a seguir!</p>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-number">01</div>
+          <h3>Ingresá a nuestro catálogo</h3>
+          <p>Allí podrás ver con lo que contamos</p>
         </div>
+        <div class="step-card">
+          <div class="step-number">02</div>
+          <h3>Solicitá tu reserva</h3>
+          <p>Te solicitaremos unos datos por seguridad de la facultad</p>
+        </div>
+        <div class="step-card">
+          <div class="step-number">03</div>
+          <h3>Envío de QR y confirmación vía mail</h3>
+          <p>¡Listo con la confirmación generada podrás retirarlo en la librería!</p>
+        </div>
+      </div>
     </section>
 
     <!-- POR QUÉ SOLICITAR UNA RESERVA -->
     <section class="benefits">
-        <h2>¿Por qué solicitar una reserva?</h2>
-        <div class="benefits-grid">
-            <div class="benefit-card">
-                <div class="icon-box"><i class="fa-solid fa-thumbs-up"></i></div>
-                <h3>Beneficio 1</h3>
-                <p>Retiro inmediato con QR.</p>
-            </div>
-            <div class="benefit-card">
-                <div class="icon-box"><i class="fa-solid fa-laptop"></i></div>
-                <h3>Beneficio 2</h3>
-                <p>Acceso a notebooks y proyectores.</p>
-            </div>
-            <div class="benefit-card">
-                <div class="icon-box"><i class="fa-solid fa-envelope"></i></div>
-                <h3>Beneficio 3</h3>
-                <p>Notificaciones de devolución por mail</p>
-            </div>
+      <h2>¿Por qué solicitar una reserva?</h2>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="icon-box"><i class="fa-solid fa-thumbs-up"></i></div>
+          <h3>Beneficio 1</h3>
+          <p>Retiro inmediato con QR.</p>
         </div>
+        <div class="benefit-card">
+          <div class="icon-box"><i class="fa-solid fa-laptop"></i></div>
+          <h3>Beneficio 2</h3>
+          <p>Acceso a notebooks y proyectores.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="icon-box"><i class="fa-solid fa-envelope"></i></div>
+          <h3>Beneficio 3</h3>
+          <p>Notificaciones de devolución por mail</p>
+        </div>
+      </div>
     </section>
 
     <!-- NORMAS -->
     <section class="rules">
-        <h2>Normas</h2>
-        <div class="rules-grid">
-            <div class="rule-item">
-                <div class="rule-icon"><i class="fa-regular fa-circle-check"></i></div>
-                <div class="rule-text">
-                    <h3>Identidad:</h3>
-                    <p>Es obligatorio presentar el QR y el DNI para retirar el material.</p>
-                </div>
-            </div>
-            <div class="rule-item">
-                <div class="rule-icon"><i class="fa-regular fa-circle-check"></i></div>
-                <div class="rule-text">
-                    <h3>Devolución:</h3>
-                    <p>El material debe devolverse en el mismo estado y antes de la fecha límite para evitar bloqueos.</p>
-                </div>
-            </div>
-            <div class="rule-item">
-                <div class="rule-icon"><i class="fa-regular fa-circle-check"></i></div>
-                <div class="rule-text">
-                    <h3>Estado del Material:</h3>
-                    <p>El usuario es responsable por daños físicos en los equipos técnicos.</p>
-                </div>
-            </div>
-            <div class="rule-item">
-                <div class="rule-icon"><i class="fa-regular fa-circle-check"></i></div>
-                <div class="rule-text">
-                    <h3>Multas:</h3>
-                    <p>El retraso o mal estado en la devolución inhabilita al usuario para nuevos préstamos por 15 días.</p>
-                </div>
-            </div>
-            <div class="rule-item">
-                <div class="rule-icon"><i class="fa-regular fa-circle-check"></i></div>
-                <div class="rule-text">
-                    <h3>Plazos:</h3>
-                    <p>Las reservas vencen automáticamente si no se retiran en 30 minutos.</p>
-                </div>
-            </div>
-            <div class="rule-item">
-                <div class="rule-icon"><i class="fa-regular fa-circle-check"></i></div>
-                <div class="rule-text">
-                    <h3>Seguridad:</h3>
-                    <p>La reserva está protegida para asegurar tus datos.</p>
-                </div>
-            </div>
+      <h2>Normas</h2>
+      <div class="rules-grid">
+        <div class="rule-item">
+          <div class="rule-icon"><i class="fa-regular fa-circle-check"></i></div>
+          <div class="rule-text">
+            <h3>Identidad:</h3>
+            <p>Es obligatorio presentar el QR y el DNI para retirar el material.</p>
+          </div>
         </div>
+        <div class="rule-item">
+          <div class="rule-icon"><i class="fa-regular fa-circle-check"></i></div>
+          <div class="rule-text">
+            <h3>Devolución:</h3>
+            <p>
+              El material debe devolverse en el mismo estado y antes de la fecha límite para evitar
+              bloqueos.
+            </p>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-icon"><i class="fa-regular fa-circle-check"></i></div>
+          <div class="rule-text">
+            <h3>Estado del Material:</h3>
+            <p>El usuario es responsable por daños físicos en los equipos técnicos.</p>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-icon"><i class="fa-regular fa-circle-check"></i></div>
+          <div class="rule-text">
+            <h3>Multas:</h3>
+            <p>
+              El retraso o mal estado en la devolución inhabilita al usuario para nuevos préstamos
+              por 15 días.
+            </p>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-icon"><i class="fa-regular fa-circle-check"></i></div>
+          <div class="rule-text">
+            <h3>Plazos:</h3>
+            <p>Las reservas vencen automáticamente si no se retiran en 30 minutos.</p>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-icon"><i class="fa-regular fa-circle-check"></i></div>
+          <div class="rule-text">
+            <h3>Seguridad:</h3>
+            <p>La reserva está protegida para asegurar tus datos.</p>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- FAQ -->
     <section class="faq">
-        <h2>FAQ</h2>
-        <div class="faq-list">
-            <div class="faq-item">
-                <button class="faq-question">
-                    <span class="faq-icon-minus"><i class="fa-solid fa-minus"></i></span>
-                    ¿Cómo cancelo una reserva?
-                    <span class="faq-icon-caret"><i class="fa-solid fa-chevron-up"></i></span>
-                </button>
-                <div class="faq-answer">
-                    <p>Podés hacerlo desde tu perfil de alumno o mediante el botón "Cancelar" incluido en el mail de confirmación del QR.</p>
-                </div>
-            </div>
-            <div class="faq-item">
-                <button class="faq-question">
-                    <span class="faq-icon-minus"><i class="fa-solid fa-minus"></i></span>
-                    ¿Qué pasa si pierdo el código QR?
-                    <span class="faq-icon-caret"><i class="fa-solid fa-chevron-up"></i></span>
-                </button>
-                <div class="faq-answer">
-                    <p>No te preocupes, podés volver a generarlo o visualizarlo ingresando con tu usuario y contraseña a la plataforma.</p>
-                </div>
-            </div>
-            <div class="faq-item">
-                <button class="faq-question">
-                    <span class="faq-icon-minus"><i class="fa-solid fa-minus"></i></span>
-                    ¿Puedo renovar una reserva activa?
-                    <span class="faq-icon-caret"><i class="fa-solid fa-chevron-up"></i></span>
-                </button>
-                <div class="faq-answer">
-                    <p>Sí, siempre y cuando no haya otros alumnos en lista de espera para ese mismo objeto.</p>
-                </div>
-            </div>
+      <h2>FAQ</h2>
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-question">
+            <span class="faq-icon-minus"><i class="fa-solid fa-minus"></i></span>
+            ¿Cómo cancelo una reserva?
+            <span class="faq-icon-caret"><i class="fa-solid fa-chevron-up"></i></span>
+          </button>
+          <div class="faq-answer">
+            <p>
+              Podés hacerlo desde tu perfil de alumno o mediante el botón "Cancelar" incluido en el
+              mail de confirmación del QR.
+            </p>
+          </div>
         </div>
+        <div class="faq-item">
+          <button class="faq-question">
+            <span class="faq-icon-minus"><i class="fa-solid fa-minus"></i></span>
+            ¿Qué pasa si pierdo el código QR?
+            <span class="faq-icon-caret"><i class="fa-solid fa-chevron-up"></i></span>
+          </button>
+          <div class="faq-answer">
+            <p>
+              No te preocupes, podés volver a generarlo o visualizarlo ingresando con tu usuario y
+              contraseña a la plataforma.
+            </p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">
+            <span class="faq-icon-minus"><i class="fa-solid fa-minus"></i></span>
+            ¿Puedo renovar una reserva activa?
+            <span class="faq-icon-caret"><i class="fa-solid fa-chevron-up"></i></span>
+          </button>
+          <div class="faq-answer">
+            <p>
+              Sí, siempre y cuando no haya otros alumnos en lista de espera para ese mismo objeto.
+            </p>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- REGISTRATE AHORA -->
     <section class="register-now">
-        <div class="register-overlay">
-            <h2>Registrate ahora!</h2>
-            <button onclick="window.location.href='{{ url_for('public.registro') }}'" class="register-btn">INGRESA</button>
-        </div>
+      <div class="register-overlay">
+        <h2>Registrate ahora!</h2>
+        <button
+          onclick="window.location.href='{{ url_for('public.registro') }}'"
+          class="register-btn">
+          INGRESA
+        </button>
+      </div>
     </section>
-</main>
+  </main>
 {% endblock %}

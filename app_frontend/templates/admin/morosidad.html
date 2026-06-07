@@ -3,21 +3,25 @@
 {% block user_name %}Administrador{% endblock %}
 
 {% block sidebar_links %}
-<li>
-  <a href="/admin/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a>
-</li>
-<li>
-  <a href="/admin/articulos"><i class="fa-solid fa-box"></i> Articulos</a>
-</li>
-<li>
-  <a href="{{ url_for('admin.lista_prestamos') }}"><i class="fa-solid fa-clipboard-list"></i> Préstamos</a>
-</li>
-<li>
-  <a href="/admin/usuarios"><i class="fa-solid fa-users"></i> Usuarios</a>
-</li>
-<li>
-  <a href="/admin/reportes/morosidad" class="active"><i class="fa-solid fa-chart-column"></i> Morosidad</a>
-</li>
+  <li>
+    <a href="/admin/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+  </li>
+  <li>
+    <a href="/admin/articulos"><i class="fa-solid fa-box"></i> Articulos</a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.lista_prestamos') }}"
+      ><i class="fa-solid fa-clipboard-list"></i> Préstamos</a
+    >
+  </li>
+  <li>
+    <a href="/admin/usuarios"><i class="fa-solid fa-users"></i> Usuarios</a>
+  </li>
+  <li>
+    <a href="/admin/reportes/morosidad" class="active"
+      ><i class="fa-solid fa-chart-column"></i> Morosidad</a
+    >
+  </li>
 {% endblock %}
 
 {% block dashboard_content %}

@@ -91,7 +91,7 @@ def obtener_reporte_db(tipo_reporte):
             JOIN articulos
                 ON reserva.id_reservado = articulos.id
             """)
-        
+
     elif tipo_reporte == "careers":
         cursor.execute("""
             SELECT
@@ -99,9 +99,9 @@ def obtener_reporte_db(tipo_reporte):
                 COUNT(*) AS cantidad_prestamos
             FROM reserva
             JOIN usuario
-                ON reserva.id_usuario = usuario.id   
+                ON reserva.id_usuario = usuario.id
             GROUP BY usuario.carrera
-            ORDER BY cantidad_prestamos DESC          
+            ORDER BY cantidad_prestamos DESC
         """)
 
     for fila in cursor:
@@ -138,6 +138,3 @@ def obtener_reportes():
     }
 
     return jsonify(respuesta), HTTP_OK
-
-
-

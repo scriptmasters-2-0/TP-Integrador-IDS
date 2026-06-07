@@ -5,13 +5,11 @@ from requests.exceptions import RequestException
 
 from config import BACKEND_URL
 
-
 TIMEOUT = 5
 
 
 def crear_usuario(credentials):
-    """
-    POST /auth/logup
+    """POST /auth/logup
     credentials: dict (ej., {"username": "...", "mail": "...", "carrera": "...", "password": "..."})
     Devuelve el JSON parseado en caso de éxito, {} en caso de fallo.
     """
@@ -25,9 +23,9 @@ def crear_usuario(credentials):
     except Exception:
         return {}
 
+
 def iniciar_sesion(credentials):
-    """
-    POST /auth/login
+    """POST /auth/login
     credentials: dict (ej., {"username": "...", "password": "..."})
     Devuelve el JSON parseado en caso de éxito, {} en caso de fallo.
     """
@@ -43,8 +41,7 @@ def iniciar_sesion(credentials):
 
 
 def cerrar_sesion():
-    """
-    POST /auth/logout
+    """POST /auth/logout
     Devuelve el JSON parseado en caso de éxito, {} en caso de fallo.
     """
     url = f"{BACKEND_URL}/auth/logout"
@@ -62,8 +59,7 @@ def cerrar_sesion():
 
 
 def obtener_mi_perfil():
-    """
-    GET /auth/me
+    """GET /auth/me
     Devuelve el JSON con la información del usuario en caso de éxito, {} en caso de fallo.
     """
     url = f"{BACKEND_URL}/auth/me"

@@ -5,6 +5,7 @@ y eliminar (baja lógica) usuarios del sistema.
 """
 
 import logging
+
 import mysql.connector
 from flask import Blueprint, jsonify, request
 
@@ -29,7 +30,8 @@ logging.basicConfig(level=logging.ERROR)
 
 users_bp = Blueprint("users", __name__)
 
-@users_bp.route('/api/user', methods=['GET'])
+
+@users_bp.route("/api/user", methods=["GET"])
 def get_all_users():
     """Lista todos los usuarios registrados.
 
@@ -55,7 +57,9 @@ def get_all_users():
     except mysql.connector.Error as query_err:
         logging.error(f"Database query error in get_all_users: {query_err}")
 
-        return jsonify({"error": "Internal server error: Database query failed"}), HTTP_INTERNAL_SERVER_ERROR
+        return jsonify(
+            {"error": "Internal server error: Database query failed"}
+        ), HTTP_INTERNAL_SERVER_ERROR
 
     finally:
         try:
@@ -67,9 +71,9 @@ def get_all_users():
             conn.close()
         except Exception:
             pass
-    
 
-@users_bp.route('/api/user/<int:user_id>', methods=['GET'])
+
+@users_bp.route("/api/user/<int:user_id>", methods=["GET"])
 def get_user_by_id(user_id):
     """Obtiene un usuario por su identificador.
 
@@ -97,14 +101,18 @@ def get_user_by_id(user_id):
         user = cursor.fetchone()
 
         if not user:
-            return jsonify({"error": f"User with ID {user_id} not found"}), HTTP_NOT_FOUND
+            return jsonify(
+                {"error": f"User with ID {user_id} not found"}
+            ), HTTP_NOT_FOUND
 
         return jsonify(user), HTTP_OK
 
     except mysql.connector.Error as query_err:
         logging.error(f"Database query error in get_user_by_id: {query_err}")
 
-        return jsonify({"error": "Internal server error: Database query failed"}), HTTP_INTERNAL_SERVER_ERROR
+        return jsonify(
+            {"error": "Internal server error: Database query failed"}
+        ), HTTP_INTERNAL_SERVER_ERROR
 
     finally:
         try:
@@ -116,6 +124,7 @@ def get_user_by_id(user_id):
             conn.close()
         except Exception:
             pass
+
 
 DUPLICATE_ENTRY_ERRNO = 1062
 
@@ -299,6 +308,7 @@ def create_user():
         except Exception:
             pass
 
+
 @users_bp.route("/api/users/<int:user_id>", methods=["GET"])
 @requiere_auth(roles=["admin"])
 def get_user(user_id):
@@ -310,7 +320,7 @@ def get_user(user_id):
         cursor = conn.cursor(dictionary=True)
         cursor.execute(
             "SELECT id, nombre, mail, score, rol, carrera FROM usuario WHERE id = %s",
-            (user_id,)
+            (user_id,),
         )
         user = cursor.fetchone()
         if not user:
@@ -327,6 +337,7 @@ def get_user(user_id):
             conn.close()
         except Exception:
             pass
+
 
 @users_bp.route("/api/users/<int:user_id>", methods=["PUT"])
 @requiere_auth(roles=["admin"])

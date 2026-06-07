@@ -11,6 +11,7 @@ import bcrypt
 import jwt
 import mysql.connector
 from flask import Blueprint, jsonify, request
+from mysql.connector import errorcode
 
 from config import JWT_ALGORITHM, JWT_SECRET
 from database import obtener_conexion
@@ -250,9 +251,7 @@ def login():
 
         token = generar_token(user.get("id"), user.get("rol"))
 
-        return jsonify(
-            {"token": token, "role": user.get("rol"), "user": user_profile}
-        ), HTTP_OK
+        return jsonify({"token": token, "role": user.get("rol"), "user": user_profile}), HTTP_OK
 
     except Exception:
         return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
@@ -375,9 +374,7 @@ def logup():
 
     password = data.get("password")
     if password is None or not isinstance(password, str) or password.strip() == "":
-        return jsonify(
-            {"error": MSG_BAD_REQUEST, "detail": "missing:password"}
-        ), HTTP_BAD_REQUEST
+        return jsonify({"error": MSG_BAD_REQUEST, "detail": "missing:password"}), HTTP_BAD_REQUEST
 
     password_hash = hashear_password(password)
 
@@ -416,13 +413,11 @@ def logup():
 
         token = generar_token(user_id, "alumno")
 
-        return jsonify(
-            {"token": token, "role": "alumno", "user": user_profile}
-        ), HTTP_CREATED
+        return jsonify({"token": token, "role": "alumno", "user": user_profile}), HTTP_CREATED
 
     except mysql.connector.Error as err:
         try:
-            if err.errno == 1062:
+            if err.errno == errorcode.ER_DUP_ENTRY:
                 return (
                     jsonify({"error": MSG_CONFLICT, "detail": "duplicate_entry"}),
                     HTTP_CONFLICT,
