@@ -67,10 +67,10 @@ def mis_reservas():
     return dashboard()
 
 
-@profesor_bp.route("/historial")
+"""@profesor_bp.route("/historial")
 def historial():
-    """Alias temporal para historial del profesor."""
-    return dashboard()
+    Alias temporal para historial del profesor.
+    return dashboard()"""
 
 
 @profesor_bp.route("/nueva", methods=["GET"])
@@ -99,15 +99,20 @@ def guardar_reserva():
 @profesor_bp.route("/historial", methods=["GET"])
 def historial_reserva():
     "Muestra el historial completo de reservas historicas de un profesor"
-
-    rol = session.get("profesor")
-    """if rol not in ["profesor"]:
-        return redirect("/")"""
     
-    """user_id = session.get("user_id")"""
-    prestamos = obtener_prestamos_usuario(3) 
+    usuario, error = get_json("/auth/me")
+    
+    if error:
+        return render_template("profesor/historial_reservas.html", prestamos=[], error=error)
 
-    return render_template("/historial_reservas.html", prestamos=prestamos)
+    user_id = usuario["user"]["id"]
+    prestamos, error = get_json(f"/users/{user_id}/loans")
+
+    return render_template(
+        "profesor/historial_reservas.html", 
+        prestamos=prestamos or [], 
+        error=error
+    )
 
 
 @profesor_bp.route("/prestamos/<int:id>/comprobante", methods=["GET"])
