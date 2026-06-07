@@ -3,120 +3,145 @@
 {% block user_name %}Administrador{% endblock %}
 
 {% block sidebar_links %}
-  <li>
-    <a href="{{ url_for('admin.dashboard') }}" class="active"
-      ><i class="fa-solid fa-gauge"></i> Mis reservas</a
-    >
-  </li>
-  <li>
-    <a href="{{ url_for('admin.reportes') }}"
-      ><i class="fa-solid fa-clipboard-list"></i> Reportes</a
-    >
-  </li>
-  <li>
-    <a href="{{ url_for('admin.listar_articulos') }}"><i class="fa-solid fa-box"></i> Articulos</a>
-  </li>
-  <li>
-    <a href="{{ url_for('admin.crear_articulo') }}"
-      ><i class="fa-solid fa-plus"></i> Nuevo Articulo</a
-    >
-  </li>
-  <li>
-    <a href="{{ url_for('admin.normativas') }}"
-      ><i class="fa-solid fa-clipboard-list"></i> Normativas</a
-    >
-  </li>
-  <li>
-    <a href="{{ url_for('admin.usuarios') }}"><i class="fa-solid fa-users"></i> Usuarios</a>
-  </li>
-  <li>
-    <a href="{{ url_for('admin.reporte_morosidad') }}"
-      ><i class="fa-solid fa-chart-column"></i> Morosidad</a
-    >
-  </li>
+
+<li>
+  <a href="{{ url_for('admin.dashboard') }}">
+    <i class="fa-solid fa-gauge"></i> Dashboard
+  </a>
+</li>
+<li>
+  <a href="{{ url_for('admin.listar_articulos') }}">
+    <i class="fa-solid fa-box"></i> Artículos
+  </a>
+</li>
+<li>
+  <a href="{{ url_for('admin.usuarios') }}">
+    <i class="fa-solid fa-users"></i> Usuarios
+  </a>
+</li>
+<li>
+  <a href="{{ url_for('admin.reportes') }}">
+    <i class="fa-solid fa-chart-column"></i> Reportes
+  </a>
+</li>
+<li>
+  <a href="{{ url_for('admin.normativas') }}" class="active">
+    <i class="fa-solid fa-book"></i> Normativas
+  </a>
+</li>
 {% endblock %}
 
 {% block dashboard_content %}
-  <div class="breadcrumb reveal">
-    <a href="/admin/dashboard">Admin</a>
-    <i class="fa-solid fa-chevron-right"></i>
-    <span>Normativas</span>
+
+<div class="breadcrumb reveal">
+  <a href="{{ url_for('admin.dashboard') }}">Admin</a>
+  <i class="fa-solid fa-chevron-right"></i>
+  <span>Normativas</span>
+</div>
+
+<div class="history-container">
+
+  <div class="history-header">
+    <h2>Gestión de normativas</h2>
+    <p>Administra las normativas del sistema.</p>
   </div>
 
-  <div class="history-container">
-    <div class="history-header">
-      <h2>Gestión de normativas</h2>
-      <p>Administra las normativas del sistema.</p>
-    </div>
+  <form method="POST" class="normativa-form">
 
-    <input type="hidden" name="id"
-      value="{{ normativa_editar.id if normativa_editar else '' }}">
+<input
+  type="hidden"
+  name="id"
+  value="{{ normativa_editada.id if normativa_editar else '' }}"
+>
 
-    <div>
-      <label>Título</label>
-      <input type="text" name="titulo"
-        value="{{ normativa_editar.titulo if normativa_editar else '' }}"
-        required>
-    </div>
+<div>
+  <label>Título</label>
+  <input
+    type="text"
+    name="titulo"
+    value="{{ normativa_editada.titulo if normativa_editada else '' }}"
+    required
+  >
+</div>
 
-    <div>
-      <label>Descripción</label>
-      <textarea name="descripcion" required>
-{{ normativa_editar.descripcion if normativa_editar else '' }}
-      </textarea>
-    </div>
+<div>
+  <label>Descripción</label>
+  <textarea
+    name="descripcion"
+    rows="4"
+    required
+  >{{ normativa_editada.descripcion if normativa_editada else '' }}</textarea>
+</div>
 
-    <button type="submit">
-      {{ 'Actualizar' if normativa_editar else 'Crear' }}
-    </button>
-
+<button type="submit">
+  {{ 'Actualizar normativa' if normativa_editada else 'Crear normativa' }}
+</button>
   </form>
 
   <div class="history-table-wrapper">
 
-    <table class="history-table">
+<table class="history-table">
 
-      <thead>
-        <tr>
-          <th>Título</th>
-          <th>Descripción</th>
-          <th>Fecha</th>
-          <th>Acciones</th>
-        </tr>
-          </tr>
-        </thead>
+  <thead>
+    <tr>
+      <th>Título</th>
+      <th>Descripción</th>
+      <th>Fecha</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
 
-        <tbody>
-          {% if normativas %}
+  <tbody>
 
-            {% for normativa in normativas %}
-              <tr>
-                <td>{{ normativa.titulo }}</td>
+  {% if normativas %}
 
-                <td>{{ normativa.descripcion }}</td>
+    {% for normativa in normativas %}
 
-                <td>{{ normativa.fecha }}</td>
+    <tr>
 
-                <td>
-                  <a href="/admin/normativas?editar={{ normativa.id }}" class="btn-edit">
-                    Editar
-                  </a>
+      <td>{{ normativa.titulo }}</td>
 
-                  <a href="/admin/normativas/{{ normativa.id }}/eliminar" class="btn-delete">
-                    Eliminar
-                  </a>
-                </td>
-              </tr>
-            {% endfor %}
-          {% else %}
-            <tr>
-              <td colspan="4" style="text-align:center;">No hay normativas cargadas.</td>
-            </tr>
-          {% endif %}
-        </tbody>
-      </table>
-    </div>
+      <td>{{ normativa.descripcion }}</td>
 
+      <td>{{ normativa.fecha }}</td>
+
+      <td>
+
+        <a
+          href="{{ url_for('admin.normativas', editar=normativa.id) }}"
+          class="btn-edit"
+        >
+          Editar
+        </a>
+
+        <form action="{{ url_for('admin.eliminar_norm') }}" method="POST">
+          <input type="hidden" name="id" value="{{ normativa.id}}">
+          <button type="submit" class="btn-delete">
+            Eliminar
+          </button>
+        </form>
+
+      </td>
+
+    </tr>
+
+    {% endfor %}
+
+  {% else %}
+
+    <tr>
+      <td colspan="4" style="text-align:center;">
+        No hay normativas cargadas.
+      </td>
+    </tr>
+
+  {% endif %}
+
+  </tbody>
+
+</table>
   </div>
-{% endblock %}
 
+</div>
+
+{% endblock %}

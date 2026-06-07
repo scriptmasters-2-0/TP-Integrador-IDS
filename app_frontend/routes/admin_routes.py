@@ -148,7 +148,7 @@ def normativas():
     if id_editar:
         for normativa in normativas:
             if str(normativa["id"]) == str(id_editar):
-                normativa_editar = normativa
+                normativa_editada = normativa
                 break
             
     return render_template(
