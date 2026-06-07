@@ -12,6 +12,7 @@ from services.api_client import (
 
 logger = logging.getLogger(__name__)
 alumno_bp = Blueprint("alumno", __name__, url_prefix="/alumno")
+BACKEND_URL = "http://127.0.0.1:5001"
 
 
 @alumno_bp.route("/perfil")
@@ -45,7 +46,9 @@ def historial():
                         "id_equipo": prestamo.get("id_reservado"),
                         "sede": prestamo.get("seccion", "Sede FIUBA"),
                         "estado_texto": prestamo.get("estado_reserva", "Pendiente"),
-                        "estado_clase": "badge-warning" if prestamo.get("estado_reserva") == "pendiente" else "badge-success",
+                        "estado_clase": (
+                            "badge-warning" if prestamo.get("estado_reserva") == "pendiente" else "badge-success"
+                        ),
                     }
                 )
 
@@ -128,3 +131,39 @@ def comprobante_sin_id():
 # Currently, these buttons are disabled in the template (alumno/perfil.html)
 # Backend endpoints in /api/users/*/password and /api/users/*/corrections should be created
 
+
+@alumno_bp.route("/dashboard")
+def dashboard():
+    """Panel principal: reservas activas, score, alertas de penalización."""
+    token = session.get("token")
+    user = session.get("user")
+
+    if not token or not user:
+        return redirect(url_for("public.login"))
+
+    dashboard_data, error = get_json(f"/api/alumno/dashboard/{user.get('id')}", token=token)
+
+    return render_template("alumno/dashboard.html", dashboard=dashboard_data or {}, fetch_error=error)
+
+
+@alumno_bp.route("/prestamos/<int:id>", methods=["GET"])
+def prestamo_detalle(id):
+    """Detalle de reserva: estado, fecha retiro/regreso, QR."""
+    token = session.get("token")
+    if not token:
+        return redirect(url_for("public.login"))
+
+    datos_api, error = get_json(f"/api/loans/{id}", token=token)
+
+    if error:
+        return render_template("alumno/prestamo_detalle_alumno.html", prestamo=None, fetch_error=error)
+
+    prestamo = {
+        "id": datos_api.get("id"),
+        "estado": datos_api.get("estado_reserva"),
+        "fecha_retiro": datos_api.get("fecha_retiro"),
+        "fecha_regreso": datos_api.get("fecha_regreso"),
+        "qr_url": f"https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=FIUBA-RES-{datos_api.get('id')}",
+    }
+
+    return render_template("alumno/prestamo_detalle_alumno.html", prestamo=prestamo)

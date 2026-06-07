@@ -75,9 +75,7 @@ def login_submit():
     email = (request.form.get("email") or "").strip()
     password = request.form.get("password") or ""
 
-    payload, error, status_code = post_json(
-        "/auth/login", {"email": email, "password": password}
-    )
+    payload, error, status_code = post_json("/auth/login", {"email": email, "password": password})
 
     if error:
         print(error)
@@ -135,7 +133,7 @@ def mostrar_catalogo():
         filtros["seccion"] = seccion_actual
 
     articulos = obtener_items(filtros)
-    
+
     return render_template(
         "public/catalogo.html",
         articulos=articulos,
@@ -147,3 +145,11 @@ def mostrar_catalogo():
 @public_bp.route("/faq", methods=["GET"])
 def mostrar_faq():
     return render_template("public/faq.html")
+
+
+@public_bp.route("/articulos/<int:item_id>")
+def get_article_details(item_id):
+    """Muestra el detalle público de un artículo."""
+    articulo, fetch_error = get_json(f"/api/items/{item_id}")
+
+    return render_template("public/article_details.html", articulo=articulo, fetch_error=fetch_error)

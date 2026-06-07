@@ -1,0 +1,53 @@
+{% extends "layouts/base_dashboard.html" %}
+
+{% block sidebar_links %}
+<li><a href="/admin/dashboard"><i class="fa-solid fa-gauge"></i> Dashboard</a></li>
+<li><a href="/admin/articulos"><i class="fa-solid fa-box"></i> Artículos</a></li>
+<li><a href="{{ url_for('admin.lista_prestamos') }}"><i class="fa-solid fa-clipboard-list"></i> Préstamos</a></li>
+<li><a href="/admin/usuarios"><i class="fa-solid fa-users"></i> Usuarios</a></li>
+<li><a href="/admin/penalizaciones" class="active"><i class="fa-solid fa-triangle-exclamation"></i> Penalizaciones</a></li>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="breadcrumb reveal">
+    <a href="/admin/dashboard">Admin</a> <i class="fa-solid fa-chevron-right"></i> <span>Penalizaciones</span>
+</div>
+
+<div class="history-container">
+    <div class="history-header">
+        <h1>Gestión de Penalizaciones</h1>
+        <p>Listado de penalizaciones activas y su gravedad.</p>
+    </div>
+
+    <div class="history-table-wrapper">
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Usuario</th>
+                    <th>Gravedad</th>
+                    <th>Fecha</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in penalizaciones if p.activa %}
+                <tr>
+                    <td>{{ p.id }}</td>
+                    <td>{{ p.usuario_nombre }}</td>
+                    <td><span class="badge">{{ p.severity }}</span></td>
+                    <td>{{ p.fecha_inicio }}</td>
+                    <td class="text-center">
+                        <form action="{{ url_for('admin.levantar_penalizacion', id=p.id) }}" method="POST">
+                            <button type="submit" class="btn-icon" title="Levantar Penalización"><i class="fa-solid fa-check-circle"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" style="text-align:center;">No hay penalizaciones activas.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

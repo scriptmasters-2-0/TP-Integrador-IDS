@@ -1,0 +1,23 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Detalle de Artículo{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    {% if articulo %}
+        <h2>Detalle de: {{ articulo.nombre_art }}</h2>
+        <div class="card p-4">
+            <p><strong>Tipo:</strong> {{ articulo.tipo }}</p>
+            <p><strong>Sección:</strong> {{ articulo.seccion }}</p>
+            <p><strong>Stock disponible:</strong> {{ articulo.stock }}</p>
+        </div>
+        <a href="{{ url_for('public.mostrar_catalogo') }}" class="btn btn-secondary mt-3">Volver al catálogo</a>
+    {% else %}
+        <div class="alert alert-danger mt-4">
+            <h3>Artículo no encontrado</h3>
+            <p>{{ fetch_error if fetch_error else 'El artículo solicitado no existe.' }}</p>
+            <a href="{{ url_for('public.mostrar_catalogo') }}">Volver al catálogo</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
