@@ -91,7 +91,7 @@ def guardar_articulo():
         "necesita_reparacion": False,
     }
 
-    _, error, _ = post_json("/api/articulos", payload, token=token)
+    _, error, _ = post_json("/articulos", payload, token=token)
 
     if error:
         return redirect(url_for("admin.crear_articulo", error=error))
@@ -168,7 +168,7 @@ def eliminar_norm():
 def usuarios():
     """Renderiza la vista de gestión de usuarios para administradores."""
     token = session.get("token")
-    usuarios, error = get_json("/api/usuario", token=token)
+    usuarios, error = get_json("/usuario", token=token)
     return render_template(
         "admin/usuarios.html",
         usuarios=usuarios if isinstance(usuarios, list) else [],
@@ -180,7 +180,7 @@ def usuarios():
 def reporte_morosidad():
     """Renderiza la vista de reporte de morosidad para administradores."""
     token = session.get("token")
-    penalizaciones, error = get_json("/api/penalizaciones", token=token)
+    penalizaciones, error = get_json("/penalizaciones", token=token)
 
     rows = []
     if isinstance(penalizaciones, list):
@@ -223,7 +223,7 @@ def editar_articulo(id):
         }
 
         _, error = post_json(
-            f"/api/articulos/{id}/update", data=datos_actualizados, token=token
+            f"/articulos/{id}/update", data=datos_actualizados, token=token
         )
 
         if error:
@@ -231,7 +231,7 @@ def editar_articulo(id):
 
         return redirect(url_for("admin.listar_articulos"))
 
-    articulo, error = get_json(f"/api/articulos/{id}", token=token)
+    articulo, error = get_json(f"/articulos/{id}", token=token)
 
     return render_template(
         "admin/editar_articulo.html", articulo=articulo, fetch_error=error
@@ -267,7 +267,7 @@ def lista_reservas():
     if lista_filtros:
         query_params = "?" + "&".join(lista_filtros)
 
-    url_final = f"/api/reservas{query_params}"
+    url_final = f"/reservas{query_params}"
     reservas, error = get_json(url_final, token=token)
 
     return render_template(
@@ -289,7 +289,7 @@ def listar_penalizaciones():
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
-    penalizaciones, error = get_json("/api/penalizaciones", token=token)
+    penalizaciones, error = get_json("/penalizaciones", token=token)
 
     lista_penalizaciones = []
 
@@ -316,5 +316,5 @@ def listar_penalizaciones():
 def levantar_penalizacion(id):
     """Acción para levantar una penalización manualmente."""
     token = session.get("token")
-    post_json(f"/api/penalizaciones/{id}/resolve", {}, token=token)
+    post_json(f"/penalizaciones/{id}/resolve", {}, token=token)
     return redirect(url_for("admin.listar_penalizaciones"))

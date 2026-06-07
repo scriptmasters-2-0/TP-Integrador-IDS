@@ -258,7 +258,7 @@ def create_usuario():
         cursor = conn.cursor()
         sql = """
             INSERT INTO usuario (nombre, email, puntaje, rol, carrera)
-            VALUES (%(nombre)s, %(email),s, %(puntaje)s, %(rol)s, %(carrera)s)
+            VALUES (%(nombre)s, %(email)s, %(puntaje)s, %(rol)s, %(carrera)s)
         """
         values = {
             "nombre": data.get("nombre"),

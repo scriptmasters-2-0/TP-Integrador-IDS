@@ -37,7 +37,7 @@ def historial():
     historial_datos = []
     error = None
     if usuario_id:
-        payload, error = get_json(f"/api/usuarios/{usuario_id}/reservas", token=token)
+        payload, error = get_json(f"/usuarios/{usuario_id}/reservas", token=token)
         if isinstance(payload, list):
             for reserva in payload:
                 historial_datos.append(
@@ -70,13 +70,13 @@ def nueva_reserva():
         articulo_id = request.form.get("articulo_id")
         if usuario_id and articulo_id:
             post_json(
-                "/api/reservas",
+                "/reservas",
                 {"usuario_id": usuario_id, "articulo_id": articulo_id},
                 token=token,
             )
         return redirect(url_for("alumno.historial"))
 
-    articulos_payload, fetch_error = get_json("/api/articulos", token=token)
+    articulos_payload, fetch_error = get_json("/articulos", token=token)
     articulos = articulos_payload if isinstance(articulos_payload, list) else []
 
     return render_template(
@@ -147,7 +147,7 @@ def dashboard():
         return redirect(url_for("public.login"))
 
     dashboard_data, error = get_json(
-        f"/api/alumno/dashboard/{usuario.get('id')}", token=token
+        f"/alumno/dashboard/{usuario.get('id')}", token=token
     )
 
     return render_template(
@@ -162,7 +162,7 @@ def reserva_detalle(id):
     if not token:
         return redirect(url_for("public.login"))
 
-    datos_api, error = get_json(f"/api/reservas/{id}", token=token)
+    datos_api, error = get_json(f"/reservas/{id}", token=token)
 
     if error:
         return render_template(

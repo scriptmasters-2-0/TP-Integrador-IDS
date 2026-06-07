@@ -156,7 +156,7 @@ This API provides a centralized system for managing inventory, reservas, penaliz
 Handles usuario sessions.
 
 * **`POST /auth/login`**: Authenticates usuario credentials and establishes a session.
-* *Payload:* `LoginRequest` (usuarioname, contrasenia)
+* *Payload:* `LoginRequest` (nombre, contrasenia)
 
 
 * **`POST /auth/logout`**: Closes the active session.
