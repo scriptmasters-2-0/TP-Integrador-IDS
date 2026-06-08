@@ -27,9 +27,7 @@ def reserva_detalle(id):
             "id": datos_api.get("id", id),
             "estado_general": datos_api.get("estado_reserva", "pendiente"),
             "estado_texto": datos_api.get("estado_reserva", "Pendiente"),
-            "estado_clase": "status-pending"
-            if datos_api.get("estado_reserva") == "pendiente"
-            else "status-active",
+            "estado_clase": "status-pending" if datos_api.get("estado_reserva") == "pendiente" else "status-active",
             "equipo_nombre": datos_api.get("nombre_art", "Material no especificado"),
             "equipo_id": datos_api.get("id_reservado", "N/A"),
             "titular_nombre": datos_api.get("nombre", "Alumno"),
@@ -96,9 +94,7 @@ def guardar_articulo():
     if error:
         return redirect(url_for("admin.crear_articulo", error=error))
 
-    return redirect(
-        url_for("admin.crear_articulo", exito="Artículo creado correctamente")
-    )
+    return redirect(url_for("admin.crear_articulo", exito="Artículo creado correctamente"))
 
 
 @admin_bp.route("/dashboard")
@@ -190,8 +186,7 @@ def reporte_morosidad():
                 {
                     "usuario": penalty.get("id_usuario") or penalty.get("usuarioId"),
                     "articulo": penalty.get("id_reserva") or penalty.get("reservaId"),
-                    "vencimiento": penalty.get("fecha_fin")
-                    or penalty.get("resolvedAt"),
+                    "vencimiento": penalty.get("fecha_fin") or penalty.get("resolvedAt"),
                     "estado": "Activa" if penalty.get("activa", True) else "Levantada",
                 }
             )
@@ -223,9 +218,7 @@ def editar_articulo(id):
             "necesita_reparacion": request.form.get("necesita_reparacion") == "on",
         }
 
-        _, error = post_json(
-            f"/articulos/{id}/update", data=datos_actualizados, token=token
-        )
+        _, error = post_json(f"/articulos/{id}/update", data=datos_actualizados, token=token)
 
         if error:
             return render_template("admin/editar_articulo.html", fetch_error=error)
@@ -234,9 +227,7 @@ def editar_articulo(id):
 
     articulo, error = get_json(f"/articulos/{id}", token=token)
 
-    return render_template(
-        "admin/editar_articulo.html", articulo=articulo, fetch_error=error
-    )
+    return render_template("admin/editar_articulo.html", articulo=articulo, fetch_error=error)
 
 
 @admin_bp.route("/reservas", methods=["GET"])

@@ -4,18 +4,25 @@
     <a href="{{ url_for('profesor.perfil') }}"><i class="fa-solid fa-usuario"></i> Perfil</a>
   </li>
   <li>
-    <a href="{{ url_for('profesor.mis_reservas') }}"><i class="fa-solid fa-list-check"></i> Mis reservas</a>
+    <a href="{{ url_for('profesor.mis_reservas') }}"
+      ><i class="fa-solid fa-list-check"></i> Mis reservas</a
+    >
   </li>
   <li>
-    <a href="{{ url_for('profesor.nueva_reserva') }}" class="active"><i class="fa-solid fa-plus"></i> Nueva reserva</a>
+    <a href="{{ url_for('profesor.nueva_reserva') }}" class="active"
+      ><i class="fa-solid fa-plus"></i> Nueva reserva</a
+    >
   </li>
   <li>
-    <a href="{{ url_for('profesor.historial_reserva') }}"><i class="fa-solid fa-clock-rotate-left"></i> Historial</a>
+    <a href="{{ url_for('profesor.historial_reserva') }}"
+      ><i class="fa-solid fa-clock-rotate-left"></i> Historial</a
+    >
   </li>
 {% endblock %}
 {% block dashboard_content %}
   <div class="breadcrumb reveal">
-    <a href="{{ url_for('profesor.perfil') }}">Profesor</a> <i class="fa-solid fa-chevron-right"></i>
+    <a href="{{ url_for('profesor.perfil') }}">Profesor</a>
+    <i class="fa-solid fa-chevron-right"></i>
     <span>Nueva reserva</span>
   </div>
 
@@ -37,7 +44,9 @@
           <select id="articulo" name="articulo" class="admin-select" required>
             <option value="">Seleccionar</option>
             {% for articulo in articulos %}
-              <option value="{{ articulo.id }}">{{ articulo.nombre_art }} (stock: {{ articulo.stock }})</option>
+              <option value="{{ articulo.id }}">
+                {{ articulo.nombre_art }} (stock: {{ articulo.stock }})
+              </option>
             {% endfor %}
           </select>
         </div>

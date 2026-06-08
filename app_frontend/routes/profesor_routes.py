@@ -1,6 +1,5 @@
 """Rutas del area de profesores."""
 
-
 from flask import Blueprint, redirect, render_template, request, session, url_for
 
 from servicios import articulos_servicio, reservas_servicio
@@ -35,9 +34,7 @@ def dashboard():
                         if articulo.get("estado_reserva") != "pendiente"
                         else "status-pending",
                         "estado_texto": articulo.get("estado_reserva", "Pendiente"),
-                        "equipo": articulo.get(
-                            "nombre_art", f"Artículo {articulo.get('id_reservado') or ''}"
-                        ),
+                        "equipo": articulo.get("nombre_art", f"Artículo {articulo.get('id_reservado') or ''}"),
                         "fecha": articulo.get("fecha_retiro", "Desconocida"),
                         "ubicacion": "Sede FIUBA",
                         "acciones": ["Cancelar", "Ver QR"],
@@ -93,16 +90,12 @@ def historial_reserva():
     usuario, error = get_json("/auth/me")
 
     if error:
-        return render_template(
-            "profesor/historial_reservas.html", reservas=[], error=error
-        )
+        return render_template("profesor/historial_reservas.html", reservas=[], error=error)
 
     usuario_id = usuario["usuario"]["id"]
     reservas, error = get_json(f"/usuarios/{usuario_id}/reservas")
 
-    return render_template(
-        "profesor/historial_reservas.html", reservas=reservas or [], error=error
-    )
+    return render_template("profesor/historial_reservas.html", reservas=reservas or [], error=error)
 
 
 @profesor_bp.route("/reservas/<int:id>/comprobante", methods=["GET"])
