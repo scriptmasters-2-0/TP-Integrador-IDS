@@ -1763,3 +1763,4 @@ VALUES
     'Las herramientas mecánicas (taladros, amoladoras) deben devolverse libres de polvo y viruta metálica.',
     DATE_SUB(NOW(), INTERVAL 310 DAY)
   );
+

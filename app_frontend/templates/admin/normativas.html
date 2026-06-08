@@ -43,7 +43,7 @@
       <input
         type="hidden"
         name="id"
-        value="{{ normativa_editada.id if normativa_editar else '' }}" />
+        value="{{ normativa_editada.id if normativa_editada else '' }}" />
 
       <div>
         <label>Título</label>
@@ -57,11 +57,11 @@
       <div>
         <label>Descripción</label>
         <textarea name="descripcion" rows="4" required>
-{{ normativa_editada.descripcion if normativa_editada else '' }}</textarea
-        >
+          {{ normativa_editada.descripcion if normativa_editada else '' }}
+        </textarea>
       </div>
 
-      <button type="submit">
+      <button type="submit" class="btn-">
         {{ 'Actualizar normativa' if normativa_editada else 'Crear normativa' }}
       </button>
     </form>
