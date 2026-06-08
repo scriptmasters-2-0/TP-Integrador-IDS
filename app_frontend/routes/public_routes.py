@@ -41,6 +41,7 @@ def logup_submit():
     respuesta = auth_servicio.crear_usuario(
         {"nombre": nombre, "email": email, "carrera": carrera, "contrasenia": contrasenia},
     )
+    print(respuesta)
 
     if not respuesta:
         return (
@@ -75,9 +76,7 @@ def login_submit():
     email = (request.form.get("email") or "").strip()
     contrasenia = request.form.get("contrasenia") or ""
 
-    payload, error, status_code = post_json(
-        "/auth/login", {"email": email, "contrasenia": contrasenia}
-    )
+    payload, error, status_code = post_json("/auth/login", {"email": email, "contrasenia": contrasenia})
 
     if error:
         print(error)
@@ -107,14 +106,6 @@ def logout():
     """Cierra la sesión del usuario y redirige a la página de inicio."""
     session.clear()
     return render_template("public/logout.html")
-
-
-@public_bp.route("/registro", methods=["GET", "POST"])
-def registro():
-    """Renderiza la página de registro y maneja el proceso de registro de nuevos usuarios."""
-    if request.method == "POST":
-        return redirect(url_for("public.login"))
-    return render_template("public/registro.html")
 
 
 @public_bp.route("/normas", methods=["GET"])
@@ -156,6 +147,4 @@ def get_article_details(articulo_id):
     """Muestra el detalle público de un artículo."""
     articulo, fetch_error = get_json(f"/articulos/{articulo_id}")
 
-    return render_template(
-        "public/article_details.html", articulo=articulo, fetch_error=fetch_error
-    )
+    return render_template("public/article_details.html", articulo=articulo, fetch_error=fetch_error)

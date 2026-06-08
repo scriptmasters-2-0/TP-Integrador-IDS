@@ -2,6 +2,27 @@
 
 {% block usuario_name %}Profesor{% endblock %}
 
+{% block sidebar_links %}
+  <li>
+    <a href="{{ url_for('profesor.perfil') }}"><i class="fa-solid fa-usuario"></i> Perfil</a>
+  </li>
+  <li>
+    <a href="{{ url_for('profesor.dashboard') }}" class="active"
+      ><i class="fa-solid fa-list-check"></i> Mis reservas</a
+    >
+  </li>
+  <li>
+    <a href="{{ url_for('profesor.nueva_reserva') }}"
+      ><i class="fa-solid fa-plus"></i> Nueva reserva</a
+    >
+  </li>
+  <li>
+    <a href="{{ url_for('profesor.historial_reserva') }}"
+      ><i class="fa-solid fa-clock-rotate-left"></i> Historial</a
+    >
+  </li>
+{% endblock %}
+
 {% block dashboard_content %}
   <div class="history-container">
     <div class="history-header">
@@ -23,9 +44,9 @@
 
             {% for p in reservas %}
               <tr>
-                <td>{{ p.nombre_art }}</td>
-                <td>{{ p.estado }}</td>
-                <td>{{ p.fecha }}</td>
+                <td>{{ p.nombre_articulo }}</td>
+                <td>{{ p.estado_reserva }}</td>
+                <td>{{ p.fecha_regreso }}</td>
               </tr>
             {% endfor %}
           {% else %}

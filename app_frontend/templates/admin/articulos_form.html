@@ -25,18 +25,6 @@
     <span>{{ "Editar" if articulo else "Nuevo" }}</span>
   </div>
 
-  <div class="history-container">
-    <div class="history-header">
-      <h1>{{ "Editar Artículo" if articulo else "Nuevo Artículo" }}</h1>
-      <p>Complete los datos requeridos para gestionar el inventario.</p>
-      {% if form_error %}
-        <p style="color: #c0392b; font-weight: 700; margin-top: 8px;">{{ form_error }}</p>
-      {% endif %}
-      {% if form_exito %}
-        <p style="color: #2e7d32; font-weight: 700; margin-top: 8px;">{{ form_exito }}</p>
-      {% endif %}
-    </div>
-
     <div class="history-container">
       <div class="history-header">
         <h1>{{ "Editar Artículo" if articulo else "Nuevo Artículo" }}</h1>
@@ -126,5 +114,4 @@
         </div>
       </form>
     </div>
-  </div>
 {% endblock %}

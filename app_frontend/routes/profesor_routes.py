@@ -64,12 +64,6 @@ def mis_reservas():
     return dashboard()
 
 
-"""@profesor_bp.route("/historial")
-def historial():
-    Alias temporal para historial del profesor.
-    return dashboard()"""
-
-
 @profesor_bp.route("/nueva", methods=["GET"])
 def nueva_reserva():
     """Renderiza el formulario para crear una nueva reserva."""
