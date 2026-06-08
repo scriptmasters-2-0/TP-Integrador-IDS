@@ -201,8 +201,6 @@ def login():
     email = data.get("email")
     contrasenia = data.get("contrasenia")
 
-    print(f"Intento de login con email: {email}")
-    print(f"Contraseña recibida: {'*' * len(contrasenia) if contrasenia else 'None'}")
     conn = obtener_conexion()
     if conn is None:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
