@@ -15,51 +15,90 @@ logger = logging.getLogger(__name__)
 alumno_bp = Blueprint("alumno", __name__, url_prefix="/alumno")
 
 
+
+
+
 @alumno_bp.route("/perfil")
 def perfil():
     """Renderiza la página de perfil del alumno."""
+    token = session.get("token")
+    usuario = session.get("usuario")
+    mensaje = request.args.get("mensaje")
+    token = session.get("token")
+    usuario = session.get("usuario")
+    if not token or not usuario:
+        return redirect(url_for("public.login"))
+
     try:
-        usuario = obtener_perfil_usuario()
+        from servicios.auth_servicio import obtener_mi_perfil
+        perfil_fresco = obtener_mi_perfil(token=token)
+        if perfil_fresco and "usuario" in perfil_fresco:
+            usuario = perfil_fresco["usuario"]
     except Exception as e:
         logger.error(f"Error fetching usuario profile: {e}")
-        usuario = None
 
-    return render_template("alumno/perfil.html", usuario=usuario)
+    return render_template("alumno/perfil.html", usuario=usuario, mensaje=mensaje)
+
+@alumno_bp.route("/cambiar_contrasena", methods=["POST"])
+def cambiar_contrasena():
+    token = session.get("token")
+    usuario = session.get("usuario")
+    if not token or not usuario:
+        return redirect(url_for("public.login"))
+        
+    nueva_contrasena = request.form.get("nueva_contrasena")
+    usuario_id = usuario.get("id")
+    
+    from servicios.usuario_servicio import actualizar_usuario
+    # Se actualiza enviando el campo contrasenia
+    actualizar_usuario(usuario_id, {"contrasenia": nueva_contrasena}, token=token)
+    
+    return redirect(url_for("alumno.perfil", mensaje="Contraseña actualizada exitosamente"))
 
 
 @alumno_bp.route("/historial")
 def historial():
     """Renderiza el historial de préstamos del alumno."""
     token = session.get("token")
-    usuario_id = (session.get("usuario") or {}).get("id")
+    usuario = session.get("usuario")
+    if not token or not usuario:
+        return redirect(url_for("public.login"))
+    usuario_id = usuario.get("id")
 
     historial_datos = []
-    error = None
-    if usuario_id:
-        payload, error = get_json(f"/usuarios/{usuario_id}/reservas", token=token)
-        if isinstance(payload, list):
-            for reserva in payload:
-                historial_datos.append(
-                    {
-                        "fecha": reserva.get("fecha_retiro", "Desconocida"),
-                        "nombre_equipo": reserva.get("nombre_art", "Artículo"),
-                        "id_equipo": reserva.get("id_reservado"),
-                        "sede": reserva.get("seccion", "Sede FIUBA"),
-                        "estado_texto": reserva.get("estado_reserva", "Pendiente"),
-                        "estado_clase": (
-                            "badge-warning" if reserva.get("estado_reserva") == "pendiente" else "badge-exito"
-                        ),
-                    }
-                )
+    payload, error = get_json(f"/usuarios/{usuario_id}/reservas", token=token)
+    if usuario_id and not error and isinstance(payload, list):
+        for reserva in payload:
+            historial_datos.append(
+                {
+                    "id": reserva.get("id", 1),
+                    "fecha": reserva.get("fecha_retiro", "Desconocida"),
+                    "nombre_equipo": reserva.get("nombre_art", "Artículo"),
+                    "id_equipo": reserva.get("id_reservado"),
+                    "sede": reserva.get("seccion", "Sede FIUBA"),
+                    "estado_texto": reserva.get("estado_reserva", "Pendiente"),
+                    "estado_clase": (
+                        "badge-warning"
+                        if reserva.get("estado_reserva") == "pendiente"
+                        else "badge-success"
+                    ),
+                }
+            )
 
-    return render_template("alumno/historial.html", historial=historial_datos, fetch_error=error)
+
+    return render_template(
+        "alumno/historial.html", historial=historial_datos, fetch_error=error
+    )
 
 
 @alumno_bp.route("/mis-reservas/nueva", methods=["GET", "POST"])
 def nueva_reserva():
     """Renderiza y procesa el formulario de nueva reserva para alumnos."""
     token = session.get("token")
-    usuario_id = (session.get("usuario") or {}).get("id")
+    usuario = session.get("usuario")
+    if not token or not usuario:
+        return redirect(url_for("public.login"))
+    usuario_id = usuario.get("id")
 
     if request.method == "POST":
         articulo_id = request.form.get("articulo_id")
@@ -74,9 +113,12 @@ def nueva_reserva():
     articulos_payload, fetch_error = get_json("/articulos", token=token)
     articulos = articulos_payload if isinstance(articulos_payload, list) else []
 
+    articulo_preseleccionado = request.args.get("articulo_id", type=int)
+
     return render_template(
         "alumno/nueva_reserva.html",
         articulos=articulos,
+        articulo_preseleccionado=articulo_preseleccionado,
         fetch_error=fetch_error,
     )
 
@@ -84,6 +126,11 @@ def nueva_reserva():
 @alumno_bp.route("/reservas/<int:id>/comprobante")
 def comprobante(id):
     """Renderiza el comprobante de un préstamo específico para el alumno."""
+    token = session.get("token")
+    usuario = session.get("usuario")
+    if not token or not usuario:
+        return redirect(url_for("public.login"))
+
     try:
         datos_api = obtener_detalle_reserva(id)
         reserva = {
@@ -121,7 +168,25 @@ def comprobante(id):
 @alumno_bp.route("/reservas/id/comprobante")
 def comprobante_sin_id():
     """Renderiza el comprobante de un reserva especifico para el alumno (sin id)."""
-    return render_template("alumno/comprobante.html")
+    token = session.get("token")
+    usuario = session.get("usuario")
+    if not token or not usuario:
+        return redirect(url_for("public.login"))
+        
+    reserva = {
+        "id": "-",
+        "estado_texto": "No seleccionado",
+        "estado_clase": "status-inactive",
+        "equipo_nombre": "-",
+        "equipo_id": "-",
+        "sede": "-",
+        "fecha_reserva": "-",
+        "fecha_retiro": "-",
+        "fecha_limite": "-",
+        "titular_nombre": usuario.get("nombre", "Alumno"),
+        "titular_legajo": usuario.get("legajo", "-"),
+    }
+    return render_template("alumno/comprobante.html", reserva=reserva)
 
 
 # TODO: Implement POST handlers for profile management
@@ -137,26 +202,32 @@ def dashboard():
     """Panel principal: reservas activas, puntaje, alertas de penalización."""
     token = session.get("token")
     usuario = session.get("usuario")
-
     if not token or not usuario:
         return redirect(url_for("public.login"))
 
-    dashboard_data, error = get_json(f"/alumno/dashboard/{usuario.get('id')}", token=token)
+    dashboard_data, error = get_json(
+        f"/alumno/dashboard/{usuario.get('id')}", token=token
+    )
 
-    return render_template("alumno/dashboard.html", dashboard=dashboard_data or {}, fetch_error=error)
+    return render_template(
+        "alumno/dashboard.html", dashboard=dashboard_data or {}, fetch_error=error
+    )
 
 
 @alumno_bp.route("/reservas/<int:id>", methods=["GET"])
 def reserva_detalle(id):
     """Detalle de reserva: estado, fecha retiro/regreso, QR."""
     token = session.get("token")
-    if not token:
+    usuario = session.get("usuario")
+    if not token or not usuario:
         return redirect(url_for("public.login"))
 
     datos_api, error = get_json(f"/reservas/{id}", token=token)
 
     if error:
-        return render_template("alumno/reserva_detalle_alumno.html", reserva=None, fetch_error=error)
+        return render_template(
+            "alumno/reserva_detalle_alumno.html", reserva=None, fetch_error=error
+        )
 
     reserva = {
         "id": datos_api.get("id"),

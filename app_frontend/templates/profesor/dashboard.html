@@ -4,7 +4,7 @@
 
 {% block sidebar_links %}
   <li>
-    <a href="{{ url_for('profesor.perfil') }}"><i class="fa-solid fa-usuario"></i> Perfil</a>
+    <a href="{{ url_for('profesor.perfil') }}"><i class="fa-solid fa-user"></i> Perfil</a>
   </li>
   <li>
     <a href="{{ url_for('profesor.dashboard') }}" class="active"
@@ -57,29 +57,28 @@
       </p>
       <a
         href="{{ url_for('profesor.nueva_reserva') }}"
-        class="res-btn btn-primary mt-3"
-        style="display: inline-flex; width: auto; padding: 12px 25px;"
+        class="res-btn btn-primary mt-3 badge-lg"
         ><i class="fa-solid fa-plus"></i> Crear mi primera reserva</a
       >
     </div>
   {% endif %}
 
   {% if fetch_error %}
-    <p style="color: #c0392b; font-weight: 700; margin: 10px 0 20px 0;">{{ fetch_error }}</p>
+    <p class="text-danger fw-bold mb-4">{{ fetch_error }}</p>
   {% endif %}
 
-  <h2 class="reveal" style="transition-delay: 0.2s;">Resumen general</h2>
+  <h2 class="reveal delay-2">Resumen general</h2>
   <div class="stats-grid">
-    <div class="stat-card reveal" style="transition-delay: 0.3s;">
+    <div class="stat-card reveal delay-3">
       <div class="stat-value">{{ estadisticas.actuales }}</div>
       <div class="stat-label">Reservas Actuales</div>
     </div>
-    <div class="stat-card reveal" style="transition-delay: 0.4s;">
+    <div class="stat-card reveal delay-4">
       <div class="stat-value">{{ estadisticas.historicas }}</div>
       <div class="stat-label">Reservas Históricas</div>
     </div>
-    <div class="stat-card reveal" style="transition-delay: 0.5s;">
-      <div class="stat-value" style="color: #20c997;">{{ estadisticas.sanciones }}</div>
+    <div class="stat-card reveal delay-5">
+      <div class="stat-value text-success">{{ estadisticas.sanciones }}</div>
       <div class="stat-label">Sanciones / Multas</div>
     </div>
   </div>

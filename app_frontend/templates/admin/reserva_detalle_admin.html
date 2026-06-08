@@ -27,7 +27,7 @@
     >
   </li>
   <li>
-    <a href="{{ url_for('admin.usuarios') }}"><i class="fa-solid fa-usuarios"></i> Usuarios</a>
+    <a href="{{ url_for('admin.usuarios') }}"><i class="fa-solid fa-users"></i> Usuarios</a>
   </li>
   <li>
     <a href="{{ url_for('admin.reporte_morosidad') }}"
@@ -44,13 +44,10 @@
   </div>
 
   <div
-    class="admin-header reveal"
-    style="transition-delay: 0.1s; display: flex; justify-content: space-between; align-articulos: flex-end; margin-bottom: 30px;">
+    class="admin-header-flex reveal delay-1">
     <div>
-      <h2 style="margin-top: 10px; margin-bottom: 15px; font-size: 28px;">Detalle de Préstamo</h2>
-      <div
-        class="ticket-status {{ reserva.estado_clase }}"
-        style="display: inline-flex; font-size: 14px; padding: 6px 15px;">
+      <h2 class="admin-title">Detalle de Préstamo</h2>
+        class="ticket-status {{ reserva.estado_clase }} badge-lg">
         {{ reserva.estado_texto }}
       </div>
     </div>
@@ -59,7 +56,7 @@
     </button>
   </div>
 
-  <div class="admin-detail-layout reveal" style="transition-delay: 0.2s;">
+  <div class="admin-detail-layout reveal delay-2">
     <div class="profile-card">
       <h3>Información General</h3>
       <div class="data-grid">
@@ -72,7 +69,9 @@
 
         <div class="data-group">
           <label>Titular (Alumno)</label>
-          <div class="data-value">{{ reserva.titular_nombre }} ({{ reserva.titular_legajo }})</div>
+          <div class="data-value">
+            {{ reserva.titular_nombre }} ({{ reserva.titular_legajo }})
+          </div>
         </div>
 
         <div class="data-group">
@@ -87,7 +86,7 @@
 
         <div class="data-group">
           <label>Fecha Límite Devolución</label>
-          <div class="data-value" style="color: #d32f2f; font-weight: 700;">
+          <div class="data-value text-danger fw-bold">
             {{ reserva.fecha_limite }}
           </div>
         </div>
@@ -95,8 +94,7 @@
     </div>
 
     <div
-      class="admin-actions-card profile-card"
-      style="height: fit-content; background: #fafbfc; border: 2px solid var(--border-color);">
+      class="admin-actions-card profile-card">
       <h3><i class="fa-solid fa-sliders"></i> Panel de Acciones</h3>
       <form
         action="{{ url_for('admin.reserva_detalle', id=reserva.id) }}"
@@ -122,10 +120,7 @@
           </select>
         </div>
 
-        <button
-          type="submit"
-          class="res-btn btn-primary mt-3"
-          style="width: 100%; padding: 18px; font-size: 16px;">
+        <button type="submit" class="res-btn btn-primary mt-3 btn-block btn-lg">
           <i class="fa-solid fa-check-double"></i> Registrar Devolución
         </button>
       </form>

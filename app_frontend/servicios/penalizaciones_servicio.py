@@ -1,6 +1,6 @@
 # penalizaciones_servicio.py
 # Funciones de servicio para consumir endpoints /penalizaciones
-from servicios.api_client import get_json, patch_json, post_json, put_json
+from servicios.api_client import get_json, post_json, put_json, patch_json
 
 TIMEOUT = 5
 

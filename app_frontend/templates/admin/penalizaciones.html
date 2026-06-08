@@ -13,7 +13,7 @@
     >
   </li>
   <li>
-    <a href="{{ url_for('admin.usuarios') }}"><i class="fa-solid fa-usuarios"></i> Usuarios</a>
+    <a href="{{ url_for('admin.usuarios') }}"><i class="fa-solid fa-users"></i> Usuarios</a>
   </li>
   <li>
     <a href="{{ url_for('admin.listar_penalizaciones') }}" class="active"
@@ -62,7 +62,7 @@
             </tr>
           {% else %}
             <tr>
-              <td colspan="5" style="text-align:center;">No hay penalizaciones activas.</td>
+              <td colspan="5" class="text-center">No hay penalizaciones activas.</td>
             </tr>
           {% endfor %}
         </tbody>

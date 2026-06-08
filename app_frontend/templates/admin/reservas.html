@@ -15,12 +15,10 @@
     >
   </li>
   <li>
-    <a href="{{ url_for('admin.usuarios') }}"><i class="fa-solid fa-usuarios"></i> Usuarios</a>
+    <a href="{{ url_for('admin.usuarios') }}"><i class="fa-solid fa-users"></i> Usuarios</a>
   </li>
   <li>
-    <a href="{{ url_for('admin.reporte_morosidad') }}"
-      ><i class="fa-solid fa-chart-column"></i> Morosidad</a
-    >
+    <a href="{{ url_for('admin.reporte_morosidad') }}"><i class="fa-solid fa-chart-column"></i> Morosidad</a>
   </li>
 {% endblock %}
 
@@ -36,7 +34,7 @@
       <p>Consulta y gestiona el historial de préstamos del sistema.</p>
     </div>
 
-    <form method="GET" class="data-grid" style="margin-bottom: 25px;">
+    <form method="GET" class="data-grid mb-4">
       <div class="data-group">
         <label>ID Usuario</label>
         <input type="text" name="usuario" class="admin-input" placeholder="Buscar por usuario..." />
@@ -54,7 +52,7 @@
         <label>Fecha</label>
         <input type="date" name="fecha" class="admin-input" />
       </div>
-      <div class="data-group" style="align-self: flex-end;">
+      <div class="data-group align-items-end">
         <button type="submit" class="register-btn-nav">Filtrar</button>
       </div>
     </form>
@@ -92,7 +90,7 @@
             {% endfor %}
           {% else %}
             <tr>
-              <td colspan="6" style="text-align:center; color: var(--text-grey);">
+              <td colspan="6" class="text-center text-muted">
                 {{ fetch_error if fetch_error else 'No hay préstamos para mostrar.' }}
               </td>
             </tr>

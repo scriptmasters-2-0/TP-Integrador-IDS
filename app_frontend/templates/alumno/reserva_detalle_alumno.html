@@ -4,7 +4,7 @@
 
 {% block sidebar_links %}
   <li>
-    <a href="{{ url_for('alumno.perfil') }}"><i class="fa-solid fa-usuario"></i> Perfil</a>
+    <a href="{{ url_for('alumno.perfil') }}"><i class="fa-solid fa-user"></i> Perfil</a>
   </li>
   <li>
     <a href="{{ url_for('alumno.historial') }}"
@@ -28,7 +28,7 @@
     <h2>Detalle de la Reserva #{{ reserva.id if reserva else '' }}</h2>
 
     {% if reserva %}
-      <div class="card p-4" style="margin-top: 20px;">
+      <div class="card p-4 mt-4">
         <p><strong>Estado:</strong> {{ reserva.estado }}</p>
         <p><strong>Fecha de Retiro:</strong> {{ reserva.fecha_retiro }}</p>
         <p><strong>Fecha de Regreso:</strong> {{ reserva.fecha_regreso }}</p>
