@@ -181,7 +181,7 @@ def normativas():
             actualizar_normativa(id_normativa, data)
         else:
             crear_normativa(data)
-        return render_template("admin/normativas.html")
+        return redirect(url_for("admin.normativas"))
 
     normativas = obtener_normativas()
     normativa_editada = None

@@ -38,9 +38,9 @@
 
             {% for p in reservas %}
               <tr>
-                <td>{{ p.nombre_art }}</td>
-                <td>{{ p.estado }}</td>
-                <td>{{ p.fecha }}</td>
+                <td>{{ p.nombre_articulo }}</td>
+                <td>{{ p.estado_reserva }}</td>
+                <td>{{ p.fecha_regreso }}</td>
               </tr>
             {% endfor %}
           {% else %}
