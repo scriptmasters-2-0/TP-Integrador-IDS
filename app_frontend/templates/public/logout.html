@@ -1,13 +1,21 @@
 {% extends "layouts/base.html" %}
+
 {% block content %}
-  <main class="hero">
+  <div class="auth-container">
     <div class="logout-card">
-      <h2>Cerrando sesión...</h2>
-      <p class="subtitle">
+      <div class="user-card-avatar mb-3">
+        <i class="fa-solid fa-right-from-bracket"></i>
+      </div>
+      <h2 class="mb-1">Cerrando sesión...</h2>
+      <p class="text-muted">
         Gracias por utilizar el sistema de la Biblioteca FIUBA. Serás redirigido en breve.
       </p>
+      <a href="{{ url_for('public.home') }}" class="res-btn btn-primary btn-inline mt-3">
+        <i class="fa-solid fa-house"></i> Volver al inicio
+      </a>
     </div>
-  </main>
+  </div>
+
   <script>
     setTimeout(() => {
       window.location.href = "{{ url_for('public.home') }}";

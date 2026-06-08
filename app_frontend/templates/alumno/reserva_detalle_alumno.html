@@ -4,52 +4,89 @@
 
 {% block sidebar_links %}
   <li>
-    <a href="{{ url_for('alumno.perfil') }}"><i class="fa-solid fa-user"></i> Perfil</a>
+    <a href="{{ url_for('alumno.perfil') }}">
+      <i class="fa-solid fa-user"></i> Perfil
+    </a>
   </li>
   <li>
-    <a href="{{ url_for('alumno.historial') }}"
-      ><i class="fa-solid fa-list-check"></i> Mis reservas</a
-    >
+    <a href="{{ url_for('alumno.historial') }}" class="active">
+      <i class="fa-solid fa-list-check"></i> Mis reservas
+    </a>
   </li>
   <li>
-    <a href="{{ url_for('alumno.nueva_reserva') }}"
-      ><i class="fa-solid fa-plus"></i> Nueva reserva</a
-    >
+    <a href="{{ url_for('alumno.nueva_reserva') }}">
+      <i class="fa-solid fa-plus"></i> Nueva reserva
+    </a>
   </li>
   <li>
-    <a href="{{ url_for('alumno.comprobante_sin_id') }}"
-      ><i class="fa-solid fa-file-invoice"></i> Comprobante</a
-    >
+    <a href="{{ url_for('alumno.comprobante_sin_id') }}">
+      <i class="fa-solid fa-file-invoice"></i> Comprobante
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('alumno.alumno_penalizaciones') }}">
+      <i class="fa-solid fa-triangle-exclamation"></i> Penalizaciones
+    </a>
   </li>
 {% endblock %}
 
 {% block dashboard_content %}
-  <div class="reveal">
-    <h2>Detalle de la Reserva #{{ reserva.id if reserva else '' }}</h2>
+  <div class="breadcrumb reveal">
+    <a href="{{ url_for('alumno.perfil') }}">Alumno</a>
+    <i class="fa-solid fa-chevron-right"></i>
+    <a href="{{ url_for('alumno.historial') }}">Mis reservas</a>
+    <i class="fa-solid fa-chevron-right"></i>
+    <span>Detalle #{{ reserva.id if reserva else '' }}</span>
+  </div>
 
-    {% if reserva %}
-      <div class="card p-4 mt-4">
-        <p><strong>Estado:</strong> {{ reserva.estado }}</p>
-        <p><strong>Fecha de Retiro:</strong> {{ reserva.fecha_retiro }}</p>
-        <p><strong>Fecha de Regreso:</strong> {{ reserva.fecha_regreso }}</p>
+  {% if reserva %}
+    <div class="history-container reveal delay-1">
+      <div class="history-header">
+        <h2>Detalle de la Reserva <span class="text-muted">#{{ reserva.id }}</span></h2>
+        <p class="text-muted">Información completa y código QR para el retiro.</p>
+      </div>
 
-        <div class="mt-4">
-          <h4>Código QR para retiro</h4>
-          <img
-            src="{{ reserva.qr_url }}"
-            alt="QR de reserva"
-            style="width: 180px; height: 180px;" />
+      <div class="data-grid mt-data-grid">
+        <div class="data-group">
+          <label>Estado</label>
+          <div class="data-value">
+            <span class="badge badge-success">{{ reserva.estado }}</span>
+          </div>
+        </div>
+        <div class="data-group">
+          <label>Fecha de Retiro</label>
+          <div class="data-value">{{ reserva.fecha_retiro }}</div>
+        </div>
+        <div class="data-group">
+          <label>Fecha de Regreso</label>
+          <div class="data-value">{{ reserva.fecha_regreso }}</div>
         </div>
       </div>
-    {% else %}
-      <div class="alert alert-danger mt-4">
-        <h4>Error al cargar el detalle</h4>
-        <p>{{ fetch_error if fetch_error else 'No se pudo encontrar la reserva.' }}</p>
-      </div>
-    {% endif %}
 
-    <div class="mt-3">
-      <a href="{{ url_for('alumno.historial') }}" class="btn btn-secondary">Volver al historial</a>
+      <div class="qr-section mt-4">
+        <p class="fw-bold mb-2">Código QR para retiro</p>
+        <img src="{{ reserva.qr_url }}" alt="QR de reserva" class="qr-image" />
+      </div>
+
+      <div class="form-actions mt-4">
+        <a href="{{ url_for('alumno.historial') }}" class="res-btn btn-secondary btn-inline">
+          <i class="fa-solid fa-arrow-left"></i> Volver al historial
+        </a>
+      </div>
     </div>
-  </div>
+
+  {% else %}
+    <div class="history-container reveal delay-1">
+      <div class="empty-state">
+        <i class="fa-solid fa-triangle-exclamation empty-icon text-danger"></i>
+        <h3>No se pudo cargar el detalle</h3>
+        <p>{{ fetch_error if fetch_error else 'No se encontró la reserva.' }}</p>
+      </div>
+      <div class="form-actions mt-4">
+        <a href="{{ url_for('alumno.historial') }}" class="res-btn btn-secondary btn-inline">
+          <i class="fa-solid fa-arrow-left"></i> Volver al historial
+        </a>
+      </div>
+    </div>
+  {% endif %}
 {% endblock %}
