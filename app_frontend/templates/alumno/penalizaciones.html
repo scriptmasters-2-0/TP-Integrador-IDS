@@ -4,24 +4,31 @@
 
 {% block sidebar_links %}
   <li>
-    <a href="#"><i class="fa-solid fa-user"></i> Perfil</a>
+    <a href="{{ url_for('alumno.perfil') }}"><i class="fa-solid fa-user"></i> Perfil</a>
   </li>
   <li>
-    <a href="{{ url_for('alumno.alumno_mis_reservas') }}"
+    <a href="{{ url_for('alumno.historial') }}"
       ><i class="fa-solid fa-list-check"></i> Mis reservas</a
     >
   </li>
   <li>
-    <a href="#" class="active"><i class="fa-solid fa-triangle-exclamation"></i> Penalizaciones</a>
+    <a href="{{ url_for('alumno.alumno_penalizaciones') }}" class="active"
+      ><i class="fa-solid fa-triangle-exclamation"></i> Penalizaciones</a
+    >
   </li>
 {% endblock %}
 
 {% block dashboard_content %}
+  <div class="breadcrumb reveal">
+    <a href="{{ url_for('alumno.perfil') }}">Alumno</a>
+    <i class="fa-solid fa-chevron-right"></i>
+    <span>Penalizaciones</span>
+  </div>
+
   <h2 class="reveal">Mis Penalizaciones</h2>
 
   {% if penalizaciones %}
-    <div
-      class="history-table-wrapper reveal table-card">
+    <div class="history-table-wrapper reveal delay-1">
       <table class="history-table">
         <thead>
           <tr>
@@ -36,9 +43,11 @@
             <tr>
               <td>{{ penalizacion.motivo }}</td>
               <td>
-                <span
-                  class="badge {% if penalizacion.severidad == 'alta' %}badge-danger{% elif penalizacion.severidad == 'media' %}badge-warning{% else %}badge-success{% endif %}">
-                  {{ penalizacion.severidad }}
+                <span class="badge
+                  {% if penalizacion.severidad == 'alta' %}badge-danger
+                  {% elif penalizacion.severidad == 'media' %}badge-warning
+                  {% else %}badge-success{% endif %}">
+                  {{ penalizacion.severidad or 'N/A' }}
                 </span>
               </td>
               <td>{{ penalizacion.fecha_inicio }}</td>
@@ -54,5 +63,9 @@
       <h3>¡No tenés penalizaciones vigentes!</h3>
       <p>Tu historial está limpio.</p>
     </div>
+  {% endif %}
+
+  {% if fetch_error %}
+    <p class="text-danger fw-bold mt-3">{{ fetch_error }}</p>
   {% endif %}
 {% endblock %}
