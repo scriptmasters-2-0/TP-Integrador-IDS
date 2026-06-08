@@ -211,7 +211,7 @@ def login():
         cursor = conn.cursor(dictionary=True)
 
         sql_query = """
-            SELECT id, nombre, email, puntaje, rol, carrera, contrasenia_hash
+            SELECT id, nombre, email, puntaje, rol, carrera, contrasenia_hash, activo
             FROM usuario
             WHERE email = %(value)s
             LIMIT 1
@@ -248,6 +248,7 @@ def login():
             "puntaje": usuario.get("puntaje"),
             "rol": usuario.get("rol"),
             "carrera": usuario.get("carrera"),
+            "activo": bool(usuario.get("activo", True)),
         }
 
         token = generar_token(usuario.get("id"), usuario.get("rol"))

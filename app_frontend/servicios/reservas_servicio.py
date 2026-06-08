@@ -1,7 +1,8 @@
 # reservas_servicio.py
 # Funciones de servicio para consumir endpoints /reservas
+from flask import session
 
-from servicios.api_client import get_json, patch_json, post_json
+from servicios.api_client import get_json, post_json, patch_json
 
 TIMEOUT = 5
 

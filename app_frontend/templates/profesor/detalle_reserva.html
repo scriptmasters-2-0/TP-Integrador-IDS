@@ -2,7 +2,7 @@
 
 {% block sidebar_links %}
   <li>
-    <a href="#"><i class="fa-solid fa-usuario"></i> Perfil</a>
+    <a href="#"><i class="fa-solid fa-user"></i> Perfil</a>
   </li>
   <li>
     <a href="{{ url_for('profesor.profesor_mis_reservas') }}" class="active"
@@ -24,7 +24,7 @@
           <label>Estado</label>
           <div class="data-value">
             <span
-              class="badge {% if reserva.estado_reserva == 'pendiente' %}badge-warning{% elif reserva.estado_reserva == 'devuelto' %}badge-exito{% elif reserva.estado_reserva == 'entregado' %}badge-info{% else %}badge-exito{% endif %}">
+              class="badge {% if reserva.estado_reserva == 'pendiente' %}badge-warning{% elif reserva.estado_reserva == 'devuelto' %}badge-success{% elif reserva.estado_reserva == 'entregado' %}badge-info{% else %}badge-success{% endif %}">
               {{ reserva.estado_reserva }}
             </span>
           </div>

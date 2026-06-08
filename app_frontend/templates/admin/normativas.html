@@ -12,7 +12,7 @@
     </a>
   </li>
   <li>
-    <a href="{{ url_for('admin.usuarios') }}"> <i class="fa-solid fa-usuarios"></i> Usuarios </a>
+    <a href="{{ url_for('admin.usuarios') }}"> <i class="fa-solid fa-users"></i> Usuarios </a>
   </li>
   <li>
     <a href="{{ url_for('admin.reportes') }}">
@@ -102,7 +102,7 @@
             {% endfor %}
           {% else %}
             <tr>
-              <td colspan="4" style="text-align:center;">No hay normativas cargadas.</td>
+              <td colspan="4" class="text-center">No hay normativas cargadas.</td>
             </tr>
           {% endif %}
         </tbody>

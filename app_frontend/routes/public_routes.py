@@ -41,7 +41,6 @@ def logup_submit():
     respuesta = auth_servicio.crear_usuario(
         {"nombre": nombre, "email": email, "carrera": carrera, "contrasenia": contrasenia},
     )
-    print(respuesta)
 
     if not respuesta:
         return (
@@ -64,7 +63,7 @@ def login():
         if rol in ("admin", "bibliotecario"):
             return redirect(url_for("admin.dashboard"))
         if rol in ("profesor", "profesor"):
-            return redirect(url_for("profesor.mis_reservas"))
+            return redirect(url_for("profesor.dashboard"))
         return redirect(url_for("alumno.perfil"))
 
     return render_template("public/login.html")
@@ -76,7 +75,9 @@ def login_submit():
     email = (request.form.get("email") or "").strip()
     contrasenia = request.form.get("contrasenia") or ""
 
-    payload, error, status_code = post_json("/auth/login", {"email": email, "contrasenia": contrasenia})
+    payload, error, status_code = post_json(
+        "/auth/login", {"email": email, "contrasenia": contrasenia}
+    )
 
     if error:
         print(error)
@@ -90,14 +91,40 @@ def login_submit():
         )
 
     rol = (payload or {}).get("rol", "alumno")
+    usuario_data = (payload or {}).get("usuario", {})
+    
+    estado_usr = str(usuario_data.get("estado", "")).lower()
+    estado_pay = str((payload or {}).get("estado", "")).lower()
+    activo_usr = usuario_data.get("activo")
+    activo_pay = (payload or {}).get("activo")
+    is_active = usuario_data.get("is_active") or (payload or {}).get("is_active")
+    
+    cuenta_inactiva = (
+        estado_usr in ["inactivo", "suspendido", "baja", "false", "0"] or
+        estado_pay in ["inactivo", "suspendido", "baja", "false", "0"] or
+        activo_usr in [False, "False", "false", 0, "0"] or
+        activo_pay in [False, "False", "false", 0, "0"] or
+        is_active in [False, "False", "false", 0, "0"]
+    )
+    
+    if cuenta_inactiva:
+        return (
+            render_template(
+                "public/login.html",
+                hasError=True,
+                errorMessage="Tu cuenta está inactiva o suspendida. Contacta al administrador.",
+            ),
+            401,
+        )
+
     session["token"] = (payload or {}).get("token")
     session["rol"] = rol
-    session["usuario"] = (payload or {}).get("usuario", {})
+    session["usuario"] = usuario_data
 
     if rol in ("admin", "bibliotecario"):
         return redirect(url_for("admin.dashboard"))
     if rol in ("profesor", "profesor"):
-        return redirect(url_for("profesor.mis_reservas"))
+        return redirect(url_for("profesor.dashboard"))
     return redirect(url_for("alumno.perfil"))
 
 
@@ -106,6 +133,14 @@ def logout():
     """Cierra la sesión del usuario y redirige a la página de inicio."""
     session.clear()
     return render_template("public/logout.html")
+
+
+@public_bp.route("/registro", methods=["GET", "POST"])
+def registro():
+    """Renderiza la página de registro y maneja el proceso de registro de nuevos usuarios."""
+    if request.method == "POST":
+        return redirect(url_for("public.login"))
+    return render_template("public/registro.html")
 
 
 @public_bp.route("/normas", methods=["GET"])
@@ -147,4 +182,6 @@ def get_article_details(articulo_id):
     """Muestra el detalle público de un artículo."""
     articulo, fetch_error = get_json(f"/articulos/{articulo_id}")
 
-    return render_template("public/article_details.html", articulo=articulo, fetch_error=fetch_error)
+    return render_template(
+        "public/article_details.html", articulo=articulo, fetch_error=fetch_error
+    )

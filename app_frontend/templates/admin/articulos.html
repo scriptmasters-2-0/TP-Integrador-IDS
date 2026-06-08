@@ -4,9 +4,7 @@
     <a href="{{ url_for('admin.dashboard') }}"><i class="fa-solid fa-gauge"></i> Dashboard</a>
   </li>
   <li>
-    <a href="{{ url_for('admin.listar_articulos') }}" class="active"
-      ><i class="fa-solid fa-box"></i> Artículos</a
-    >
+    <a href="{{ url_for('admin.listar_articulos') }}" class="active"><i class="fa-solid fa-box"></i> Artículos</a>
   </li>
   <li>
     <a href="{{ url_for('admin.lista_reservas') }}"
@@ -14,12 +12,10 @@
     >
   </li>
   <li>
-    <a href="{{ url_for('admin.usuarios') }}"><i class="fa-solid fa-usuarios"></i> Usuarios</a>
+    <a href="{{ url_for('admin.usuarios') }}"><i class="fa-solid fa-users"></i> Usuarios</a>
   </li>
   <li>
-    <a href="{{ url_for('admin.reporte_morosidad') }}"
-      ><i class="fa-solid fa-chart-column"></i> Morosidad</a
-    >
+    <a href="{{ url_for('admin.reporte_morosidad') }}"><i class="fa-solid fa-chart-column"></i> Morosidad</a>
   </li>
 {% endblock %}
 {% block dashboard_content %}
@@ -36,14 +32,12 @@
         <h1>Gestión de Artículos</h1>
         <p>Administra el inventario de la biblioteca.</p>
       </div>
-      <button
-        class="register-btn-nav"
-        onclick="window.location.href = '{{ url_for('admin.crear_articulo') }}'">
+      <button class="register-btn-nav" onclick="window.location.href = '{{ url_for('admin.crear_articulo') }}'">
         <i class="fa-solid fa-plus"></i> Nuevo Artículo
       </button>
     </div>
 
-    <div class="data-grid" style="margin-bottom: 25px">
+    <div class="data-grid mb-4">
       <div class="data-group">
         <label>Tipo</label>
         <select class="admin-select">
@@ -82,9 +76,9 @@
                 <td>{{ articulo.stock }}</td>
                 <td>
                   {% if articulo.stock and articulo.stock > 0 and not articulo.necesita_reparacion %}
-                    <span class="badge badge-exito">Disponible</span>
+                    <span class="badge badge-success">Disponible</span>
                   {% else %}
-                    <span class="badge" style="background: #ffe5e5; color: #c0392b"
+                    <span class="badge bg-danger-light text-danger"
                       >No disponible</span
                     >
                   {% endif %}
@@ -104,7 +98,7 @@
             {% endfor %}
           {% else %}
             <tr>
-              <td colspan="5" style="text-align:center; color: var(--text-grey);">
+              <td colspan="5" class="text-center text-muted">
                 {{ fetch_error if fetch_error else 'No hay artículos para mostrar.' }}
               </td>
             </tr>

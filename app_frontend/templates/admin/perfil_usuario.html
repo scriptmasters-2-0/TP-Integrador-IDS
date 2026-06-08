@@ -27,7 +27,7 @@
     >
   </li>
   <li>
-    <a href="{{ url_for('admin.usuarios') }}"><i class="fa-solid fa-usuarios"></i> Usuarios</a>
+    <a href="{{ url_for('admin.usuarios') }}"><i class="fa-solid fa-users"></i> Usuarios</a>
   </li>
   <li>
     <a href="{{ url_for('admin.reporte_morosidad') }}"
@@ -39,15 +39,15 @@
 {% block dashboard_content %}
   <h2 class="reveal">Perfil de Usuario</h2>
 
-  <div class="admin-detail-layout reveal" style="transition-delay: 0.1s;">
+  <div class="admin-detail-layout reveal delay-1">
     <!-- COLUMNA IZQUIERDA: DATOS DEL USUARIO -->
     <div class="profile-card">
-      <div class="usuario-card">
-        <div class="usuario-card-avatar">
-          <i class="fa-solid fa-usuario"></i>
+      <div class="user-card">
+        <div class="user-card-avatar">
+          <i class="fa-solid fa-user"></i>
         </div>
-        <h3 class="usuario-card-name">{{ usuario.nombre }}</h3>
-        <span class="badge badge-exito mb-3">{{ usuario.rol }}</span>
+        <h3 class="user-card-name">{{ usuario.nombre }}</h3>
+        <span class="badge badge-success mb-3">{{ usuario.rol }}</span>
       </div>
       <div class="data-grid mt-data-grid">
         <div class="data-group">
@@ -93,7 +93,7 @@
             <option value="admin" {% if usuario.rol == 'admin' %}selected{% endif %}>Admin</option>
           </select>
         </div>
-        <button type="submit" class="res-btn btn-primary" style="width: 100%; padding: 15px;">
+        <button type="submit" class="res-btn btn-primary btn-block p-3">
           <i class="fa-solid fa-floppy-disk"></i> Guardar cambios
         </button>
       </form>

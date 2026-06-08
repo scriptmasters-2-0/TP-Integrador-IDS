@@ -15,14 +15,10 @@
     >
   </li>
   <li>
-    <a href="{{ url_for('admin.usuarios') }}" class="active"
-      ><i class="fa-solid fa-usuarios"></i> Usuarios</a
-    >
+    <a href="{{ url_for('admin.usuarios') }}" class="active"><i class="fa-solid fa-users"></i> Usuarios</a>
   </li>
   <li>
-    <a href="{{ url_for('admin.reporte_morosidad') }}"
-      ><i class="fa-solid fa-chart-column"></i> Morosidad</a
-    >
+    <a href="{{ url_for('admin.reporte_morosidad') }}"><i class="fa-solid fa-chart-column"></i> Morosidad</a>
   </li>
 {% endblock %}
 
@@ -55,12 +51,12 @@
                 <td>{{ usuario.nombre if usuario.nombre is defined else usuario.nombre }}</td>
                 <td>{{ usuario.email if usuario.email is defined else usuario.mail }}</td>
                 <td>{{ usuario.rol if usuario.rol is defined else usuario.rol }}</td>
-                <td><span class="badge badge-exito">Activo</span></td>
+                <td><span class="badge badge-success">Activo</span></td>
               </tr>
             {% endfor %}
           {% else %}
             <tr>
-              <td colspan="4" style="text-align:center; color: var(--text-grey);">
+              <td colspan="4" class="text-center text-muted">
                 {{ fetch_error if fetch_error else 'No hay usuarios para mostrar.' }}
               </td>
             </tr>

@@ -114,15 +114,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   attachSimpleFormValidations();
 
-  const faqItems = document.querySelectorAll(".faq-articulo");
+  const faqItems = document.querySelectorAll(".faq-item");
 
-  // Default to open for the demo as shown in screenshots
-  faqItems.forEach((articulo) => {
-    articulo.classList.add("active"); // Since screenshots show them open
+  faqItems.forEach((item) => {
+    item.classList.add("active"); // Since screenshots show them open
 
-    const questionBtn = articulo.querySelector(".faq-question");
+    const questionBtn = item.querySelector(".faq-question");
     questionBtn.addEventListener("click", () => {
-      articulo.classList.toggle("active");
+      item.classList.toggle("active");
     });
   });
 
@@ -155,7 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Auto-add reveal class and staggered delays to elements
   const elementsToReveal = document.querySelectorAll(
-    ".step-card, .benefit-card, .rule-articulo, .faq-articulo, section h2, .subtitle"
+    ".step-card, .benefit-card, .rule-item, .faq-item, section h2, .subtitle"
   );
   elementsToReveal.forEach((el) => {
     el.classList.add("reveal");

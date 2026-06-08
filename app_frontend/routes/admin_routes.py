@@ -15,9 +15,19 @@ from servicios.reports_servicio import obtener_reportes
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
+
+
+
 @admin_bp.route("/reservas/<int:id>", methods=["GET", "POST"])
 def reserva_detalle(id):
     """Renderiza y procesa la vista de detalle de préstamo para administradores."""
+    token = session.get("token")
+    rol = session.get("rol")
+    if not token:
+        return redirect(url_for("public.login"))
+    if rol not in ["admin", "bibliotecario"]:
+        return redirect(url_for("public.home"))
+
     if request.method == "POST":
         return redirect(url_for("admin.reserva_detalle", id=id))
 
@@ -27,7 +37,9 @@ def reserva_detalle(id):
             "id": datos_api.get("id", id),
             "estado_general": datos_api.get("estado_reserva", "pendiente"),
             "estado_texto": datos_api.get("estado_reserva", "Pendiente"),
-            "estado_clase": "status-pending" if datos_api.get("estado_reserva") == "pendiente" else "status-active",
+            "estado_clase": "status-pending"
+            if datos_api.get("estado_reserva") == "pendiente"
+            else "status-active",
             "equipo_nombre": datos_api.get("nombre_art", "Material no especificado"),
             "equipo_id": datos_api.get("id_reservado", "N/A"),
             "titular_nombre": datos_api.get("nombre", "Alumno"),
@@ -39,24 +51,31 @@ def reserva_detalle(id):
     except Exception:
         reserva = {
             "id": id,
-            "estado_general": "en_curso",
-            "estado_texto": "En curso (Retirado)",
-            "estado_clase": "status-pending",
-            "equipo_nombre": "Proyector Epson WXGA",
-            "equipo_id": "PRJ-012",
-            "titular_nombre": "Juan Pérez",
-            "titular_legajo": "102345",
-            "titular_carrera": "Ingeniería Informática",
-            "fecha_retiro": "15 May 2026 - 15:00 hs",
-            "fecha_limite": "15 May 2026 - 18:00 hs",
+            "estado_general": "error",
+            "estado_texto": "Error al cargar",
+            "estado_clase": "status-error",
+            "equipo_nombre": "No disponible",
+            "equipo_id": "N/A",
+            "titular_nombre": "Usuario",
+            "titular_legajo": "N/A",
+            "titular_carrera": "N/A",
+            "fecha_retiro": "N/A",
+            "fecha_limite": "N/A",
         }
 
-    return render_template("admin/reserva_detalle.html", reserva=reserva)
+    return render_template("admin/reserva_detalle_admin.html", reserva=reserva)
 
 
 @admin_bp.route("/articulos")
 def listar_articulos():
     """Renderiza la vista de listado de artículos para administradores."""
+    token = session.get("token")
+    rol = session.get("rol")
+    if not token:
+        return redirect(url_for("public.login"))
+    if rol not in ["admin", "bibliotecario"]:
+        return redirect(url_for("public.home"))
+
     articulos = articulos_servicio.obtener_articulos()
 
     return render_template(
@@ -68,6 +87,13 @@ def listar_articulos():
 @admin_bp.route("/articulos/nuevo")
 def crear_articulo():
     """Renderiza la vista de creación de nuevo artículo para administradores."""
+    token = session.get("token")
+    rol = session.get("rol")
+    if not token:
+        return redirect(url_for("public.login"))
+    if rol not in ["admin", "bibliotecario"]:
+        return redirect(url_for("public.home"))
+
     return render_template(
         "admin/articulos_form.html",
         articulo=None,
@@ -80,6 +106,12 @@ def crear_articulo():
 def guardar_articulo():
     """Crea un artículo consumiendo el endpoint backend /api/articulos."""
     token = session.get("token")
+    rol = session.get("rol")
+    if not token:
+        return redirect(url_for("public.login"))
+    if rol not in ["admin", "bibliotecario"]:
+        return redirect(url_for("public.home"))
+
     payload = {
         "nombre_art": request.form.get("nombre"),
         "tipo": request.form.get("tipo"),
@@ -94,21 +126,33 @@ def guardar_articulo():
     if error:
         return redirect(url_for("admin.crear_articulo", error=error))
 
-    return redirect(url_for("admin.crear_articulo", exito="Artículo creado correctamente"))
+    return redirect(
+        url_for("admin.crear_articulo", exito="Artículo creado correctamente")
+    )
 
 
 @admin_bp.route("/dashboard")
 def dashboard():
     """Renderiza la vista del dashboard para administradores."""
+    token = session.get("token")
+    rol = session.get("rol")
+    if not token:
+        return redirect(url_for("public.login"))
+    if rol not in ["admin", "bibliotecario"]:
+        return redirect(url_for("public.home"))
+
     return render_template("admin/dashboard.html")
 
 
 @admin_bp.route("/reportes", methods=["GET"])
 def reportes():
     """Renderiza la vista de reportes para administradores."""
+    token = session.get("token")
     rol = session.get("rol")
+    if not token:
+        return redirect(url_for("public.login"))
     if rol not in ["admin", "bibliotecario"]:
-        return redirect("/")
+        return redirect(url_for("public.home"))
 
     rta = obtener_reportes("careers")
 
@@ -120,9 +164,12 @@ def reportes():
 @admin_bp.route("/normativas", methods=["GET", "POST"])
 def normativas():
     """ABM de normativas solo visibles para admins y bibliotecarios."""
+    token = session.get("token")
     rol = session.get("rol")
+    if not token:
+        return redirect(url_for("public.login"))
     if rol not in ["admin", "bibliotecario"]:
-        return redirect("/")
+        return redirect(url_for("public.home"))
 
     if request.method == "POST":
         id_normativa = request.form.get("id")
@@ -156,6 +203,13 @@ def normativas():
 @admin_bp.route("/normativas/eliminar", methods=["POST"])
 def eliminar_norm():
     """Descripción: función eliminar_norm."""
+    token = session.get("token")
+    rol = session.get("rol")
+    if not token:
+        return redirect(url_for("public.login"))
+    if rol not in ["admin", "bibliotecario"]:
+        return redirect(url_for("public.home"))
+
     id_norm = request.form.get("id")
     eliminar_normativa(id_norm)
     return redirect("/admin/normativas")
@@ -165,6 +219,12 @@ def eliminar_norm():
 def usuarios():
     """Renderiza la vista de gestión de usuarios para administradores."""
     token = session.get("token")
+    rol = session.get("rol")
+    if not token:
+        return redirect(url_for("public.login"))
+    if rol not in ["admin", "bibliotecario"]:
+        return redirect(url_for("public.home"))
+
     usuarios, error = get_json("/usuario", token=token)
     return render_template(
         "admin/usuarios.html",
@@ -177,6 +237,12 @@ def usuarios():
 def reporte_morosidad():
     """Renderiza la vista de reporte de morosidad para administradores."""
     token = session.get("token")
+    rol = session.get("rol")
+    if not token:
+        return redirect(url_for("public.login"))
+    if rol not in ["admin", "bibliotecario"]:
+        return redirect(url_for("public.home"))
+
     penalizaciones, error = get_json("/penalizaciones", token=token)
 
     rows = []
@@ -186,7 +252,8 @@ def reporte_morosidad():
                 {
                     "usuario": penalty.get("id_usuario") or penalty.get("usuarioId"),
                     "articulo": penalty.get("id_reserva") or penalty.get("reservaId"),
-                    "vencimiento": penalty.get("fecha_fin") or penalty.get("resolvedAt"),
+                    "vencimiento": penalty.get("fecha_fin")
+                    or penalty.get("resolvedAt"),
                     "estado": "Activa" if penalty.get("activa", True) else "Levantada",
                 }
             )
@@ -199,10 +266,8 @@ def editar_articulo(id):
     """Formulario de edición de artículo: muestra datos y permite actualizarlos."""
     token = session.get("token")
     rol = session.get("rol")
-
     if not token:
         return redirect(url_for("public.login"))
-
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
@@ -218,7 +283,9 @@ def editar_articulo(id):
             "necesita_reparacion": request.form.get("necesita_reparacion") == "on",
         }
 
-        _, error = post_json(f"/articulos/{id}/update", data=datos_actualizados, token=token)
+        _, error = post_json(
+            f"/articulos/{id}/update", data=datos_actualizados, token=token
+        )
 
         if error:
             return render_template("admin/editar_articulo.html", fetch_error=error)
@@ -227,7 +294,9 @@ def editar_articulo(id):
 
     articulo, error = get_json(f"/articulos/{id}", token=token)
 
-    return render_template("admin/editar_articulo.html", articulo=articulo, fetch_error=error)
+    return render_template(
+        "admin/editar_articulo.html", articulo=articulo, fetch_error=error
+    )
 
 
 @admin_bp.route("/reservas", methods=["GET"])
@@ -235,10 +304,8 @@ def lista_reservas():
     """Lista todos los préstamos con filtros por estado, fecha o usuario."""
     token = session.get("token")
     rol = session.get("rol")
-
     if not token:
         return redirect(url_for("public.login"))
-
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
@@ -274,10 +341,8 @@ def listar_penalizaciones():
     """Lista las penalizaciones activas."""
     token = session.get("token")
     rol = session.get("rol")
-
     if not token:
         return redirect(url_for("public.login"))
-
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
@@ -308,5 +373,11 @@ def listar_penalizaciones():
 def levantar_penalizacion(id):
     """Acción para levantar una penalización manualmente."""
     token = session.get("token")
+    rol = session.get("rol")
+    if not token:
+        return redirect(url_for("public.login"))
+    if rol not in ["admin", "bibliotecario"]:
+        return redirect(url_for("public.home"))
+
     post_json(f"/penalizaciones/{id}/resolve", {}, token=token)
     return redirect(url_for("admin.listar_penalizaciones"))
