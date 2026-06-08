@@ -1,6 +1,6 @@
 # auth_servicio.py
 # Funciones de servicio para consumir endpoints /auth
-from servicios.api_client import post_json, get_json
+from servicios.api_client import get_json, post_json
 
 TIMEOUT = 5
 

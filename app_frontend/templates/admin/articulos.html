@@ -4,7 +4,9 @@
     <a href="{{ url_for('admin.dashboard') }}"><i class="fa-solid fa-gauge"></i> Dashboard</a>
   </li>
   <li>
-    <a href="{{ url_for('admin.listar_articulos') }}" class="active"><i class="fa-solid fa-box"></i> Artículos</a>
+    <a href="{{ url_for('admin.listar_articulos') }}" class="active"
+      ><i class="fa-solid fa-box"></i> Artículos</a
+    >
   </li>
   <li>
     <a href="{{ url_for('admin.lista_reservas') }}"
@@ -15,7 +17,9 @@
     <a href="{{ url_for('admin.usuarios') }}"><i class="fa-solid fa-usuarios"></i> Usuarios</a>
   </li>
   <li>
-    <a href="{{ url_for('admin.reporte_morosidad') }}"><i class="fa-solid fa-chart-column"></i> Morosidad</a>
+    <a href="{{ url_for('admin.reporte_morosidad') }}"
+      ><i class="fa-solid fa-chart-column"></i> Morosidad</a
+    >
   </li>
 {% endblock %}
 {% block dashboard_content %}
@@ -32,7 +36,9 @@
         <h1>Gestión de Artículos</h1>
         <p>Administra el inventario de la biblioteca.</p>
       </div>
-      <button class="register-btn-nav" onclick="window.location.href = '{{ url_for('admin.crear_articulo') }}'">
+      <button
+        class="register-btn-nav"
+        onclick="window.location.href = '{{ url_for('admin.crear_articulo') }}'">
         <i class="fa-solid fa-plus"></i> Nuevo Artículo
       </button>
     </div>

@@ -7,7 +7,9 @@
     <a href="{{ url_for('alumno.perfil') }}"><i class="fa-solid fa-usuario"></i> Perfil</a>
   </li>
   <li>
-    <a href="{{ url_for('alumno.historial') }}"><i class="fa-solid fa-list-check"></i> Mis reservas</a>
+    <a href="{{ url_for('alumno.historial') }}"
+      ><i class="fa-solid fa-list-check"></i> Mis reservas</a
+    >
   </li>
   <li>
     <a href="{{ url_for('alumno.nueva_reserva') }}" class="active"
@@ -45,7 +47,9 @@
           <select id="articulo" name="articulo_id" class="admin-select" required>
             <option value="">Seleccionar</option>
             {% for articulo in articulos %}
-              <option value="{{ articulo.id }}">{{ articulo.nombre_art }} (stock: {{ articulo.stock }})</option>
+              <option value="{{ articulo.id }}">
+                {{ articulo.nombre_art }} (stock: {{ articulo.stock }})
+              </option>
             {% endfor %}
           </select>
         </div>

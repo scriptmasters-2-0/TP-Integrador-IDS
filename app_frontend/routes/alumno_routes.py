@@ -47,16 +47,12 @@ def historial():
                         "sede": reserva.get("seccion", "Sede FIUBA"),
                         "estado_texto": reserva.get("estado_reserva", "Pendiente"),
                         "estado_clase": (
-                            "badge-warning"
-                            if reserva.get("estado_reserva") == "pendiente"
-                            else "badge-exito"
+                            "badge-warning" if reserva.get("estado_reserva") == "pendiente" else "badge-exito"
                         ),
                     }
                 )
 
-    return render_template(
-        "alumno/historial.html", historial=historial_datos, fetch_error=error
-    )
+    return render_template("alumno/historial.html", historial=historial_datos, fetch_error=error)
 
 
 @alumno_bp.route("/mis-reservas/nueva", methods=["GET", "POST"])
@@ -145,13 +141,9 @@ def dashboard():
     if not token or not usuario:
         return redirect(url_for("public.login"))
 
-    dashboard_data, error = get_json(
-        f"/alumno/dashboard/{usuario.get('id')}", token=token
-    )
+    dashboard_data, error = get_json(f"/alumno/dashboard/{usuario.get('id')}", token=token)
 
-    return render_template(
-        "alumno/dashboard.html", dashboard=dashboard_data or {}, fetch_error=error
-    )
+    return render_template("alumno/dashboard.html", dashboard=dashboard_data or {}, fetch_error=error)
 
 
 @alumno_bp.route("/reservas/<int:id>", methods=["GET"])
@@ -164,9 +156,7 @@ def reserva_detalle(id):
     datos_api, error = get_json(f"/reservas/{id}", token=token)
 
     if error:
-        return render_template(
-            "alumno/reserva_detalle_alumno.html", reserva=None, fetch_error=error
-        )
+        return render_template("alumno/reserva_detalle_alumno.html", reserva=None, fetch_error=error)
 
     reserva = {
         "id": datos_api.get("id"),
