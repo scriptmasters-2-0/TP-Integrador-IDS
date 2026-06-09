@@ -484,9 +484,9 @@ def valid_penalty_patch(data):
         if data.get("status") is None:
             return False, "null:status"
         if not isinstance(data.get("status"), str):
-            return False, "invalid_type:status"
+            return False, "invalid_type:status tiene que ser un string"
         if data.get("status") not in ("Activa", "Levantada"):
-            return False, "invalid_value:status"
+            return False, "invalid_type:status tiene que ser 'Activa' o 'Levantada'"
 
     if "severidad" in data:
         if data.get("severidad") is None:
