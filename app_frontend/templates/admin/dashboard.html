@@ -3,40 +3,43 @@
 
 {% block sidebar_links %}
   <li>
-    <a href="{{ url_for('admin.dashboard') }}" class="active"
-      ><i class="fa-solid fa-gauge"></i> Dashboard</a
-    >
+    <a href="{{ url_for('admin.dashboard') }}" class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+      <i class="fa-solid fa-gauge"></i> Dashboard
+    </a>
   </li>
   <li>
-    <a href="{{ url_for('admin.reportes') }}"
-      ><i class="fa-solid fa-clipboard-list"></i> Reportes</a
-    >
+    <a href="{{ url_for('admin.reportes') }}" class="{% if request.endpoint == 'admin.reportes' %}active{% endif %}">
+      <i class="fa-solid fa-clipboard-list"></i> Reportes
+    </a>
   </li>
   <li>
-    <a href="{{ url_for('admin.lista_reservas') }}"
-      ><i class="fa-solid fa-clipboard-list"></i> Préstamos</a
-    >
+    <a href="{{ url_for('admin.lista_reservas') }}" class="{% if request.endpoint == 'lista_reservas' %}active{% endif %}">
+      <i class="fa-solid fa-clipboard-list"></i> Préstamos
+    </a>
   </li>
   <li>
-    <a href="{{ url_for('admin.listar_articulos') }}"><i class="fa-solid fa-box"></i> Articulos</a>
+    <a href="{{ url_for('admin.listar_articulos') }}" class="{% if request.endpoint == 'admin.listar_articulos' %}active{% endif %}">
+      <i class="fa-solid fa-box"></i> Articulos
+    </a>
   </li>
   <li>
-    <a href="{{ url_for('admin.crear_articulo') }}"
-      ><i class="fa-solid fa-plus"></i> Nuevo Articulo</a
-    >
+    <a href="{{ url_for('admin.crear_articulo') }}" class="{% if request.endpoint == 'admin.crear_articulo' %}active{% endif %}">
+      <i class="fa-solid fa-plus"></i> Nuevo Articulo
+    </a>
   </li>
   <li>
-    <a href="{{ url_for('admin.normativas') }}"
-      ><i class="fa-solid fa-clipboard-list"></i> Normativas</a
-    >
+    <a href="{{ url_for('admin.normativas') }}" class="{% if request.endpoint == 'admin.normativas' %}active{% endif %}">
+      <i class="fa-solid fa-clipboard-list"></i> Normativas
+    </a>
   </li>
   <li>
-    <a href="{{ url_for('admin.usuarios') }}"><i class="fa-solid fa-users"></i> Usuarios</a>
+    <a href="{{ url_for('admin.usuarios') }}" class="{% if request.endpoint == 'admin.usuarios %}active{% endif %}">
+      <i class="fa-solid fa-users"></i> Usuarios</a>
   </li>
   <li>
-    <a href="{{ url_for('admin.reporte_morosidad') }}"
-      ><i class="fa-solid fa-chart-column"></i> Morosidad</a
-    >
+    <a href="{{ url_for('admin.reporte_morosidad') }}" class="{% if request.endpoint == 'admin.reporte_morosidad' %}active{% endif %}">
+      <i class="fa-solid fa-chart-column"></i> Morosidad
+    </a>
   </li>
 {% endblock %}
 
@@ -47,48 +50,7 @@
   </div>
   <div class="dashboard-content reveal">
     <h2>Bienvenido al panel de administración</h2>
-    <p>Desde aquí puedes gestionar tus reservas, reportes, artículos, normativas y usuarios.</p>
-    <div class="dashboard-cards">
-      <div class="dashboard-card">
-        <i class="fa-solid fa-gauge"></i>
-        <h3>Mis reservas</h3>
-        <p>Consulta y administra tus reservas activas.</p>
-        <a href="{{ url_for('admin.dashboard') }}" class="dashboard-card-link">Ver reservas</a>
-      </div>
-      <div class="dashboard-card">
-        <i class="fa-solid fa-clipboard-list"></i>
-        <h3>Reportes</h3>
-        <p>Visualiza reportes de uso y estadísticas del sistema.</p>
-        <a href="{{ url_for('admin.reportes') }}" class="dashboard-card-link">Ver reportes</a>
-      </div>
-      <div class="dashboard-card">
-        <i class="fa-solid fa-box"></i>
-        <h3>Artículos</h3>
-        <p>Gestiona los artículos disponibles para préstamo.</p>
-        <a href="{{ url_for('admin.listar_articulos') }}" class="dashboard-card-link"
-          >Ver artículos</a
-        >
-      </div>
-      <div class="dashboard-card">
-        <i class="fa-solid fa-clipboard-list"></i>
-        <h3>Normativas</h3>
-        <p>Administra las normativas del sistema.</p>
-        <a href="{{ url_for('admin.normativas') }}" class="dashboard-card-link"> Ver normativas</a>
-      </div>
-      <div class="dashboard-card">
-        <i class="fa-solid fa-users"></i>
-        <h3>Usuarios</h3>
-        <p>Consulta y administra los usuarios registrados.</p>
-        <a href="{{ url_for('admin.usuarios') }}" class="dashboard-card-link">Ver usuarios</a>
-      </div>
-      <div class="dashboard-card">
-        <i class="fa-solid fa-chart-column"></i>
-        <h3>Morosidad</h3>
-        <p>Visualiza reservas vencidos y usuarios con penalizaciones activas.</p>
-        <a href="{{ url_for('admin.reporte_morosidad') }}" class="dashboard-card-link"
-          >Ver morosidad</a
-        >
-      </div>
-    </div>
+    <p>Desde aquí puedes gestionar reservas, reportes, artículos, normativas y usuarios.</p>
+{% include 'admin/_admin_nav_cards.html' %}
   </div>
 {% endblock %}

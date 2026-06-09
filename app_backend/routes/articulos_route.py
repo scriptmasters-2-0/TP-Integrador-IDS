@@ -71,7 +71,7 @@ def get_articulos():
     if conn is None:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
 
-    where_conditions = []
+    where_conditions = ["activo = 1"]
     values = {}
 
     if parsed_filters.get("tipo") is not None:
@@ -428,7 +428,7 @@ def eliminar_articulo(articulo_id):
 
         sql = """
             UPDATE articulos
-            SET stock = 0, necesita_reparacion = 1
+            SET activo = 0
             WHERE id = %s
         """
 

@@ -1,21 +1,44 @@
 {% extends "layouts/base_dashboard.html" %} {% block usuario_name %}Administrador{% endblock %}
 {% block sidebar_links %}
   <li>
-    <a href="{{ url_for('admin.dashboard') }}"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+    <a href="{{ url_for('admin.dashboard') }}" class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+      <i class="fa-solid fa-gauge"></i> Dashboard
+    </a>
   </li>
   <li>
-    <a href="{{ url_for('admin.listar_articulos') }}" class="active"><i class="fa-solid fa-box"></i> Artículos</a>
+    <a href="{{ url_for('admin.reportes') }}" class="{% if request.endpoint == 'admin.reportes' %}active{% endif %}">
+      <i class="fa-solid fa-clipboard-list"></i> Reportes
+    </a>
   </li>
   <li>
-    <a href="{{ url_for('admin.lista_reservas') }}"
-      ><i class="fa-solid fa-clipboard-list"></i> Préstamos</a
-    >
+    <a href="{{ url_for('admin.lista_reservas') }}" class="{% if request.endpoint == 'admin.lista_reservas' %}active{% endif %}">
+      <i class="fa-solid fa-clipboard-list"></i> Préstamos
+    </a>
   </li>
   <li>
-    <a href="{{ url_for('admin.usuarios') }}"><i class="fa-solid fa-users"></i> Usuarios</a>
+    <a href="{{ url_for('admin.listar_articulos') }}" class="{% if request.endpoint == 'admin.listar_articulos' %}active{% endif %}">
+      <i class="fa-solid fa-box"></i> Artículos
+    </a>
   </li>
   <li>
-    <a href="{{ url_for('admin.reporte_morosidad') }}"><i class="fa-solid fa-chart-column"></i> Morosidad</a>
+    <a href="{{ url_for('admin.crear_articulo') }}" class="{% if request.endpoint == 'admin.crear_articulo' %}active{% endif %}">
+      <i class="fa-solid fa-plus"></i> Nuevo Artículo
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.normativas') }}" class="{% if request.endpoint == 'admin.normativas' %}active{% endif %}">
+      <i class="fa-solid fa-clipboard-list"></i> Normativas
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.usuarios') }}" class="{% if request.endpoint == 'admin.usuarios' %}active{% endif %}">
+      <i class="fa-solid fa-users"></i> Usuarios
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.reporte_morosidad') }}" class="{% if request.endpoint == 'admin.reporte_morosidad' %}active{% endif %}">
+      <i class="fa-solid fa-chart-column"></i> Morosidad
+    </a>
   </li>
 {% endblock %}
 {% block dashboard_content %}
@@ -24,15 +47,15 @@
     <span>Artículos</span>
   </div>
 
+
   <div class="history-container">
     <div
-      class="history-header"
-      style="display: flex; justify-content: space-between; align-articulos: center">
+      class="history-header flex-between-center">
       <div>
         <h1>Gestión de Artículos</h1>
         <p>Administra el inventario de la biblioteca.</p>
       </div>
-      <button class="register-btn-nav" onclick="window.location.href = '{{ url_for('admin.crear_articulo') }}'">
+      <button class="register-btn-nav" onclick="window.location.href='{{ url_for('admin.crear_articulo') }}'">
         <i class="fa-solid fa-plus"></i> Nuevo Artículo
       </button>
     </div>
@@ -90,9 +113,12 @@
                     onclick="window.location.href='{{ url_for('admin.editar_articulo', id=articulo.id) }}'">
                     <i class="fa-solid fa-pen"></i>
                   </button>
-                  <button class="btn-icon" title="Eliminar" style="color: #ff4d4d">
-                    <i class="fa-solid fa-trash"></i>
-                  </button>
+                  <form action="{{ url_for('admin.eliminar_articulo_route', id=articulo.id) }}" method="POST" class="inline-form"
+onsubmit="return confirm('¿Estás seguro de que deseas elimiar este articulo?');">
+                    <button class="btn-icon btn-con-danger" title="Eliminar">
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  </form>
                 </td>
               </tr>
             {% endfor %}
