@@ -37,7 +37,8 @@ services:
   db:
     image: mysql:latest
     container_name: tp_integrador_db
-    restart: "always"
+    restart: always
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     env_file:
       - .env
     environment:
@@ -49,8 +50,7 @@ services:
       - 3306:${DB_PORT}
     volumes:
       - tp_integrador_db:/var/lib/mysql
-      - ./app_backend/db_scripts/init_db.sql:/docker-entrypoint-initdb.d/01_init_db.sql 
-      - ./app_backend/db_scripts/create_seeds.sql:/docker-entrypoint-initdb.d/02_seeds.sql
+      - ./app_backend/db_scripts/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql 
 
 volumes:
   tp_integrador_db:
