@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS articulos (
   prestacion_maxima INT NOT NULL,
   stock INT DEFAULT 1,
   necesita_reparacion BOOLEAN DEFAULT FALSE,
-  activo BOLEAN DEFAULT TRUE
+  activo BOOLEAN DEFAULT TRUE
 );
 
 CREATE TABLE IF NOT EXISTS reserva (
