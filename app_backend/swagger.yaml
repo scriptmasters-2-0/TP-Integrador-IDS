@@ -8,19 +8,19 @@ info:
     y generación de reportes/estadísticas.
   version: 2.0.0
 servers:
-  - url: /api
+  - url: /
     description: Servidor Base Local
 
 paths:
   # ==========================================
   # 1. Autenticación y Accesos (/api/auth)
   # ==========================================
-  /auth/login:
+  /api/auth/login:
     post:
       tags:
         - Autenticación
       summary: Inicia sesión utilizando flask-login
-      description: Valida credenciales y establece la sesión indicando el rol (alumno/docente, bibliotecario/admin).
+      description: Valida credenciales y establece la sesión indicando el rol (alumno/profesor, bibliotecario/admin).
       requestBody:
         required: true
         content:
@@ -39,7 +39,7 @@ paths:
         '400':
           description: Datos de entrada incorrectos.
 
-  /auth/logout:
+  /api/auth/logout:
     post:
       tags:
         - Autenticación
@@ -53,7 +53,7 @@ paths:
         '401':
           description: No autorizado.
 
-  /auth/me:
+  /api/auth/me:
     get:
       tags:
         - Autenticación
@@ -71,7 +71,7 @@ paths:
         '401':
           description: No autorizado.
 
-  /auth/logup:
+  /api/auth/logup:
     post:
       tags:
         - Autenticación
@@ -100,7 +100,7 @@ paths:
   # ==========================================
   # 2. Usuarios (/api/users)
   # ==========================================
-  /users:
+  /api/usuarios:
     get:
       tags:
         - Usuarios
@@ -145,7 +145,7 @@ paths:
         '403':
           description: Prohibido. Permisos insuficientes.
 
-  /user:
+  /api/usuario:
     get:
       tags:
         - Usuarios
@@ -161,9 +161,9 @@ paths:
                 items:
                   $ref: '#/components/schemas/UserLegacyDetail'
 
-  /user/{user_id}:
+  /api/usuario/{usuario_id}:
     parameters:
-      - name: user_id
+      - name: usuario_id
         in: path
         required: true
         description: Identificador único del usuario.
@@ -174,22 +174,22 @@ paths:
       tags:
         - Usuarios
       summary: Obtiene un usuario por ID (endpoint de compatibilidad)
-      description: Endpoint agregado por compatibilidad. Consulta usuarios en la tabla users.
+      description: Endpoint agregado por compatibilidad. Consulta usuarios en la tabla usuario.
       responses:
         '200':
           description: Usuario encontrado.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserLegacyDetail'
+                $ref: '#/components/schemas/UserDetail'
         '400':
           description: ID inválido.
         '404':
           description: Usuario no encontrado.
 
-  /users/{id}:
+  /api/usuarios/{usuario_id}:
     parameters:
-      - name: id
+      - name: usuario_id
         in: path
         required: true
         description: Identificador único del usuario.
@@ -249,14 +249,14 @@ paths:
         '404':
           description: Usuario no encontrado.
 
-  /users/{id}/status:
+  /api/usuarios/{usuario_id}/status:
     patch:
       tags:
         - Usuarios
       summary: Activa o desactiva a un usuario (Opción 2)
       description: Actualización parcial para cambiar únicamente el estado de actividad del usuario.
       parameters:
-        - name: id
+        - name: usuario_id
           in: path
           required: true
           schema:
@@ -276,13 +276,13 @@ paths:
         '404':
           description: Usuario no encontrado.
 
-  /users/{id}/loans:
+  /api/usuarios/{usuario_id}/reservas:
     get:
       tags:
         - Usuarios
       summary: Obtiene el historial personal de préstamos/pedidos
       parameters:
-        - name: id
+        - name: usuario_id
           in: path
           required: true
           schema:
@@ -302,36 +302,11 @@ paths:
         '404':
           description: Alumno no encontrado.
 
-  /users/{id}/penalties:
-    get:
-      tags:
-        - Usuarios
-      summary: Obtiene las penalizaciones vigentes e históricas de un alumno
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      security:
-        - BearerAuth: []
-      responses:
-        '200':
-          description: Historial de penalizaciones obtenido.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PenaltyDetail'
-        '404':
-          description: Alumno no encontrado.
 
   # ==========================================
   # 3. Inventario y Materiales (/api/items)
   # ==========================================
-  /items:
+  /api/articulos:
     get:
       tags:
         - Inventario y Materiales
@@ -391,9 +366,9 @@ paths:
         '403':
           description: Prohibido. Permisos insuficientes.
 
-  /items/{id}:
+  /api/articulos/{articulo_id}:
     parameters:
-      - name: id
+      - name: articulo_id
         in: path
         required: true
         schema:
@@ -454,13 +429,13 @@ paths:
         '404':
           description: Ítem no encontrado.
 
-  /items/{id}/condition:
+  /api/articulos/{articulo_id}/condition:
     patch:
       tags:
         - Inventario y Materiales
       summary: Actualiza específicamente el estado o condición física del ítem
       parameters:
-        - name: id
+        - name: articulo_id
           in: path
           required: true
           schema:
@@ -473,7 +448,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ItemConditionUpdate'
+              type: object
+              required:
+                - estado
+              properties:
+                estado:
+                  type: string
+                  enum: [disponible, dañado, reparacion, "dado de baja"]
       responses:
         '200':
           description: Condición actualizada.
@@ -487,7 +468,7 @@ paths:
   # ==========================================
   # 4. Préstamos y Solicitudes (/api/loans)
   # ==========================================
-  /loans:
+  /api/reservas:
     get:
       tags:
         - Préstamos y Reservas
@@ -528,7 +509,7 @@ paths:
       tags:
         - Préstamos y Reservas
       summary: Crea una nueva solicitud de reserva
-      description: Endpoint de compatibilidad. Recibe user_id e item_id, valida disponibilidad y crea el préstamo.
+      description: Endpoint de compatibilidad. Recibe usuario_id y articulo_id, valida disponibilidad y crea la reserva.
       requestBody:
         required: true
         content:
@@ -547,9 +528,9 @@ paths:
         '404':
           description: Usuario o ítem no encontrado.
 
-  /loans/{id}:
+  /api/reservas/{reserva_id}:
     parameters:
-      - name: id
+      - name: reserva_id
         in: path
         required: true
         schema:
@@ -571,14 +552,14 @@ paths:
         '404':
           description: Préstamo no encontrado.
 
-  /loans/{id}/status:
+  /api/reservas/{reserva_id}/status:
     patch:
       tags:
         - Préstamos y Reservas
       summary: Cambia el estado del préstamo
       description: (Solo Admin).
       parameters:
-        - name: id
+        - name: reserva_id
           in: path
           required: true
           schema:
@@ -607,21 +588,19 @@ paths:
   # ==========================================
   # 5. Códigos QR (/api/qr)
   # ==========================================
-  /qr/loans/{loan_id}:
+  /api/qr/reservas/{id_reserva}:
     get:
       tags:
         - Códigos QR
       summary: Genera o devuelve el código QR dinámico
       description: Devuelve el código QR asociado al préstamo aprobado.
       parameters:
-        - name: loan_id
+        - name: id_reserva
           in: path
           required: true
           schema:
             type: integer
             format: int64
-      security:
-        - BearerAuth: []
       responses:
         '200':
           description: Código QR generado/obtenido correctamente.
@@ -630,6 +609,8 @@ paths:
               schema:
                 type: object
                 properties:
+                  id_reserva:
+                    type: integer
                   qrData:
                     type: string
                     description: Contenido o representación base64 del QR.
@@ -639,14 +620,14 @@ paths:
   # ==========================================
   # 6. Penalizaciones (/api/penalties)
   # ==========================================
-  /penalties:
+  /api/penalizaciones:
     get:
       tags:
         - Penalizaciones
       summary: Lista general de penalizaciones activas e históricas
-      description: Permite listar todas las penalizaciones o filtrar por usuario con query param user_id.
+      description: Permite listar todas las penalizaciones o filtrar por usuario con query param usuario_id.
       parameters:
-        - name: user_id
+        - name: usuario_id
           in: query
           required: false
           description: Identificador del usuario para filtrar penalizaciones.
@@ -690,9 +671,9 @@ paths:
         '403':
           description: Prohibido.
 
-  /penalties/{id}:
+  /api/penalizaciones/{penalty_id}:
     parameters:
-      - name: id
+      - name: penalty_id
         in: path
         required: true
         schema:
@@ -762,12 +743,12 @@ paths:
   # ==========================================
   # 7. Reportes y Estadísticas (/api/reports)
   # ==========================================
-  /reports:
+  /api/reports:
     get:
       tags:
         - Reportes y Estadísticas
       summary: Endpoint unificado y centralizado para la generación de reportes
-      description: (Solo Admin). Soporta Dashboard, demanda, morosidad, historial, inventario mediante query params.
+      description: '(Solo Admin). Soporta tipos: pending, returned, overdue, all, careers mediante query params.'
       security:
         - BearerAuth: []
       parameters:
@@ -777,7 +758,7 @@ paths:
           description: Tipo de reporte a generar.
           schema:
             type: string
-            enum: [dashboard, demand, overdue, history, inventory]
+            enum: [pending, returned, overdue, all, careers]
         - name: format
           in: query
           required: false
@@ -785,24 +766,18 @@ paths:
           schema:
             type: string
             enum: [json, pdf]
-            default: pdf
+            default: json
       responses:
         '200':
           description: Reporte generado exitosamente.
           content:
-            application/pdf:
-              schema:
-                type: string
-                format: binary
             application/json:
               schema:
-                type: object
-                description: Esquema dinámico dependiendo del type (DashboardData, DemandReportItem, etc.)
+                $ref: '#/components/schemas/ReportsResponse'
         '400':
           description: Parámetros inválidos.
         '403':
           description: Prohibido.
-
   # ==========================================
   # 8. Salud del Sistema (/ping)
   # ==========================================
@@ -819,9 +794,12 @@ paths:
               schema:
                 type: object
                 properties:
-                  status:
+                  mensaje:
                     type: string
-                    example: "ok"
+                  base_de_datos:
+                    type: string
+                  resultado_test:
+                    type: string
 
 components:
   securitySchemes:
@@ -834,44 +812,43 @@ components:
     LoginRequest:
       type: object
       required:
-        - username
-        - password
+        - email
+        - contrasenia
       properties:
-        username:
+        email:
           type: string
-          example: juan.perez
-        password:
+          format: email
+        contrasenia:
           type: string
           format: password
-          example: 'Segura123*'
 
     LoginResponse:
       type: object
       properties:
         token:
           type: string
-        role:
+        rol:
           type: string
-          enum: [alumno, docente, bibliotecario, admin]
-        user:
+          enum: [alumno, profesor, bibliotecario, admin]
+        usuario:
           $ref: '#/components/schemas/UserPerfil'
 
     LogUpRequest:
       type: object
       required:
         - nombre
-        - mail
+        - email
         - carrera
-        - password
+        - contrasenia
       properties:
         nombre:
           type: string
-        mail:
+        email:
           type: string
           format: email
         carrera:
           type: string
-        password:
+        contrasenia:
           type: string
           format: password
 
@@ -880,10 +857,10 @@ components:
       properties:
         token:
           type: string
-        role:
+        rol:
           type: string
-          enum: [alumno, docente, bibliotecario, admin]
-        user:
+          enum: [alumno, profesor, bibliotecario, admin]
+        usuario:
           $ref: '#/components/schemas/UserPerfil'
 
     UserPerfil:
@@ -894,14 +871,14 @@ components:
           format: int64
         nombre:
           type: string
-        mail:
+        email:
           type: string
           format: email
-        score:
+        puntaje:
           type: integer
         rol:
           type: string
-          enum: [alumno, docente, bibliotecario, admin]
+          enum: [alumno, profesor, bibliotecario, admin]
         carrera:
           type: string
           nullable: true
@@ -914,14 +891,14 @@ components:
           format: int64
         nombre:
           type: string
-        mail:
+        email:
           type: string
           format: email
-        score:
+        puntaje:
           type: integer
         rol:
           type: string
-          enum: [alumno, docente, bibliotecario, admin]
+          enum: [alumno, profesor, bibliotecario, admin]
         carrera:
           type: string
           nullable: true
@@ -932,32 +909,32 @@ components:
         id:
           type: integer
           format: int64
-        username:
+        nombre:
           type: string
         email:
           type: string
           format: email
-        role:
+        rol:
           type: string
 
     UserCreate:
       type: object
       required:
         - nombre
-        - mail
+        - email
         - rol
       properties:
         nombre:
           type: string
-        mail:
+        email:
           type: string
           format: email
         rol:
           type: string
-          enum: [alumno, docente, bibliotecario, admin]
+          enum: [alumno, profesor, bibliotecario, admin]
         carrera:
           type: string
-        score:
+        puntaje:
           type: integer
 
     UserUpdate:
@@ -965,15 +942,15 @@ components:
       properties:
         nombre:
           type: string
-        mail:
+        email:
           type: string
           format: email
         rol:
           type: string
-          enum: [alumno, docente, bibliotecario, admin]
+          enum: [alumno, profesor, bibliotecario, admin]
         carrera:
           type: string
-        score:
+        puntaje:
           type: integer
 
     UserStatusUpdate:
@@ -1094,7 +1071,7 @@ components:
         id_reservado:
           type: integer
           format: int64
-        nombre_articulo:
+        nombre_art:
           type: string
         estado_reserva:
           type: string
@@ -1129,13 +1106,13 @@ components:
     LoanCreateLegacyRequest:
       type: object
       required:
-        - user_id
-        - item_id
+        - usuario_id
+        - articulo_id
       properties:
-        user_id:
+        usuario_id:
           type: integer
           format: int64
-        item_id:
+        articulo_id:
           type: integer
           format: int64
 
@@ -1144,13 +1121,13 @@ components:
       properties:
         message:
           type: string
-        loan_id:
+        reserva_id:
           type: integer
           format: int64
-        user_id:
+        usuario_id:
           type: integer
           format: int64
-        item_id:
+        articulo_id:
           type: integer
           format: int64
 
@@ -1196,10 +1173,10 @@ components:
     PenaltyCreate:
       type: object
       required:
-        - userId
+        - usuario_id
         - reason
       properties:
-        userId:
+        usuario_id:
           type: integer
           format: int64
         loanId:
@@ -1225,7 +1202,7 @@ components:
         status:
           type: string
           enum: [Activa, Levantada]
-        severity:
+        severidad:
           type: string
           example: Alta
         notes:
@@ -1252,3 +1229,16 @@ components:
           type: integer
         mostRequestedCategory:
           type: string
+
+    ReportsResponse:
+      type: object
+      properties:
+        tipo_reporte:
+          type: string
+        formato_solicitado:
+          type: string
+          nullable: true
+        datos:
+          type: array
+          items:
+            type: object
