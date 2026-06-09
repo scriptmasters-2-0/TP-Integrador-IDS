@@ -2653,3 +2653,41 @@ h3 {
   gap: 12px;
   justify-content: flex-end;
 }
+
+/* Clases utilitarias agregadas para evitar estilos inline */
+.flex-between-center { display: flex; justify-content: space-between; align-items: center; }
+.inline-form { display: inline-block; margin: 0; padding: 0; }
+.btn-icon-danger { color: #ff4d4d !important; }
+.btn-icon-danger:hover { color: #cc0000 !important; }
+.form-error-msg { color: #c0392b; font-weight: 700; margin-top: 8px; }
+.form-success-msg { color: #2e7d32; font-weight: 700; margin-top: 8px; }
+.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+/* Clases extraidas de estilos inline */
+.dashboard-current-date {
+  color: var(--text-grey);
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.admin-form-container {
+  max-width: 800px;
+  background: #fff;
+  padding: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.admin-form-actions {
+  margin-top: 30px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}

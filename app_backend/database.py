@@ -28,7 +28,7 @@ def obtener_conexion():
             user=config.DB_USER,
             password=config.DB_PASSWORD,
             database=config.DB_NAME,
-            port=config.DB_PORT,
+            port=config.DB_PORT
         )
         return connection
 

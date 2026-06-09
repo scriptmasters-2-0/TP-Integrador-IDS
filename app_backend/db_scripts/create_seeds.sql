@@ -1,4 +1,5 @@
 USE sistema_prestamos;
+SET NAMES utf8mb4;
 
 -- ==============================================================================
 -- 0. PREPARACIÓN (Limpieza de tablas y reseteo de AUTO_INCREMENT)
@@ -554,7 +555,7 @@ INSERT INTO
 VALUES
   (
     'Osciloscopio Digital Rigol DS1054Z',
-    'Equipo',
+    'Electronicos',
     'Laboratorio Electronica',
     3,
     5,

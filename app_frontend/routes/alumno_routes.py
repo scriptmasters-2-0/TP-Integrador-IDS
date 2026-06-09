@@ -10,6 +10,7 @@ from servicios.api_client import (
     obtener_perfil_usuario,
     post_json,
 )
+from servicios.usuario_servicio import obtener_penalizaciones_usuario
 
 logger = logging.getLogger(__name__)
 alumno_bp = Blueprint("alumno", __name__, url_prefix="/alumno")
@@ -238,3 +239,19 @@ def reserva_detalle(id):
     }
 
     return render_template("alumno/reserva_detalle_alumno.html", reserva=reserva)
+
+@alumno_bp.route("/penalizaciones")
+def alumno_penalizaciones():
+    """Renderiza la página de penalizaciones del alumno."""
+    token = session.get("token")
+    usuario = session.get("usuario")
+    if not token or not usuario:
+        return redirect(url_for("public.login"))
+    
+    penalizaciones = obtener_penalizaciones_usuario(usuario.get("id"), token=token)
+
+    return render_template(
+        "alumno/penalizaciones.html",
+        usuario=usuario,
+        penalizaciones=penalizaciones
+    )

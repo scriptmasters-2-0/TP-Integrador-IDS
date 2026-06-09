@@ -1,3 +1,5 @@
+SET NAMES utf8mb4;
+
 CREATE TABLE IF NOT EXISTS usuario (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(50) NOT NULL,
@@ -16,7 +18,8 @@ CREATE TABLE IF NOT EXISTS articulos (
   seccion VARCHAR(50) NOT NULL,
   prestacion_maxima INT NOT NULL,
   stock INT DEFAULT 1,
-  necesita_reparacion BOOLEAN DEFAULT FALSE
+  necesita_reparacion BOOLEAN DEFAULT FALSE,
+  activo BOLEAN DEFAULT TRUE
 );
 
 CREATE TABLE IF NOT EXISTS reserva (

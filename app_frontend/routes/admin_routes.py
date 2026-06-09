@@ -11,6 +11,7 @@ from servicios.normativas_servicio import (
     obtener_normativas,
 )
 from servicios.reports_servicio import obtener_reportes
+from servicios.articulos_servicio import eliminar_articulo
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -129,6 +130,16 @@ def guardar_articulo():
     return redirect(
         url_for("admin.crear_articulo", exito="Artículo creado correctamente")
     )
+
+@admin_bp.route("/articulos/<int:id>/eliminar", methods=["POST"])
+def eliminar_articulo_route(id):
+    """Elimina un articulo."""
+    token = session.get("token")
+    if not token:
+        return redirect(url_for("public.login"))
+
+    eliminar_articulo(id, token=token)
+    return redirect(url_for("admin.listar_articulos"))
 
 
 @admin_bp.route("/dashboard")
