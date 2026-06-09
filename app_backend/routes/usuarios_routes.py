@@ -219,7 +219,7 @@ def get_usuario_reservas(usuario_id):
 
 
 @usuarios_bp.route("/api/usuarios", methods=["POST"])
-@requiere_auth(roles=["admin"])
+@requiere_auth(roles=["admin", "bibliotecario"])
 def create_usuario():
     """Crea un nuevo usuario en el sistema.
 
@@ -341,7 +341,7 @@ def get_usuario(usuario_id):
 
 
 @usuarios_bp.route("/api/usuarios/<int:usuario_id>", methods=["PUT"])
-@requiere_auth(roles=["admin"])
+@requiere_auth(roles=["admin", "bibliotecario"])
 def update_usuario(usuario_id):
     """Actualiza los datos de un usuario existente.
 
