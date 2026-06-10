@@ -4,10 +4,17 @@
 
 {% block sidebar_links %}
   <li>
-    <a href="{{ url_for('profesor.perfil') }}" class="active"><i class="fa-solid fa-user"></i> Perfil</a>
+    <a href="{{ url_for('profesor.perfil') }}"  class="active"><i class="fa-solid fa-user"></i> Perfil</a>
   </li>
   <li>
-    <a href="{{ url_for('profesor.dashboard') }}"><i class="fa-solid fa-list-check"></i> Mis reservas</a>
+    <a href="{{ url_for('profesor.dashboard') }}">
+      <i class="fa-solid fa-gauge"></i> Dashboard
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('profesor.mis_reservas') }}">
+      <i class="fa-solid fa-list-check"></i> Mis reservas
+    </a>
   </li>
   <li>
     <a href="{{ url_for('profesor.nueva_reserva') }}"><i class="fa-solid fa-plus"></i> Nueva reserva</a>
@@ -19,19 +26,20 @@
 
 {% block dashboard_content %}
   <div class="breadcrumb reveal">
-    <a href="{{ url_for('profesor.perfil') }}">Profesor</a> <i class="fa-solid fa-chevron-right"></i>
+    <a href="{{ url_for('profesor.perfil') }}">Profesor</a>
+    <i class="fa-solid fa-chevron-right"></i>
     <span>Perfil</span>
   </div>
 
   <div class="profile-header reveal">
     <h2 class="mt-0 mb-1">Perfil del profesor</h2>
-    <p class="text-muted">Revisa tus datos y estado de cuenta institucional.</p>
+    <p class="text-muted">Revisá tus datos y estado de cuenta institucional.</p>
   </div>
 
   <div class="profile-layout reveal delay-2">
     <div class="profile-card user-card">
       <div class="user-card-avatar">
-        <i class="fa-solid fa-chalkboard-usuario"></i>
+        <i class="fa-solid fa-chalkboard-user"></i>
       </div>
       <h3 class="user-card-name">
         {{ perfil.nombre if perfil and perfil.nombre else 'Profesor' }}
@@ -40,25 +48,61 @@
     </div>
 
     <div class="profile-card data-card">
-      <h3>Informacion profesional</h3>
+      {% if mensaje %}
+        <div class="alert alert-success">
+          <i class="fa-solid fa-circle-check"></i> {{ mensaje }}
+        </div>
+      {% endif %}
+
+      <h3>Información profesional</h3>
       <div class="data-grid">
         <div class="data-group">
           <label>Nombre completo</label>
-          <div class="data-value">{{ perfil.nombre if perfil and perfil.nombre else '-' }}</div>
+          <div class="data-value">{{ perfil.nombre if perfil and perfil.nombre else '—' }}</div>
         </div>
         <div class="data-group">
           <label>Legajo</label>
-          <div class="data-value">{{ perfil.id if perfil and perfil.id else '-' }}</div>
+          <div class="data-value">{{ perfil.id if perfil and perfil.id else '—' }}</div>
         </div>
         <div class="data-group">
-          <label>Correo</label>
-          <div class="data-value">{{ perfil.mail if perfil and perfil.mail else '-' }}</div>
+          <label>Correo Institucional</label>
+          <div class="data-value">{{ perfil.email if perfil and perfil.email else '—' }}</div>
         </div>
         <div class="data-group">
           <label>Departamento</label>
-          <div class="data-value">{{ perfil.carrera if perfil and perfil.carrera else '-' }}</div>
+          <div class="data-value">{{ perfil.carrera if perfil and perfil.carrera else '—' }}</div>
         </div>
       </div>
+
+      <div class="profile-actions">
+        <a href="#modalPassword" class="res-btn btn-secondary">
+          <i class="fa-solid fa-key"></i> Cambiar Contraseña
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalPassword" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-lock"></i> Cambiar Contraseña</h3>
+      </div>
+      <form method="POST" action="{{ url_for('profesor.cambiar_contrasena') }}">
+        <div class="form-group">
+          <label class="admin-label">Nueva Contraseña</label>
+          <input
+            type="password"
+            name="nueva_contrasena"
+            required
+            class="admin-input"
+            placeholder="Ingresa tu nueva contraseña"
+          />
+        </div>
+        <div class="modal-actions">
+          <a href="#" class="res-btn btn-secondary">Cancelar</a>
+          <button type="submit" class="res-btn btn-primary">Guardar Cambios</button>
+        </div>
+      </form>
     </div>
   </div>
 {% endblock %}

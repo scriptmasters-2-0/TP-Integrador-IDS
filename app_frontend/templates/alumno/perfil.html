@@ -55,6 +55,15 @@
       {% if mensaje %}
       <div class="alert alert-success">
         <i class="fa-solid fa-circle-check"></i> {{ mensaje }}
+        <div class="user-score-box">
+        <div class="score-icon">
+          <i class="fa-solid fa-star"></i>
+        </div>
+        <div class="score-details">
+          <span class="score-value">Sin multas</span>
+          <span class="score-label">Estado de cuenta</span>
+        </div>
+      </div>
       </div>
       {% endif %}
 
@@ -69,8 +78,8 @@
           <div class="data-value">{{ usuario.legajo | default('-') }}</div>
         </div>
         <div class="data-group">
-          <label>Correo Electrónico</label>
-          <div class="data-value">{{ usuario.email | default('-') }}</div>
+          <label>Correo Institucional</label>
+          <div class="data-value">{{ perfil.email if perfil and perfil.email else '—' }}</div>
         </div>
         <div class="data-group">
           <label>Carrera</label>

@@ -2,7 +2,6 @@
 
 from flask import Blueprint, redirect, render_template, request, session, url_for
 
-from servicios import articulos_servicio
 from servicios.api_client import get_json, obtener_detalle_reserva, post_json
 from servicios.normativas_servicio import (
     actualizar_normativa,
@@ -12,7 +11,8 @@ from servicios.normativas_servicio import (
 )
 from servicios.reports_servicio import obtener_reportes
 from servicios.articulos_servicio import eliminar_articulo
-from servicios.usuario_servicio import obtener_usuarios, actualizar_usuario
+from servicios import articulos_servicio
+from servicios import usuario_servicio
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -254,13 +254,12 @@ def usuarios():
             "activo": request.form.get("activo"),
         }
         if id_usuario:
-            actualizar_usuario(id_usuario, data)
+            usuario_servicio.actualizar_usuario(id_usuario, data, token=token)
         
         return redirect(url_for("admin.usuarios"))
     
     page = request.args.get("page", 1, type=int)
-    usuarios = obtener_usuarios(page)
-    
+    usuarios = usuario_servicio.obtener_usuarios(params={"page": page}, token=token)    
     usuario_editado = None
     id_editar = request.args.get("editar")
 
@@ -277,10 +276,10 @@ def usuarios():
         usuario_editado=usuario_editado,
     )
 
-
+"""
 @admin_bp.route("/usuarios/eliminar", methods=["POST"])
 def eliminar_usuario():
-    """Elimina un usuario desde el rol administrador."""
+    Elimina un usuario desde el rol administrador.
 
     token = session.get("token")
     rol = session.get("rol")
@@ -294,7 +293,7 @@ def eliminar_usuario():
     eliminar_usuario(id_usuario)
 
     return redirect(url_for("admin.usuarios"))
-
+"""
 
 @admin_bp.route("/reportes/morosidad")
 def reporte_morosidad():
@@ -444,3 +443,50 @@ def levantar_penalizacion(id):
 
     post_json(f"/penalizaciones/{id}/resolve", {}, token=token)
     return redirect(url_for("admin.listar_penalizaciones"))
+
+@admin_bp.route("/usuarios/<int:id>", methods=["GET"])
+def usuario_detalle(id):
+    """Renderiza el perfil completo de un usuario para administradores."""
+    token = session.get("token")
+    rol = session.get("rol")
+    if not token:
+        return redirect(url_for("public.login"))
+    if rol not in ["admin", "bibliotecario"]:
+        return redirect(url_for("public.home"))
+
+    usuario = usuario_servicio.obtener_usuario(id, token=token)
+    return render_template("admin/perfil_usuario.html", usuario=usuario)
+
+
+@admin_bp.route("/usuarios/<int:id>/editar", methods=["POST"])
+def editar_usuario(id):
+    """Actualiza el rol de un usuario y redirige a su perfil."""
+    token = session.get("token")
+    rol = session.get("rol")
+    if not token:
+        return redirect(url_for("public.login"))
+    if rol not in ["admin", "bibliotecario"]:
+        return redirect(url_for("public.home"))
+
+    payload = {
+        "rol": request.form.get("rol"),
+        "email": request.form.get("email"),
+        "carrera": request.form.get("carrera"),
+    }
+    payload = {k: v for k, v in payload.items() if v is not None and v != ""}
+    usuario_servicio.actualizar_usuario(id, payload, token=token)
+
+    return redirect(url_for("admin.usuario_detalle", id=id))
+
+@admin_bp.route("/usuarios/<int:id>/eliminar", methods=["POST"])
+def eliminar_usuario(id):
+    """Elimina un usuario del sistema."""
+    token = session.get("token")
+    rol = session.get("rol")
+    if not token:
+        return redirect(url_for("public.login"))
+    if rol not in ["admin", "bibliotecario"]:
+        return redirect(url_for("public.home"))
+
+    post_json(f"/usuarios/{id}", {}, token=token)
+    return redirect(url_for("admin.usuarios"))

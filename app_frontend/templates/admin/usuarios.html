@@ -117,8 +117,7 @@
                     Editar
                   </a>
 
-                  <form action="{{ url_for('admin.eliminar_usuario') }}" method="POST" class="inline-form">
-                    <input type="hidden" name="id" value="{{ usuario.id }}">
+                  <form action="{{ url_for('admin.eliminar_usuario', id=usuario.id) }}" method="POST">
                     <button type="submit" class="btn-delete-abm">
                       Eliminar
                     </button>
