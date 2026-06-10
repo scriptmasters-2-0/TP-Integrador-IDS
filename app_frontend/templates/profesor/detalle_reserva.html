@@ -2,12 +2,19 @@
 
 {% block sidebar_links %}
   <li>
-    <a href="#"><i class="fa-solid fa-user"></i> Perfil</a>
+    <a href="{{ url_for('profesor.perfil') }}"><i class="fa-solid fa-user"></i> Perfil</a>
   </li>
   <li>
-    <a href="{{ url_for('profesor.profesor_mis_reservas') }}" class="active"
-      ><i class="fa-solid fa-list-check"></i> Mis reservas</a
-    >
+    <a href="{{ url_for('profesor.dashboard') }}"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+  </li>
+  <li>
+    <a href="{{ url_for('profesor.mis_reservas') }}" class="active"><i class="fa-solid fa-list-check"></i> Mis reservas</a>
+  </li>
+  <li>
+    <a href="{{ url_for('profesor.nueva_reserva') }}"><i class="fa-solid fa-plus"></i> Nueva reserva</a>
+  </li>
+  <li>
+    <a href="{{ url_for('profesor.historial_reserva') }}"><i class="fa-solid fa-clock-rotate-left"></i> Historial</a>
   </li>
 {% endblock %}
 

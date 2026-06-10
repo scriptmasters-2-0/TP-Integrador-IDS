@@ -1,66 +1,154 @@
 {% extends 'layouts/base_dashboard.html' %}
 
-{% block usuario_name %}Profesor{% endblock %}
+{% block usuario_name %}{{ session.get('usuario', {}).get('nombre', 'Profesor') }}{% endblock %}
 
 {% block sidebar_links %}
   <li>
-    <a href="#"><i class="fa-solid fa-user"></i> Perfil</a>
+    <a href="{{ url_for('profesor.perfil') }}"><i class="fa-solid fa-user"></i> Perfil</a>
   </li>
   <li>
-    <a href="{{ url_for('profesor.profesor_mis_reservas') }}" class="active"
-      ><i class="fa-solid fa-list-check"></i> Mis reservas</a
-    >
+    <a href="{{ url_for('profesor.dashboard') }}">
+      <i class="fa-solid fa-gauge"></i> Dashboard
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('profesor.mis_reservas') }}"  class="active">
+      <i class="fa-solid fa-list-check"></i> Mis reservas
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('profesor.nueva_reserva') }}"><i class="fa-solid fa-plus"></i> Nueva reserva</a>
+  </li>
+  <li>
+    <a href="{{ url_for('profesor.historial_reserva') }}"><i class="fa-solid fa-clock-rotate-left"></i> Historial</a>
   </li>
 {% endblock %}
 
 {% block dashboard_content %}
-  <h2 class="reveal">Mis Reservas</h2>
+  <div class="breadcrumb reveal">
+    <a href="{{ url_for('profesor.dashboard') }}">Profesor</a>
+    <i class="fa-solid fa-chevron-right"></i>
+    <span>Mis reservas</span>
+  </div>
 
-  {% if reservas %}
-    <div class="history-table-wrapper">
-      <table class="history-table">
-        <thead>
-          <tr>
-            <th>Item</th>
-            <th>Estado</th>
-            <th>Fecha</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for reserva in reservas %}
-            <tr>
-              <td>{{ reserva.nombre_art }}</td>
-              <td>
-                <span
-                  class="badge {% if reserva.estado_reserva == 'pendiente' %}badge-warning{% elif reserva.estado_reserva == 'devuelto' %}badge-success{% else %}badge-success{% endif %}">
-                  {{ reserva.estado_reserva }}
-                </span>
-              </td>
-              <td>
-                {% if reserva.estado_reserva == 'pendiente' %}
-                  <form
-                    action="{{ url_for('profesor.profesor_cancelar_reserva', id=reserva.id) }}"
-                    method="POST">
-                    <!--<button type="submit" class="btn-icon" title="Cancelar reserva">
-                                    <i class="fa-solid fa-xmark"></i>
-                                </button>-->
-                    <button type="submit" class="res-btn btn-secondary">
-                      <i class="fa-solid fa-xmark"></i> Cancelar
-                    </button>
-                  </form>
-                {% endif %}
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  {% else %}
-    <div class="empty-state reveal">
-      <i class="icon-success fa-solid fa-circle-check empty-icon"></i>
-      <h3>¡No tenés reservas vigentes!</h3>
-      <p>Tu historial está limpio.</p>
-    </div>
+  <h2 class="reveal mt-0 mb-1">Mis reservas</h2>
+  <p class="text-muted reveal">Consultá tus préstamos activos e historial completo.</p>
+
+  {% if fetch_error %}
+    <p class="text-danger fw-bold mb-4">{{ fetch_error }}</p>
   {% endif %}
+
+  <div class="tabs-container reveal delay-2">
+    <div class="tabs-header">
+      <button class="tab-btn active" data-tab="activos">
+        Activos ({{ reservas_activas | length }})
+      </button>
+      <button class="tab-btn" data-tab="historico">
+        Histórico ({{ reservas_historicas | length }})
+      </button>
+    </div>
+
+    <div class="tab-content" id="tab-activos">
+      {% if reservas_activas %}
+        <div class="history-table-wrapper table-card">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>Artículo</th>
+                <th>Estado</th>
+                <th>Fecha retiro</th>
+                <th>Fecha regreso</th>
+                <th class="text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for reserva in reservas_activas %}
+                <tr>
+                  <td><strong>{{ reserva.nombre_articulo }}</strong></td>
+                  <td>
+                    <span class="badge {% if reserva.estado_reserva == 'pendiente' %}badge-warning{% else %}badge-success{% endif %}">
+                      {{ reserva.estado_reserva }}
+                    </span>
+                  </td>
+                  <td>{{ reserva.fecha_retiro }}</td>
+                  <td>{{ reserva.fecha_regreso }}</td>
+                  <td class="text-center">
+                    {% if reserva.estado_reserva == 'pendiente' %}
+                      <form action="{{ url_for('profesor.profesor_cancelar_reserva', id=reserva.id) }}" method="POST" class="inline-form">
+                        <button type="submit" class="res-btn btn-secondary btn-inline">
+                          <i class="fa-solid fa-xmark"></i> Cancelar
+                        </button>
+                      </form>
+                    {% else %}
+                      <span class="text-muted text-sm">—</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <i class="fa-solid fa-box-open empty-icon"></i>
+          <h3>No tenés reservas activas</h3>
+          <p>¿Necesitás reservar un equipo?</p>
+          <a href="{{ url_for('profesor.nueva_reserva') }}" class="res-btn btn-primary mt-3 badge-lg">
+            <i class="fa-solid fa-plus"></i> Nueva reserva
+          </a>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="tab-content hidden" id="tab-historico">
+      {% if reservas_historicas %}
+        <div class="history-table-wrapper table-card">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>Artículo</th>
+                <th>Estado</th>
+                <th>Fecha retiro</th>
+                <th>Fecha regreso</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for reserva in reservas_historicas %}
+                <tr>
+                  <td><strong>{{ reserva.nombre_articulo }}</strong></td>
+                  <td>
+                    <span class="badge
+                      {% if reserva.estado_reserva == 'devuelto' %}badge-success
+                      {% elif reserva.estado_reserva == 'cancelado' %}badge-danger
+                      {% else %}badge-success{% endif %}">
+                      {{ reserva.estado_reserva }}
+                    </span>
+                  </td>
+                  <td>{{ reserva.fecha_retiro }}</td>
+                  <td>{{ reserva.fecha_regreso }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <i class="fa-solid fa-clock-rotate-left empty-icon"></i>
+          <h3>No hay historial registrado</h3>
+          <p>Tus reservas pasadas aparecerán aquí.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
+      });
+    });
+  </script>
 {% endblock %}

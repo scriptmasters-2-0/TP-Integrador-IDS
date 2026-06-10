@@ -7,20 +7,34 @@
     <a href="{{ url_for('profesor.perfil') }}"><i class="fa-solid fa-user"></i> Perfil</a>
   </li>
   <li>
-    <a href="{{ url_for('profesor.dashboard') }}"><i class="fa-solid fa-list-check"></i> Mis reservas</a>
+    <a href="{{ url_for('profesor.dashboard') }}">
+      <i class="fa-solid fa-gauge"></i> Dashboard
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('profesor.mis_reservas') }}">
+      <i class="fa-solid fa-list-check"></i> Mis reservas
+    </a>
   </li>
   <li>
     <a href="{{ url_for('profesor.nueva_reserva') }}"><i class="fa-solid fa-plus"></i> Nueva reserva</a>
   </li>
   <li>
-    <a href="{{ url_for('profesor.historial_reserva') }}" class="active"><i class="fa-solid fa-clock-rotate-left"></i> Historial</a>
+    <a href="{{ url_for('profesor.historial_reserva') }}"  class="active"><i class="fa-solid fa-clock-rotate-left"></i> Historial</a>
   </li>
 {% endblock %}
 
 {% block dashboard_content %}
-  <div class="history-container">
+  <div class="breadcrumb reveal">
+    <a href="{{ url_for('profesor.perfil') }}">Profesor</a>
+    <i class="fa-solid fa-chevron-right"></i>
+    <span>Historial</span>
+  </div>
+
+  <div class="history-container reveal delay-2">
     <div class="history-header">
-      <h2>Mi historial de préstamos</h2>
+      <h2 class="mt-0">Mi historial de préstamos</h2>
+      <p class="text-muted">Registro completo de tus reservas pasadas.</p>
     </div>
 
     <div class="history-table-wrapper">
@@ -29,27 +43,77 @@
           <tr>
             <th>Artículo</th>
             <th>Estado</th>
-            <th>Fecha</th>
+            <th>Fecha de regreso</th>
           </tr>
         </thead>
-
         <tbody>
           {% if reservas %}
-
             {% for p in reservas %}
               <tr>
                 <td>{{ p.nombre_articulo }}</td>
-                <td>{{ p.estado_reserva }}</td>
-                <td>{{ p.fecha_regreso }}</td>
+                <td>
+                  <span class="badge
+                    {% if p.estado_reserva == 'pendiente' %}badge-warning
+                    {% elif p.estado_reserva == 'devuelto' %}badge-success
+                    {% elif p.estado_reserva == 'cancelado' %}badge-danger
+                    {% else %}badge-success{% endif %}">
+                    {{ p.estado_reserva }}
+                  </span>
+                </td>
+                <td>
+                  <div class="date-cell">
+                    <i class="fa-regular fa-calendar"></i>
+                    {{ p.fecha_regreso }}
+                  </div>
+                </td>
               </tr>
             {% endfor %}
           {% else %}
             <tr>
-              <td colspan="3" class="text-center">No hay préstamos registrados</td>
+              <td colspan="3" class="text-center text-muted p-4">
+                <i class="fa-solid fa-clock-rotate-left empty-icon"></i>
+                No hay préstamos registrados
+              </td>
             </tr>
           {% endif %}
         </tbody>
       </table>
+      {% if pagination %}
+      <p class="text-muted mt-3">
+        Mostrando {{ pagination.first_item }}-{{ pagination.last_item }} de {{ pagination.total_items }} reservas
+      </p>
+    {% endif %}
+
+    {% if pagination and pagination.total_pages > 1 %}
+      <div class="pagination-container">
+        <ul class="pagination">
+          <li>
+            <a href="{{ url_for('profesor.historial_reserva', page=pagination.prev_page) if pagination.has_prev else '#' }}"
+               class="page-link {% if not pagination.has_prev %}disabled{% endif %}">
+              <i class="fa-solid fa-chevron-left"></i>
+            </a>
+          </li>
+          {% for page_number in pagination.pages %}
+            {% if page_number %}
+              <li>
+                <a href="{{ url_for('profesor.historial_reserva', page=page_number) }}"
+                   class="page-link {% if page_number == pagination.page %}active{% endif %}">
+                  {{ page_number }}
+                </a>
+              </li>
+            {% else %}
+              <li><span class="page-dots">...</span></li>
+            {% endif %}
+          {% endfor %}
+          <li>
+            <a href="{{ url_for('profesor.historial_reserva', page=pagination.next_page) if pagination.has_next else '#' }}"
+               class="page-link {% if not pagination.has_next %}disabled{% endif %}">
+              <i class="fa-solid fa-chevron-right"></i>
+            </a>
+          </li>
+        </ul>
+      </div>
+    {% endif %}
     </div>
   </div>
 {% endblock %}

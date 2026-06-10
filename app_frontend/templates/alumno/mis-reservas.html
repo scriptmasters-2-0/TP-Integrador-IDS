@@ -30,7 +30,7 @@
         <tbody>
           {% for reserva in reservas %}
             <tr>
-              <td>{{ reserva.nombre_art }}</td>
+              <td>{{ reserva | tojson }}</td>
               <td>
                 <span
                   class="badge {% if reserva.estado_reserva == 'pendiente' %}badge-warning{% elif reserva.estado_reserva == 'devuelto' %}badge-success{% else %}badge-success{% endif %}">

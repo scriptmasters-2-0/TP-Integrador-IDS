@@ -242,16 +242,50 @@ def reserva_detalle(id):
 
 @alumno_bp.route("/penalizaciones")
 def alumno_penalizaciones():
-    """Renderiza la página de penalizaciones del alumno."""
+    """Renderiza las penalizaciones activas del alumno."""
     token = session.get("token")
     usuario = session.get("usuario")
     if not token or not usuario:
         return redirect(url_for("public.login"))
-    
-    penalizaciones = obtener_penalizaciones_usuario(usuario.get("id"), token=token)
+
+    usuario_id = usuario.get("id")
+    penalizaciones, error = get_json(f"/penalizaciones?usuario_id={usuario_id}", token=token)
 
     return render_template(
         "alumno/penalizaciones.html",
-        usuario=usuario,
-        penalizaciones=penalizaciones
+        penalizaciones=penalizaciones if isinstance(penalizaciones, list) else [],
+        fetch_error=error,
     )
+
+@alumno_bp.route("/reservas/<int:id>/cancelar", methods=["POST"])
+def cancelar_reserva(id):
+    """Cancela una reserva pendiente del alumno."""
+    token = session.get("token")
+    usuario = session.get("usuario")
+    if not token or not usuario:
+        return redirect(url_for("public.login"))
+    post_json(f"/reservas/{id}/cancelar", {}, token=token)
+    return redirect(url_for("alumno.historial"))
+
+@alumno_bp.route("/mis-reservas")
+def alumno_mis_reservas():
+    """Alias para mis reservas del alumno."""
+    token = session.get("token")
+    usuario = session.get("usuario")
+    if not token or not usuario:
+        return redirect(url_for("public.login"))
+
+    usuario_id = usuario.get("id")
+    reservas, error = get_json(f"/usuarios/{usuario_id}/reservas", token=token)
+
+    return render_template(
+        "alumno/mis-reservas.html",
+        reservas=reservas if isinstance(reservas, list) else [],
+        fetch_error=error,
+    )
+
+
+@alumno_bp.route("/reservas/<int:id>/cancelar", methods=["POST"])
+def alumno_cancelar_reserva(id):
+    """Alias para cancelar reserva del alumno."""
+    return cancelar_reserva(id)

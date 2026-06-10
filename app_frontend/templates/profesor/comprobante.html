@@ -2,8 +2,30 @@
 
 {% block usuario_name %}Profesor{% endblock %}
 
+{% block sidebar_links %}
+  <li>
+    <a href="{{ url_for('profesor.perfil') }}"><i class="fa-solid fa-user"></i> Perfil</a>
+  </li>
+  <li>
+    <a href="{{ url_for('profesor.dashboard') }}">
+      <i class="fa-solid fa-gauge"></i> Dashboard
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('profesor.mis_reservas') }}">
+      <i class="fa-solid fa-list-check"  class="active"></i> Mis reservas
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('profesor.nueva_reserva') }}"><i class="fa-solid fa-plus"></i> Nueva reserva</a>
+  </li>
+  <li>
+    <a href="{{ url_for('profesor.historial_reserva') }}"><i class="fa-solid fa-clock-rotate-left"></i> Historial</a>
+  </li>
+{% endblock %}
+
 {% block dashboard_content %}
-  <div class="breadcrumb">
+  <div class="breadcrumb reveal">
     <a href="{{ url_for('profesor.dashboard') }}">Profesor</a>
     <i class="fa-solid fa-chevron-right"></i>
     <a href="{{ url_for('profesor.dashboard') }}">Mis reservas</a>
@@ -11,19 +33,56 @@
     <span>Comprobante</span>
   </div>
 
-  <div class="ticket-container">
-    <div class="ticket-card">
-      <h2>📄 Comprobante de Reserva</h2>
+  <div class="ticket-container reveal delay-2">
+    <div class="ticket">
 
-      <div class="ticket-info">
-        <p><b>ID Reserva:</b> {{ qr.id_reserva }}</p>
+      <!-- ENCABEZADO AZUL -->
+      <div class="ticket-top">
+        <div class="ticket-brand">
+          <i class="fa-solid fa-building-columns"></i>
+          <span>FIUBA · Sistema de Préstamos</span>
+        </div>
+        <div class="ticket-title">Comprobante de Reserva</div>
       </div>
 
-      <div class="qr-section">
-        <h3>Codigo QR</h3>
-        <img src="data:image/png;base64,{{ qr.qrData }}" alt="QR de la reserva" class="qr-image" />
-        <p class="qr-text">Escaneá este código para verificar la reserva</p>
+      <!-- CUERPO -->
+      <div class="ticket-body">
+        <div class="ticket-info-grid">
+          <div>
+            <span class="ticket-label">ID de Reserva</span>
+            <span class="ticket-value highlight">#{{ qr.id_reserva }}</span>
+          </div>
+          <div class="text-right">
+            <span class="ticket-label">Estado</span>
+            <span class="ticket-status">
+              <i class="fa-solid fa-circle-check"></i> Confirmada
+            </span>
+          </div>
+          <div class="full-width">
+            <span class="ticket-label">Sede</span>
+            <span class="ticket-value">FIUBA — Paseo Colón 850, Buenos Aires</span>
+          </div>
+        </div>
       </div>
+
+      <!-- DIVISOR DENTADO -->
+      <div class="ticket-divider"></div>
+
+      <!-- SECCIÓN QR -->
+      <div class="ticket-qr-section">
+        <p class="qr-instruction">
+          Presentá este código al retirar el equipo. El encargado lo escaneará para validar tu reserva.
+        </p>
+        <div class="qr-code-box">
+          <img src="data:image/png;base64,{{ qr.qrData }}" alt="QR de la reserva" class="qr-image" />
+        </div>
+        <div class="ticket-actions">
+          <a href="{{ url_for('profesor.dashboard') }}" class="res-btn btn-secondary btn-inline">
+            <i class="fa-solid fa-arrow-left"></i> Volver
+          </a>
+        </div>
+      </div>
+
     </div>
   </div>
 {% endblock %}
