@@ -108,13 +108,13 @@
                 <td>{{ normativa.fecha }}</td>
 
                 <td>
-                  <a href="{{ url_for('admin.normativas', editar=normativa.id) }}" class="btn-edit">
+                  <a href="{{ url_for('admin.normativas', editar=normativa.id) }}" class="btn-edit-abm">
                     Editar
                   </a>
 
                   <form action="{{ url_for('admin.eliminar_norm') }}" method="POST">
                     <input type="hidden" name="id" value="{{ normativa.id }}" />
-                    <button type="submit" class="btn-delete">Eliminar</button>
+                    <button type="submit" class="btn-delete-abm">Eliminar</button>
                   </form>
                 </td>
               </tr>

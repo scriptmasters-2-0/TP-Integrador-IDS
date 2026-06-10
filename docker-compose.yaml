@@ -5,7 +5,7 @@ services:
       args:
         MYPORT: ${BACKEND_PORT}
     container_name: tp_integrador_backend
-    restart: no
+    restart: "always"
     depends_on:
       - db
     env_file:
@@ -23,7 +23,7 @@ services:
       args:
         MYPORT: ${FRONTEND_PORT}
     container_name: tp_integrador_frontend
-    restart: no
+    restart: "always"
     depends_on:
       - backend
     env_file:
@@ -37,7 +37,7 @@ services:
   db:
     image: mysql:latest
     container_name: tp_integrador_db
-    restart: always
+    restart: "always"
     env_file:
       - .env
     environment:
@@ -49,7 +49,8 @@ services:
       - 3306:${DB_PORT}
     volumes:
       - tp_integrador_db:/var/lib/mysql
-      - ./app_backend/db_scripts/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql 
+      - ./app_backend/db_scripts/init_db.sql:/docker-entrypoint-initdb.d/01_init_db.sql 
+      - ./app_backend/db_scripts/create_seeds.sql:/docker-entrypoint-initdb.d/02_seeds.sql
 
 volumes:
   tp_integrador_db:

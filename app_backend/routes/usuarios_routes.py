@@ -31,7 +31,7 @@ logging.basicConfig(level=logging.ERROR)
 usuarios_bp = Blueprint("usuarios", __name__)
 
 
-@usuarios_bp.route("/api/usuario", methods=["GET"])
+@usuarios_bp.route("/api/usuarios", methods=["GET"])
 def get_all_usuarios():
     """Lista todos los usuarios registrados.
 
@@ -48,8 +48,13 @@ def get_all_usuarios():
 
     try:
         cursor = conn.cursor(dictionary=True)
-        query = "SELECT id, nombre, email, rol FROM usuario"
-        cursor.execute(query)
+
+        page = int(request.args.get("page", 1))
+        limit = 20
+        offset = (page - 1) * limit
+
+        query = "SELECT * FROM usuario LIMIT %s OFFSET %s"
+        cursor.execute(query, (limit, offset))
         usuarios = cursor.fetchall()
 
         return jsonify(usuarios), HTTP_OK
@@ -61,6 +66,9 @@ def get_all_usuarios():
             {"error": "Internal server error: Database query failed"}
         ), HTTP_INTERNAL_SERVER_ERROR
 
+    except Exception as e:
+        print(repr(e))
+        return jsonify({str(e)}), 500
     finally:
         try:
             if cursor:

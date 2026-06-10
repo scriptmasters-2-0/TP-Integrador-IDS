@@ -47,45 +47,110 @@
 
 {% block dashboard_content %}
   <div class="breadcrumb reveal">
-    <a href="{{ url_for('admin.dashboard') }}">Admin</a> <i class="fa-solid fa-chevron-right"></i>
+    <a href="{{ url_for('admin.dashboard') }}">Admin</a>
+    <i class="fa-solid fa-chevron-right"></i>
     <span>Usuarios</span>
   </div>
 
   <div class="history-container">
     <div class="history-header">
-      <h2>Gestion de usuarios</h2>
+      <h2>Gestión de usuarios</h2>
       <p>Consulta y administra los usuarios registrados en el sistema.</p>
     </div>
+
+    <form method="POST" class="normativa-form">
+      <input type="hidden" name="id" value="{{ usuario_editado.id if usuario_editado else '' }}">
+      <div>
+        <label>Nombre</label>
+        <input type="text" name="nombre" value="{{ usuario_editado.nombre if usuario_editado else '' }}" required>
+      </div>
+
+      <div>
+        <label>Carrera</label>
+        <input type="text" name="carrera" value="{{ usuario_editado.carrera if usuario_editado else '' }}">
+      </div>
+
+      <div>
+        <label>Score</label>
+        <input type="number" name="puntaje" min="0" value="{{ usuario_editado.puntaje if usuario_editado else 0 }}">
+      </div>
+
+      <div>
+        <label>Estado</label>
+        <select name="estado">
+          <option value="1" {% if usuario_editado and usuario_editado.activo == 1 %}selected{% endif %}>
+            Activo
+          </option>
+          <option value="0" {% if usuario_editado and usuario_editado.activo == 0 %}selected{% endif %}>
+            Inactivo
+          </option>
+        </select>
+
+      <button type="submit" class="btn-create">
+        {{ 'Actualizar usuario' if usuario_editado else 'Crear usuario' }}
+      </button>
+
+    </form>
 
     <div class="history-table-wrapper">
       <table class="history-table">
         <thead>
           <tr>
             <th>Nombre</th>
-            <th>Email</th>
-            <th>Rol</th>
+            <th>Carrera</th>
+            <th>Puntaje</th>
             <th>Estado</th>
           </tr>
         </thead>
+
         <tbody>
           {% if usuarios %}
             {% for usuario in usuarios %}
               <tr>
-                <td>{{ usuario.nombre if usuario.nombre is defined else usuario.nombre }}</td>
-                <td>{{ usuario.email if usuario.email is defined else usuario.mail }}</td>
-                <td>{{ usuario.rol if usuario.rol is defined else usuario.rol }}</td>
-                <td><span class="badge badge-success">Activo</span></td>
+                <td>{{ usuario.nombre }}</td>
+                <td>{{ usuario.carrera }}</td>
+                <td>{{ usuario.puntaje }}</td>
+                <td>{{ usuario.activo }}</td>
+                <td>
+
+                  <a href="{{ url_for('admin.usuarios', editar=usuario.id) }}" class="btn-edit-abm">
+                    Editar
+                  </a>
+
+                  <form action="{{ url_for('admin.eliminar_usuario') }}" method="POST" class="inline-form">
+                    <input type="hidden" name="id" value="{{ usuario.id }}">
+                    <button type="submit" class="btn-delete-abm">
+                      Eliminar
+                    </button>
+                  </form>
+                </td>
               </tr>
             {% endfor %}
           {% else %}
             <tr>
-              <td colspan="4" class="text-center text-muted">
-                {{ fetch_error if fetch_error else 'No hay usuarios para mostrar.' }}
+              <td colspan="6" class="text-center text-muted">
+                No hay usuarios para mostrar.
               </td>
             </tr>
           {% endif %}
         </tbody>
       </table>
+
+      <div class="pagination">
+        {% if page > 1 %}
+          <a href="{{ url_for('admin.usuarios', page=page-1 )}}">
+            Anterior
+          </a>
+        {% endif %}
+
+        <span>Página {{ page }}</span>
+
+        {% if usuarios|length == 20 %}
+          <a href="{{ url_for('admin.usuarios', page=page+1 )}}">
+            Siguiente
+          </a>
+        {% endif %}
+      </div>
     </div>
   </div>
 {% endblock %}
