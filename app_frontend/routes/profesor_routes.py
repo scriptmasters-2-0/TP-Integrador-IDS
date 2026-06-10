@@ -61,7 +61,7 @@ def dashboard():
                 "fecha": reserva.get("fecha_retiro", "Desconocida"),
                 "ubicacion": "Sede FIUBA",
             }
-            if estado in ("pendiente", "entregado"):
+            if estado in ("pendiente", "aprobado", "entregado"):
                 reservas.append(entrada)
                 total_activas += 1
             else:
@@ -106,9 +106,9 @@ def mis_reservas():
                 "fecha_retiro": formatear_fecha_argentina(reserva.get("fecha_retiro")),
                 "fecha_regreso": formatear_fecha_argentina(reserva.get("fecha_regreso")),
             }
-            if estado in ("pendiente", "entregado"):
+            if estado in ("pendiente", "aprobado", "entregado"):
                 reservas_activas.append(entrada)
-            else:
+            else:  
                 reservas_historicas.append(entrada)
 
     return render_template(
