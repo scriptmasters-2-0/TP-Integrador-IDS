@@ -305,22 +305,14 @@ def reporte_morosidad():
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
-    penalizaciones, error = get_json("/penalizaciones", token=token)
+    nombre_usuario = request.args.get("usuario")
+    url = "/penalizaciones"
+    if nombre_usuario:
+        url += f"?usuario={nombre_usuario}"
 
-    rows = []
-    if isinstance(penalizaciones, list):
-        for penalty in penalizaciones:
-            rows.append(
-                {
-                    "usuario": penalty.get("id_usuario") or penalty.get("usuarioId"),
-                    "articulo": penalty.get("id_reserva") or penalty.get("reservaId"),
-                    "vencimiento": penalty.get("fecha_fin")
-                    or penalty.get("resolvedAt"),
-                    "estado": "Activa" if penalty.get("activa", True) else "Levantada",
-                }
-            )
+    penalizaciones, error = get_json(url, token=token)
 
-    return render_template("admin/morosidad.html", penalizaciones=rows, fetch_error=error)
+    return render_template("admin/morosidad.html", penalizaciones=penalizaciones, fetch_error=error)
 
 
 @admin_bp.route("/articulos/<int:id>/editar", methods=["GET", "POST"])
