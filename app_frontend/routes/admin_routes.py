@@ -12,6 +12,7 @@ from servicios.normativas_servicio import (
 )
 from servicios.reports_servicio import obtener_reportes
 from servicios.articulos_servicio import eliminar_articulo
+from servicios.usuario_servicio import obtener_usuarios, actualizar_usuario
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -223,12 +224,12 @@ def eliminar_norm():
 
     id_norm = request.form.get("id")
     eliminar_normativa(id_norm)
-    return redirect("/admin/normativas")
+    return redirect(url_for("admin.normativas"))
 
 
-@admin_bp.route("/usuarios")
+@admin_bp.route("/usuarios", methods=["GET", "POST"])
 def usuarios():
-    """Renderiza la vista de gestión de usuarios para administradores."""
+    """ABM de usuarios para administradores."""
     token = session.get("token")
     rol = session.get("rol")
     if not token:
@@ -236,12 +237,63 @@ def usuarios():
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
-    usuarios, error = get_json("/usuario", token=token)
+    """usuarios, error = get_json("/usuario", token=token)
     return render_template(
         "admin/usuarios.html",
         usuarios=usuarios if isinstance(usuarios, list) else [],
         fetch_error=error,
+    )"""
+
+    if request.method == "POST":
+        id_usuario = request.form.get("id")
+        data = {
+            "nombre": request.form.get("nombre"),
+            "email": request.form.get("email"),
+            "carera": request.form.get("carrera"),
+            "puntaje": request.form.get("puntaje"),
+            "activo": request.form.get("activo"),
+        }
+        if id_usuario:
+            actualizar_usuario(id_usuario, data)
+        
+        return redirect(url_for("admin.usuarios"))
+    
+    page = request.args.get("page", 1, type=int)
+    usuarios = obtener_usuarios(page)
+    
+    usuario_editado = None
+    id_editar = request.args.get("editar")
+
+    if id_editar:
+        for usuario in usuarios:
+            if str(usuario["id"]) == str(id_editar):
+                usuario_editado = usuario
+                break
+
+    return render_template(
+        "admin/usuarios.html",
+        usuarios=usuarios,
+        page=page,
+        usuario_editado=usuario_editado,
     )
+
+
+@admin_bp.route("/usuarios/eliminar", methods=["POST"])
+def eliminar_usuario():
+    """Elimina un usuario desde el rol administrador."""
+
+    token = session.get("token")
+    rol = session.get("rol")
+
+    if not token:
+        return redirect(url_for("public.login"))
+    if rol not in ["admin", "bibliotecario"]:
+        return redirect(url_for("public.home"))
+
+    id_usuario = request.form.get("id")
+    eliminar_usuario(id_usuario)
+
+    return redirect(url_for("admin.usuarios"))
 
 
 @admin_bp.route("/reportes/morosidad")

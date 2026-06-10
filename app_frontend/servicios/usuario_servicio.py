@@ -5,11 +5,12 @@ from servicios.api_client import get_json, post_json, put_json, delete_json, pat
 TIMEOUT = 5
 
 
-def obtener_usuarios(params=None, token=None):
+def obtener_usuarios(page=1, token=None):
     """GET /usuarios
     params: diccionario opcional para parámetros de consulta
     Devuelve una lista en caso de éxito, [] en caso de fallo.
     """
+    params = {"page": page}
     payload, error = get_json("/usuarios", token=token, params=params)
     if error:
         return []
