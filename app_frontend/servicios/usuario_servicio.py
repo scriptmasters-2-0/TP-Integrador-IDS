@@ -81,6 +81,14 @@ def obtener_reservas_usuario_con_error(usuario_id, params=None, token=None):
     return payload or [], None
 
 
+def obtener_reservas_usuario_con_error(usuario_id, params=None, token=None):
+    """GET /usuarios/{id}/reservas preservando el error para vistas."""
+    payload, error = get_json(f"/usuarios/{usuario_id}/reservas", token=token, params=params)
+    if error:
+        return [], error
+    return payload or [], None
+
+
 def obtener_penalizaciones_usuario(usuario_id, params=None, token=None):
     """GET /usuarios/{id}/penalizaciones
     Devuelve una lista de penalizaciones del usuario en caso de éxito, [] en caso de fallo.

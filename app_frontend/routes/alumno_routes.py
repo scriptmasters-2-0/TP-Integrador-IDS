@@ -10,13 +10,15 @@ from servicios.api_client import (
     obtener_perfil_usuario,
     post_json,
 )
-from servicios.usuario_servicio import obtener_penalizaciones_usuario
+from servicios.fechas_servicio import formatear_fecha_argentina
+from servicios.paginacion_servicio import DEFAULT_PER_PAGE, paginar_lista
+from servicios.usuario_servicio import (
+    obtener_penalizaciones_usuario,
+    obtener_reservas_usuario_con_error,
+)
 
 logger = logging.getLogger(__name__)
 alumno_bp = Blueprint("alumno", __name__, url_prefix="/alumno")
-
-
-
 
 
 @alumno_bp.route("/perfil")
@@ -67,28 +69,43 @@ def historial():
     usuario_id = usuario.get("id")
 
     historial_datos = []
-    payload, error = get_json(f"/usuarios/{usuario_id}/reservas", token=token)
+    payload, error = obtener_reservas_usuario_con_error(usuario_id, token=token)
     if usuario_id and not error and isinstance(payload, list):
         for reserva in payload:
+            nombre_articulo = (
+                reserva.get("nombre_articulo")
+                or reserva.get("nombre_art")
+                or "Artículo no disponible"
+            )
+            estado_reserva = reserva.get("estado_reserva") or "desconocido"
             historial_datos.append(
                 {
                     "id": reserva.get("id", 1),
-                    "fecha": reserva.get("fecha_retiro", "Desconocida"),
-                    "nombre_equipo": reserva.get("nombre_art", "Artículo"),
+                    "fecha": formatear_fecha_argentina(reserva.get("fecha_retiro")),
+                    "nombre_equipo": nombre_articulo,
                     "id_equipo": reserva.get("id_reservado"),
                     "sede": reserva.get("seccion", "Sede FIUBA"),
-                    "estado_texto": reserva.get("estado_reserva", "Pendiente"),
+                    "estado_texto": estado_reserva,
                     "estado_clase": (
                         "badge-warning"
-                        if reserva.get("estado_reserva") == "pendiente"
+                        if estado_reserva == "pendiente"
                         else "badge-success"
                     ),
                 }
             )
 
+    page = request.args.get("page", 1, type=int) or 1
+    historial_datos, pagination = paginar_lista(
+        historial_datos,
+        pagina=page,
+        por_pagina=DEFAULT_PER_PAGE,
+    )
 
     return render_template(
-        "alumno/historial.html", historial=historial_datos, fetch_error=error
+        "alumno/historial.html",
+        historial=historial_datos,
+        fetch_error=error,
+        pagination=pagination,
     )
 
 

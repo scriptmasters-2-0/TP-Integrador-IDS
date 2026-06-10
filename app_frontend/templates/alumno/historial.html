@@ -48,10 +48,10 @@
         <table class="history-table">
           <thead>
             <tr>
-              <th>Fecha del préstamo</th>
+              <th>Fecha de la reserva</th>
               <th>Equipo / Material</th>
               <th>Sede de retiro</th>
-              <th>Estado de devolución</th>
+              <th>Estado</th>
               <th class="text-center">Acciones</th>
             </tr>
           </thead>
@@ -69,7 +69,7 @@
                   <br /><span class="text-sm text-grey">ID: {{ reserva.id_equipo }}</span>
                 </td>
                 <td>{{ reserva.sede }}</td>
-                <td><span class="badge badge-success">{{ reserva.estado_texto }}</span></td>
+                <td><span class="badge {{ reserva.estado_clase }}">{{ reserva.estado_texto }}</span></td>
                 <td class="action-cell text-center">
                   <a
                     href="{{ url_for('alumno.reserva_detalle', id=reserva.id) }}"
@@ -87,21 +87,47 @@
         </table>
       </div>
 
-      <div class="pagination-container reveal delay-3">
-        <ul class="pagination">
-          <li>
-            <a href="#" class="page-link disabled"><i class="fa-solid fa-chevron-left"></i></a>
-          </li>
-          <li><a href="#" class="page-link active">1</a></li>
-          <li><a href="#" class="page-link">2</a></li>
-          <li><a href="#" class="page-link">3</a></li>
-          <li><span class="page-dots">...</span></li>
-          <li><a href="#" class="page-link">12</a></li>
-          <li>
-            <a href="#" class="page-link"><i class="fa-solid fa-chevron-right"></i></a>
-          </li>
-        </ul>
-      </div>
+      {% if pagination %}
+        <p class="text-muted mt-3">
+          Mostrando {{ pagination.first_item }}-{{ pagination.last_item }} de {{ pagination.total_items }} reservas
+        </p>
+      {% endif %}
+
+      {% if pagination and pagination.total_pages > 1 %}
+        <div class="pagination-container">
+          <ul class="pagination">
+            <li>
+              <a
+                href="{{ url_for('alumno.historial', page=pagination.prev_page) if pagination.has_prev else '#' }}"
+                class="page-link {% if not pagination.has_prev %}disabled{% endif %}"
+                aria-label="Página anterior">
+                <i class="fa-solid fa-chevron-left"></i>
+              </a>
+            </li>
+            {% for page_number in pagination.pages %}
+              {% if page_number %}
+                <li>
+                  <a
+                    href="{{ url_for('alumno.historial', page=page_number) }}"
+                    class="page-link {% if page_number == pagination.page %}active{% endif %}">
+                    {{ page_number }}
+                  </a>
+                </li>
+              {% else %}
+                <li><span class="page-dots">...</span></li>
+              {% endif %}
+            {% endfor %}
+            <li>
+              <a
+                href="{{ url_for('alumno.historial', page=pagination.next_page) if pagination.has_next else '#' }}"
+                class="page-link {% if not pagination.has_next %}disabled{% endif %}"
+                aria-label="Página siguiente">
+                <i class="fa-solid fa-chevron-right"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      {% endif %}
     {% else %}
       <div class="empty-state">
         <i class="fa-solid fa-clock-rotate-left empty-icon"></i>
