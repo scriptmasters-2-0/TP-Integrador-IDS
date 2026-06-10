@@ -1169,6 +1169,103 @@ h3 {
   font-size: 16px;
 }
 
+.history-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.history-filter-bar {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) auto auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.history-search-button,
+.history-filter-toggle {
+  min-height: 49px;
+  white-space: nowrap;
+}
+
+.history-advanced-filters {
+  position: relative;
+}
+
+.history-advanced-filters summary {
+  list-style: none;
+}
+
+.history-advanced-filters summary::-webkit-details-marker {
+  display: none;
+}
+
+.history-filter-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  z-index: 20;
+  width: min(720px, calc(100vw - 360px));
+  min-width: 520px;
+  padding: 18px;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(140px, 1fr));
+  gap: 14px;
+}
+
+.history-filter-panel-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.history-active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-grey);
+  font-size: 13px;
+}
+
+.history-active-filters span {
+  padding: 6px 10px;
+  background: #eef5ff;
+  color: var(--primary-blue);
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.history-active-filters a {
+  color: var(--primary-blue);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+@media (max-width: 992px) {
+  .history-filter-bar {
+    grid-template-columns: 1fr;
+  }
+
+  .history-filter-panel {
+    position: static;
+    width: 100%;
+    min-width: 0;
+    margin-top: 10px;
+    grid-template-columns: 1fr;
+  }
+
+  .history-filter-panel-actions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}
+
 .history-table-wrapper {
   overflow-x: auto;
 }
@@ -1652,6 +1749,38 @@ h3 {
   display: flex;
   justify-content: center;
   gap: 15px;
+}
+
+@media print {
+  body {
+    background: #ffffff;
+  }
+
+  .dashboard-sidebar-fixed,
+  .dashboard-topbar,
+  .breadcrumb,
+  .ticket-actions {
+    display: none !important;
+  }
+
+  .dashboard-main-content {
+    margin-left: 0 !important;
+  }
+
+  .dashboard-content-area {
+    padding: 0 !important;
+  }
+
+  .ticket-container {
+    max-width: 100%;
+    margin: 0;
+  }
+
+  .ticket {
+    box-shadow: none;
+    border: 1px solid #dddddd;
+    page-break-inside: avoid;
+  }
 }
 
 .mt-4 {

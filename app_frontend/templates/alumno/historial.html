@@ -17,11 +17,6 @@
     >
   </li>
   <li>
-    <a href="{{ url_for('alumno.comprobante_sin_id') }}"
-      ><i class="fa-solid fa-file-invoice"></i> Mis comprobantes</a
-    >
-  </li>
-  <li>
     <a href="{{ url_for('alumno.alumno_penalizaciones') }}">
       <i class="fa-solid fa-triangle-exclamation"></i> Penalizaciones
     </a>
@@ -37,14 +32,98 @@
   <div class="history-header reveal">
     <h2 class="mt-0 mb-1">Historial de Reservas</h2>
     <p class="text-muted">
-      Consulta el registro completo de tus préstamos anteriores.
+      Consulta el registro completo de tus reservas anteriores.
     </p>
   </div>
 
   <section class="history-list reveal delay-2">
+    {% if total_historial or filtros_activos %}
+      <form method="GET" action="{{ url_for('alumno.historial') }}" class="history-filters mb-4">
+        <div class="history-filter-bar">
+          <div class="data-group history-filter-search">
+            <label for="q">Buscador</label>
+            <input
+              id="q"
+              type="search"
+              name="q"
+              class="admin-input"
+              placeholder="Nombre del articulo o ID"
+              value="{{ filtros.q }}" />
+          </div>
+          <button type="submit" class="res-btn btn-primary btn-inline history-search-button">
+            <i class="fa-solid fa-magnifying-glass"></i> Buscar
+          </button>
+          <details class="history-advanced-filters">
+            <summary class="res-btn btn-secondary btn-inline history-filter-toggle">
+              <i class="fa-solid fa-sliders"></i>
+              Filtros{% if filtros.estado or filtros.fecha_desde or filtros.fecha_hasta %} activos{% endif %}
+            </summary>
+            <div class="history-filter-panel">
+              <div class="data-group">
+                <label for="estado">Estado</label>
+                <select id="estado" name="estado" class="admin-select">
+                  <option value="">Todos</option>
+                  {% for estado in estado_opciones %}
+                    <option value="{{ estado }}" {% if filtros.estado == estado %}selected{% endif %}>
+                      {{ estado }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="data-group">
+                <label for="fecha_desde">Desde</label>
+                <input
+                  id="fecha_desde"
+                  type="date"
+                  name="fecha_desde"
+                  class="admin-input"
+                  value="{{ filtros.fecha_desde }}" />
+              </div>
+              <div class="data-group">
+                <label for="fecha_hasta">Hasta</label>
+                <input
+                  id="fecha_hasta"
+                  type="date"
+                  name="fecha_hasta"
+                  class="admin-input"
+                  value="{{ filtros.fecha_hasta }}" />
+              </div>
+              <div class="history-filter-panel-actions">
+                <button type="submit" class="res-btn btn-primary btn-inline">
+                  <i class="fa-solid fa-filter"></i> Aplicar filtros
+                </button>
+                {% if filtros_activos %}
+                  <a href="{{ url_for('alumno.historial') }}" class="res-btn btn-secondary btn-inline">
+                    <i class="fa-solid fa-rotate-left"></i> Limpiar
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          </details>
+        </div>
+
+        {% if filtros_activos %}
+          <div class="history-active-filters">
+            {% if filtros.q %}
+              <span>Busqueda: {{ filtros.q }}</span>
+            {% endif %}
+            {% if filtros.estado %}
+              <span>Estado: {{ filtros.estado }}</span>
+            {% endif %}
+            {% if filtros.fecha_desde %}
+              <span>Desde: {{ filtros.fecha_desde }}</span>
+            {% endif %}
+            {% if filtros.fecha_hasta %}
+              <span>Hasta: {{ filtros.fecha_hasta }}</span>
+            {% endif %}
+            <a href="{{ url_for('alumno.historial') }}">Limpiar</a>
+          </div>
+        {% endif %}
+      </form>
+    {% endif %}
+
     {% if historial %}
-      <div
-        class="history-table-wrapper table-card">
+      <div class="history-table-wrapper table-card">
         <table class="history-table">
           <thead>
             <tr>
@@ -77,7 +156,10 @@
                     title="Ver detalle">
                     <i class="fa-solid fa-eye"></i>
                   </a>
-                  <a href="{{ url_for('alumno.nueva_reserva', articulo_id=reserva.id_equipo) }}" class="btn-icon" title="Volver a reservar">
+                  <a
+                    href="{{ url_for('alumno.nueva_reserva', articulo_id=reserva.id_equipo) }}"
+                    class="btn-icon"
+                    title="Volver a reservar">
                     <i class="fa-solid fa-rotate-right"></i>
                   </a>
                 </td>
@@ -98,7 +180,7 @@
           <ul class="pagination">
             <li>
               <a
-                href="{{ url_for('alumno.historial', page=pagination.prev_page) if pagination.has_prev else '#' }}"
+                href="{{ url_for('alumno.historial', page=pagination.prev_page, **filtros_url) if pagination.has_prev else '#' }}"
                 class="page-link {% if not pagination.has_prev %}disabled{% endif %}"
                 aria-label="Página anterior">
                 <i class="fa-solid fa-chevron-left"></i>
@@ -108,7 +190,7 @@
               {% if page_number %}
                 <li>
                   <a
-                    href="{{ url_for('alumno.historial', page=page_number) }}"
+                    href="{{ url_for('alumno.historial', page=page_number, **filtros_url) }}"
                     class="page-link {% if page_number == pagination.page %}active{% endif %}">
                     {{ page_number }}
                   </a>
@@ -119,7 +201,7 @@
             {% endfor %}
             <li>
               <a
-                href="{{ url_for('alumno.historial', page=pagination.next_page) if pagination.has_next else '#' }}"
+                href="{{ url_for('alumno.historial', page=pagination.next_page, **filtros_url) if pagination.has_next else '#' }}"
                 class="page-link {% if not pagination.has_next %}disabled{% endif %}"
                 aria-label="Página siguiente">
                 <i class="fa-solid fa-chevron-right"></i>
@@ -131,15 +213,23 @@
     {% else %}
       <div class="empty-state">
         <i class="fa-solid fa-clock-rotate-left empty-icon"></i>
-        <h3>Aún no tienes historial</h3>
-        <p>
-          {{ fetch_error if fetch_error else 'No se encontraron registros de reservas pasadas en tu cuenta.' }}
-        </p>
-        <a
-          href="{{ url_for('alumno.nueva_reserva') }}"
-          class="res-btn btn-primary mt-3 badge-lg"
-          >Explorar catálogo</a
-        >
+        {% if filtros_activos and total_historial %}
+          <h3>No hay reservas que coincidan con los filtros</h3>
+          <p>Ajusta los criterios de busqueda o limpia los filtros para ver todo el historial.</p>
+          <a href="{{ url_for('alumno.historial') }}" class="res-btn btn-secondary mt-3 badge-lg">
+            Limpiar filtros
+          </a>
+        {% else %}
+          <h3>Aún no tienes historial</h3>
+          <p>
+            {{ fetch_error if fetch_error else 'No se encontraron registros de reservas pasadas en tu cuenta.' }}
+          </p>
+          <a
+            href="{{ url_for('alumno.nueva_reserva') }}"
+            class="res-btn btn-primary mt-3 badge-lg"
+            >Explorar catálogo</a
+          >
+        {% endif %}
       </div>
     {% endif %}
   </section>
