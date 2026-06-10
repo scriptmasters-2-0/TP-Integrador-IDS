@@ -56,15 +56,23 @@
       <h2>Reporte de morosidad</h2>
       <p>Visualiza reservas vencidos y usuarios con penalizaciones activas.</p>
     </div>
-
+    <form method="get" class="history-filter-form">
+      <div class="filter-group">
+        <input type="text" name="usuario" id="usuario" class="admin-input" placeholder="Buscar por nombre">
+      <br/>
+      <button type="submit" class="res-btn btn-primary">Buscar</button>
+      </div>
+    </form>
+    <br/>
     <div class="history-table-wrapper">
       <table class="history-table">
         <thead>
           <tr>
             <th>Usuario</th>
             <th>Articulo</th>
+            <th>Severidad</th>
             <th>Vencimiento</th>
-            <th>Dias de atraso</th>
+            <th>Días de retraso</th>
             <th>Estado</th>
           </tr>
         </thead>
@@ -72,15 +80,28 @@
           {% if penalizaciones %}
             {% for p in penalizaciones %}
               <tr>
-                <td>{{ p.usuario }}</td>
-                <td>{{ p.articulo }}</td>
-                <td>{{ p.vencimiento if p.vencimiento else '-' }}</td>
-                <td>-</td>
+                <td>{{ p.nombre }}</td>
                 <td>
-                  {% if p.estado == 'Activa' %}
+                  {% if p.nombre_art %}
+                    {{ p.nombre_art }}
+                  {% else %}
+                    <span class="text-muted ">(Artículo eliminado)</span>
+                  {% endif %}
+                </td>
+                <td>{{ p.severidad }}</td>
+                <td>{{ p.fecha_fin if p.fecha_fin else '-' }}</td>
+                <td>
+                  {% if p.retrazo > 0 %}
+                    {{ p.retrazo }}
+                  {% else %}
+                  -
+                  {% endif %}
+                </td>
+                <td>
+                  {% if p.activa %}
                     <span class="badge bg-danger-light text-danger">Activa</span>
                   {% else %}
-                    <span class="badge bg-success-light text-success">Levantada</span>
+                    <span class="badge bg-success-light text-success">Vencida</span>
                   {% endif %}
                 </td>
               </tr>

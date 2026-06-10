@@ -317,18 +317,88 @@ def patch_penalty(penalty_id):
 
 
 @penalizaciones_bp.route("/api/penalizaciones", methods=["GET"])
+# @requiere_auth(roles=["admin", "bibliotecario"])
 def listar_penalizaciones():
-    """Lista todas las penalizaciones del sistema.
+    """Obtiene penalizaciones asociadas a un usuario mediante query param.
+    o Lista todas las penalizaciones del sistema si no se especifica usuario_id.
+    Requiere un JWT válido con rol admin o bibliotecario en el request.
 
-    Requiere un JWT válido con rol admin en el request.
+    Query Params:
+        usuario_id (str): Identificador del usuario a consultar.
 
     Returns:
         tuple: Respuesta JSON con la lista de todas las penalizaciones
             y código HTTP 200. Retorna 403 si el usuario no es admin.
 
     """
-    penalizaciones = listar_penalizaciones_db()
-    return jsonify(penalizaciones), HTTP_OK
+    nombre_usuario = request.args.get("usuario")
+    usuario_id = None
+    if "usuario_id" in request.args:
+        is_valid, error, usuario_id = valid_usuario_id_query(request.args)
+        if not is_valid:
+            return jsonify(
+                {"error": "Invalid query params", "detail": error}
+            ), HTTP_BAD_REQUEST
+
+    conn = obtener_conexion()
+    if conn is None:
+        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
+
+    cursor = None
+
+    try:
+        cursor = conn.cursor(dictionary=True)
+        penalizaciones_query  = """SELECT nombre, nombre_art, severidad, motivo, activa,
+            DATE_FORMAT(fecha_fin, '%d/%m/%y') as fecha_fin, DATEDIFF(CURDATE(), fecha_fin) as retrazo
+            FROM penalizacion
+            INNER JOIN usuario ON penalizacion.id_usuario = usuario.id
+            LEFT JOIN reserva ON penalizacion.id_reserva = reserva.id
+            LEFT JOIN articulos ON reserva.id_reservado = articulos.id
+            """
+        values = {}
+
+        if usuario_id:
+            usuario_check_query = "SELECT id FROM usuario WHERE id = %s"
+            cursor.execute(usuario_check_query, (usuario_id,))
+            usuario_exists = cursor.fetchone()
+
+            if not usuario_exists:
+                return jsonify(
+                    {"error": f"User with ID {usuario_id} not found"}
+                ), HTTP_NOT_FOUND
+            penalizaciones_query += " WHERE penalizacion.id_usuario = %(usuario_id)s"
+            values = {"usuario_id": usuario_id}
+
+        if nombre_usuario:
+            if values:
+                penalizaciones_query += " AND usuario.nombre LIKE %(nombre_usuario)s"
+            else:
+                penalizaciones_query += " WHERE usuario.nombre LIKE %(nombre_usuario)s"
+            values["nombre_usuario"] = f"%{nombre_usuario}%"
+
+        print(penalizaciones_query)
+        cursor.execute(penalizaciones_query, values)
+        penalizaciones = cursor.fetchall()
+
+        return jsonify(penalizaciones), HTTP_OK
+
+    except mysql.connector.Error as query_err:
+        logging.error(f"Database query execution error: {query_err}")
+
+        return jsonify(
+            {"error": "Internal server error: Database query failed"}
+        ), HTTP_INTERNAL_SERVER_ERROR
+
+    finally:
+        try:
+            if cursor:
+                cursor.close()
+        except Exception:
+            pass
+        try:
+            conn.close()
+        except Exception:
+            pass
 
 
 @penalizaciones_bp.route("/api/penalizaciones", methods=["POST"])
@@ -360,66 +430,3 @@ def crear_penalizacion():
     penalizacion = obtener_penalizacion_por_id(id_penalizacion)
 
     return jsonify(penalizacion), HTTP_CREATED
-
-
-logging.basicConfig(level=logging.ERROR)
-
-
-@penalizaciones_bp.route("/api/penalizaciones", methods=["GET"])
-def get_usuario_penalizaciones():
-    """Obtiene penalizaciones asociadas a un usuario mediante query param.
-
-    Query Params:
-        usuario_id (str): Identificador del usuario a consultar.
-
-    Returns:
-        tuple: JSON con la lista de penalizaciones y código HTTP 200,
-            o un error con su código correspondiente.
-
-    """
-    is_valid, error, usuario_id = valid_usuario_id_query(request.args)
-    if not is_valid:
-        return jsonify(
-            {"error": "Invalid query params", "detail": error}
-        ), HTTP_BAD_REQUEST
-
-    conn = obtener_conexion()
-    if conn is None:
-        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
-
-    cursor = None
-
-    try:
-        cursor = conn.cursor(dictionary=True)
-        usuario_check_query = "SELECT id FROM usuario WHERE id = %s"
-        cursor.execute(usuario_check_query, (usuario_id,))
-        usuario_exists = cursor.fetchone()
-
-        if not usuario_exists:
-            return jsonify(
-                {"error": f"User with ID {usuario_id} not found"}
-            ), HTTP_NOT_FOUND
-
-        penalizaciones_query = "SELECT * FROM penalizacion WHERE id_usuario = %s"
-        cursor.execute(penalizaciones_query, (usuario_id,))
-        penalizaciones = cursor.fetchall()
-
-        return jsonify(penalizaciones), HTTP_OK
-
-    except mysql.connector.Error as query_err:
-        logging.error(f"Database query execution error: {query_err}")
-
-        return jsonify(
-            {"error": "Internal server error: Database query failed"}
-        ), HTTP_INTERNAL_SERVER_ERROR
-
-    finally:
-        try:
-            if cursor:
-                cursor.close()
-        except Exception:
-            pass
-        try:
-            conn.close()
-        except Exception:
-            pass
