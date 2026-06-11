@@ -58,39 +58,61 @@
       <p>Consulta y administra los usuarios registrados en el sistema.</p>
     </div>
 
-    <form method="POST" class="normativa-form">
+    {% if usuario_editado or creando_usuario %}
       <input type="hidden" name="id" value="{{ usuario_editado.id if usuario_editado else '' }}">
-      <div>
-        <label>Nombre</label>
-        <input type="text" name="nombre" value="{{ usuario_editado.nombre if usuario_editado else '' }}" required>
+      <form method="POST" class="normativa-form">
+        <div>
+          <label>Nombre</label>
+          <input type="text" name="nombre" class="admin-input" value="{{ usuario_editado.nombre if usuario_editado else '' }}" required>
+        </div>
+
+        <div>
+          <label>Carrera</label>
+          <input type="text" name="carrera" class="admin-input" value="{{ usuario_editado.carrera if usuario_editado else '' }}">
+        </div>
+
+        <div>
+          <label>Score</label>
+          <input type="number" name="puntaje" class="admin-input" min="0" value="{{ usuario_editado.puntaje if usuario_editado else 0 }}">
+        </div>
+
+        <div>
+          <label>Estado</label>
+          <select name="estado" class="admin-input">
+            <option value="1" {% if usuario_editado and usuario_editado.activo == 1 %}selected{% endif %}>
+              Activo
+            </option>
+            <option value="0" {% if usuario_editado and usuario_editado.activo == 0 %}selected{% endif %}>
+              Inactivo
+            </option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn-create">
+          {{ 'Actualizar usuario' if usuario_editado else 'Crear usuario' }}
+        </button>
+      </form>
+
+      <br/>
+
+      <a href="{{ url_for('admin.usuarios') }}" class="btn-delete-abm">
+        Cancelar
+      </a>
+    {% else %}
+      <a href="{{ url_for('admin.usuarios', creando_usuario=1) }}" class="btn-create-abm">
+        Crear nuevo usuario
+      </a>
+    {% endif %}
+
+    <form method="get" class="history-filter-form">
+      <div class="filter-group">
+        <input type="text" name="usuario" id="usuario" class="admin-input" placeholder="Buscar por nombre">
+        <br/>
+        <button type="submit" class="res-btn btn-primary">Buscar</button>
       </div>
-
-      <div>
-        <label>Carrera</label>
-        <input type="text" name="carrera" value="{{ usuario_editado.carrera if usuario_editado else '' }}">
-      </div>
-
-      <div>
-        <label>Score</label>
-        <input type="number" name="puntaje" min="0" value="{{ usuario_editado.puntaje if usuario_editado else 0 }}">
-      </div>
-
-      <div>
-        <label>Estado</label>
-        <select name="estado">
-          <option value="1" {% if usuario_editado and usuario_editado.activo == 1 %}selected{% endif %}>
-            Activo
-          </option>
-          <option value="0" {% if usuario_editado and usuario_editado.activo == 0 %}selected{% endif %}>
-            Inactivo
-          </option>
-        </select>
-
-      <button type="submit" class="btn-create">
-        {{ 'Actualizar usuario' if usuario_editado else 'Crear usuario' }}
-      </button>
-
     </form>
+
+    <br/>
 
     <div class="history-table-wrapper">
       <table class="history-table">
@@ -100,6 +122,7 @@
             <th>Carrera</th>
             <th>Puntaje</th>
             <th>Estado</th>
+            <th> </th>
           </tr>
         </thead>
 
@@ -110,13 +133,17 @@
                 <td>{{ usuario.nombre }}</td>
                 <td>{{ usuario.carrera }}</td>
                 <td>{{ usuario.puntaje }}</td>
-                <td>{{ usuario.activo }}</td>
                 <td>
-
+                  {% if usuario.activo %}
+                    <span class="badge bg-success-light text-success">Activo</span>
+                  {% else %}
+                    <span class="badge bg-danger-light text-danger">Inactivo</span>
+                  {% endif %}
+                </td>
+                <td>
                   <a href="{{ url_for('admin.usuarios', editar=usuario.id) }}" class="btn-edit-abm">
                     Editar
                   </a>
-
                   <form action="{{ url_for('admin.eliminar_usuario', id=usuario.id) }}" method="POST">
                     <button type="submit" class="btn-delete-abm">
                       Eliminar
