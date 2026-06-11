@@ -40,6 +40,7 @@ def get_all_usuarios():
             o un error con su código correspondiente.
 
     """
+    nombre_usuario = request.args.get("usuario")
     conn = obtener_conexion()
     if conn is None:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
@@ -53,8 +54,14 @@ def get_all_usuarios():
         limit = 20
         offset = (page - 1) * limit
 
-        query = "SELECT * FROM usuario LIMIT %s OFFSET %s"
-        cursor.execute(query, (limit, offset))
+        query = "SELECT * FROM usuario"
+
+        if nombre_usuario:
+            query += " WHERE nombre LIKE %(nombre_usuario)s"
+
+        query += " LIMIT %(limit)s OFFSET %(offset)s"
+
+        cursor.execute(query, { "nombre_usuario": f"%{nombre_usuario}%", "limit": limit, "offset": offset })
         usuarios = cursor.fetchall()
 
         return jsonify(usuarios), HTTP_OK
