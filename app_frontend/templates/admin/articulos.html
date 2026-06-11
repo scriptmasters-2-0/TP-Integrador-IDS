@@ -1,4 +1,8 @@
-{% extends "layouts/base_dashboard.html" %} {% block usuario_name %}Administrador{% endblock %}
+{% extends "layouts/base_dashboard.html" %} {% block usuario_name %}
+  {% if session.rol == 'admin' %}Administrador
+  {% elif session.rol == 'bibliotecario' %}Bibliotecario
+  {% else %}{{ session.nombre or 'Usuario' }}{% endif %}
+{% endblock %}
 {% block sidebar_links %}
   <li>
     <a href="{{ url_for('admin.dashboard') }}" class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
@@ -7,7 +11,7 @@
   </li>
   <li>
     <a href="{{ url_for('admin.reportes') }}" class="{% if request.endpoint == 'admin.reportes' %}active{% endif %}">
-      <i class="fa-solid fa-clipboard-list"></i> Reportes
+      <i class="fa-solid fa-chart-bar"></i> Reportes
     </a>
   </li>
   <li>
@@ -17,17 +21,17 @@
   </li>
   <li>
     <a href="{{ url_for('admin.listar_articulos') }}" class="{% if request.endpoint == 'admin.listar_articulos' %}active{% endif %}">
-      <i class="fa-solid fa-box"></i> Artículos
+      <i class="fa-solid fa-box-open"></i> Artículos
     </a>
   </li>
   <li>
     <a href="{{ url_for('admin.crear_articulo') }}" class="{% if request.endpoint == 'admin.crear_articulo' %}active{% endif %}">
-      <i class="fa-solid fa-plus"></i> Nuevo Artículo
+      <i class="fa-solid fa-circle-plus"></i> Nuevo Artículo
     </a>
   </li>
   <li>
     <a href="{{ url_for('admin.normativas') }}" class="{% if request.endpoint == 'admin.normativas' %}active{% endif %}">
-      <i class="fa-solid fa-clipboard-list"></i> Normativas
+      <i class="fa-solid fa-scale-balanced"></i> Normativas
     </a>
   </li>
   <li>
@@ -37,54 +41,93 @@
   </li>
   <li>
     <a href="{{ url_for('admin.reporte_morosidad') }}" class="{% if request.endpoint == 'admin.reporte_morosidad' %}active{% endif %}">
-      <i class="fa-solid fa-chart-column"></i> Morosidad
+      <i class="fa-solid fa-triangle-exclamation"></i> Morosidad
     </a>
   </li>
 {% endblock %}
+
 {% block dashboard_content %}
   <div class="breadcrumb reveal">
-    <a href="{{ url_for('admin.dashboard') }}">Admin</a> <i class="fa-solid fa-chevron-right"></i>
+    <a href="{{ url_for('admin.dashboard') }}">Admin</a>
+    <i class="fa-solid fa-chevron-right"></i>
     <span>Artículos</span>
   </div>
 
-
   <div class="history-container">
-    <div
-      class="history-header flex-between-center">
+
+    {# ── Encabezado ── #}
+    <div class="history-header flex-between-center">
       <div>
         <h1>Gestión de Artículos</h1>
-        <p>Administra el inventario de la biblioteca.</p>
+        <p>
+          Administra el inventario de la biblioteca.
+          {% if pagination and pagination.total_items %}
+            <span class="text-muted">
+              — {{ pagination.total_items }} artículo{{ 's' if pagination.total_items != 1 else '' }}
+              {% if filtro_tipo or filtro_seccion or filtro_nombre %} encontrado{{ 's' if pagination.total_items != 1 else '' }}{% endif %}
+            </span>
+          {% endif %}
+        </p>
       </div>
-      <button class="register-btn-nav" onclick="window.location.href='{{ url_for('admin.crear_articulo') }}'">
-        <i class="fa-solid fa-plus"></i> Nuevo Artículo
-      </button>
+      <a href="{{ url_for('admin.crear_articulo') }}" class="register-btn-nav">
+        <i class="fa-solid fa-circle-plus"></i> Nuevo Artículo
+      </a>
     </div>
 
-    <div class="data-grid mb-4">
+    {# ── Filtros ── #}
+    <form method="GET" action="{{ url_for('admin.listar_articulos') }}" class="data-grid mb-4">
       <div class="data-group">
-        <label>Tipo</label>
-        <select class="admin-select">
-          <option>Todos los tipos</option>
-          <option>Electrónica</option>
-          <option>Libros</option>
+        <label for="f-nombre">Nombre</label>
+        <input
+          type="text"
+          id="f-nombre"
+          name="nombre"
+          class="admin-input"
+          placeholder="Buscar por nombre..."
+          value="{{ filtro_nombre }}" />
+      </div>
+      <div class="data-group">
+        <label for="f-tipo">Tipo</label>
+        <select id="f-tipo" name="tipo" class="admin-select">
+          <option value="">Todos los tipos</option>
+          {% for t in tipos %}
+            <option value="{{ t.lower() }}" {% if filtro_tipo == t.lower() %}selected{% endif %}>
+              {{ t }}
+            </option>
+          {% endfor %}
         </select>
       </div>
       <div class="data-group">
-        <label>Sección</label>
-        <select class="admin-select">
-          <option>Todas las secciones</option>
-          <option>Biblioteca Central</option>
-          <option>Laboratorio</option>
+        <label for="f-seccion">Sección</label>
+        <select id="f-seccion" name="seccion" class="admin-select">
+          <option value="">Todas las secciones</option>
+          {% for s in secciones %}
+            <option value="{{ s.lower() }}" {% if filtro_seccion == s.lower() %}selected{% endif %}>
+              {{ s }}
+            </option>
+          {% endfor %}
         </select>
       </div>
-    </div>
+      <div class="filter-actions-group">
+        <button type="submit" class="register-btn-nav">
+          <i class="fa-solid fa-magnifying-glass"></i> Filtrar
+        </button>
+        {% if filtro_tipo or filtro_seccion or filtro_nombre %}
+          <a href="{{ url_for('admin.listar_articulos') }}" class="btn-secondary res-btn">
+            <i class="fa-solid fa-xmark"></i> Limpiar
+          </a>
+        {% endif %}
+      </div>
+    </form>
 
+    {# ── Tabla ── #}
     <div class="history-table-wrapper">
       <table class="history-table">
         <thead>
           <tr>
             <th>Nombre</th>
             <th>Tipo</th>
+            <th>Sección</th>
             <th>Stock</th>
             <th>Estado</th>
             <th class="text-center">Acciones</th>
@@ -94,29 +137,42 @@
           {% if articulos %}
             {% for articulo in articulos %}
               <tr>
-                <td>{{ articulo.nombre_art }}</td>
+                <td class="fw-bold">{{ articulo.nombre_art }}</td>
                 <td>{{ articulo.tipo }}</td>
+                <td class="text-muted">{{ articulo.seccion or '—' }}</td>
                 <td>{{ articulo.stock }}</td>
                 <td>
-                  {% if articulo.stock and articulo.stock > 0 and not articulo.necesita_reparacion %}
-                    <span class="badge badge-success">Disponible</span>
+                  {% if articulo.necesita_reparacion %}
+                    <span class="badge badge-warning">
+                      <i class="fa-solid fa-wrench"></i> Reparación
+                    </span>
+                  {% elif articulo.stock and articulo.stock > 0 %}
+                    <span class="badge badge-success">
+                      <i class="fa-solid fa-circle-check"></i> Disponible
+                    </span>
                   {% else %}
-                    <span class="badge bg-danger-light text-danger"
-                      >No disponible</span
-                    >
+                    <span class="badge badge-danger">
+                      <i class="fa-solid fa-circle-xmark"></i> Sin stock
+                    </span>
                   {% endif %}
                 </td>
                 <td class="text-center">
-                  <button
+                  <a
+                    href="{{ url_for('admin.editar_articulo', id=articulo.id) }}"
                     class="btn-icon"
-                    title="Editar"
-                    onclick="window.location.href='{{ url_for('admin.editar_articulo', id=articulo.id) }}'">
-                    <i class="fa-solid fa-pen"></i>
-                  </button>
-                  <form action="{{ url_for('admin.eliminar_articulo_route', id=articulo.id) }}" method="POST" class="inline-form"
-onsubmit="return confirm('¿Estás seguro de que deseas elimiar este articulo?');">
-                    <button class="btn-icon btn-con-danger" title="Eliminar">
-                      <i class="fa-solid fa-trash"></i>
+                    title="Editar artículo">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                  </a>
+                  <form
+                    action="{{ url_for('admin.eliminar_articulo_route', id=articulo.id) }}"
+                    method="POST"
+                    class="inline-form"
+                    onsubmit="return confirm('¿Eliminar «{{ articulo.nombre_art }}»? Esta acción no se puede deshacer.');">
+                    <button
+                      type="submit"
+                      class="btn-icon btn-con-danger"
+                      title="Eliminar artículo">
+                      <i class="fa-solid fa-trash-can"></i>
                     </button>
                   </form>
                 </td>
@@ -124,13 +180,77 @@ onsubmit="return confirm('¿Estás seguro de que deseas elimiar este articulo?')
             {% endfor %}
           {% else %}
             <tr>
-              <td colspan="5" class="text-center text-muted">
-                {{ fetch_error if fetch_error else 'No hay artículos para mostrar.' }}
+              <td colspan="6" class="text-center text-muted">
+                {% if filtro_tipo or filtro_seccion or filtro_nombre %}
+                  No se encontraron artículos con esos filtros.
+                  <a href="{{ url_for('admin.listar_articulos') }}">Ver todos</a>
+                {% else %}
+                  No hay artículos en el inventario.
+                {% endif %}
               </td>
             </tr>
           {% endif %}
         </tbody>
       </table>
     </div>
+
+    {# ── Paginación ── #}
+    {% if pagination and pagination.total_pages > 1 %}
+      <div class="pagination-container">
+        <ul class="pagination">
+
+          {# Anterior #}
+          <li>
+            {% if pagination.has_prev %}
+              <a class="page-link"
+                href="{{ url_for('admin.listar_articulos', page=pagination.prev_page, tipo=filtro_tipo, seccion=filtro_seccion, nombre=filtro_nombre) }}"
+                title="Página anterior">
+                <i class="fa-solid fa-chevron-left"></i>
+              </a>
+            {% else %}
+              <span class="page-link disabled">
+                <i class="fa-solid fa-chevron-left"></i>
+              </span>
+            {% endif %}
+          </li>
+
+          {# Números #}
+          {% for p in pagination.pages %}
+            {% if p is none %}
+              <li><span class="page-dots">…</span></li>
+            {% elif p == pagination.page %}
+              <li><span class="page-link active">{{ p }}</span></li>
+            {% else %}
+              <li>
+                <a class="page-link"
+                  href="{{ url_for('admin.listar_articulos', page=p, tipo=filtro_tipo, seccion=filtro_seccion, nombre=filtro_nombre) }}">
+                  {{ p }}
+                </a>
+              </li>
+            {% endif %}
+          {% endfor %}
+
+          {# Siguiente #}
+          <li>
+            {% if pagination.has_next %}
+              <a class="page-link"
+                href="{{ url_for('admin.listar_articulos', page=pagination.next_page, tipo=filtro_tipo, seccion=filtro_seccion, nombre=filtro_nombre) }}"
+                title="Página siguiente">
+                <i class="fa-solid fa-chevron-right"></i>
+              </a>
+            {% else %}
+              <span class="page-link disabled">
+                <i class="fa-solid fa-chevron-right"></i>
+              </span>
+            {% endif %}
+          </li>
+        </ul>
+      </div>
+
+      <p class="text-center text-muted text-sm mt-3">
+        Mostrando {{ pagination.first_item }}–{{ pagination.last_item }} de {{ pagination.total_items }}
+      </p>
+    {% endif %}
+
   </div>
 {% endblock %}

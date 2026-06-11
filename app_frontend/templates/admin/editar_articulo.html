@@ -1,47 +1,136 @@
 {% extends "layouts/base_dashboard.html" %}
 
+{% block usuario_name %}
+  {% if session.rol == 'admin' %}Administrador
+  {% elif session.rol == 'bibliotecario' %}Bibliotecario
+  {% else %}{{ session.nombre or 'Usuario' }}{% endif %}
+{% endblock %}
+
+{% block sidebar_links %}
+  <li>
+    <a href="{{ url_for('admin.dashboard') }}" class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+      <i class="fa-solid fa-gauge"></i> Dashboard
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.reportes') }}" class="{% if request.endpoint == 'admin.reportes' %}active{% endif %}">
+      <i class="fa-solid fa-chart-bar"></i> Reportes
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.lista_reservas') }}" class="{% if request.endpoint == 'admin.lista_reservas' %}active{% endif %}">
+      <i class="fa-solid fa-clipboard-list"></i> Préstamos
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.listar_articulos') }}" class="{% if request.endpoint == 'admin.listar_articulos' %}active{% endif %}">
+      <i class="fa-solid fa-box-open"></i> Artículos
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.crear_articulo') }}" class="{% if request.endpoint == 'admin.crear_articulo' %}active{% endif %}">
+      <i class="fa-solid fa-plus"></i> Nuevo Artículo
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.normativas') }}" class="{% if request.endpoint == 'admin.normativas' %}active{% endif %}">
+      <i class="fa-solid fa-scale-balanced"></i> Normativas
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.usuarios') }}" class="{% if request.endpoint == 'admin.usuarios' %}active{% endif %}">
+      <i class="fa-solid fa-users"></i> Usuarios
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.reporte_morosidad') }}" class="{% if request.endpoint == 'admin.reporte_morosidad' %}active{% endif %}">
+      <i class="fa-solid fa-triangle-exclamation"></i> Morosidad
+    </a>
+  </li>
+{% endblock %}
+
 {% block dashboard_content %}
-  <h2>Editar Artículo</h2>
+  <div class="breadcrumb reveal">
+    <a href="{{ url_for('admin.dashboard') }}">Admin</a> <i class="fa-solid fa-chevron-right"></i>
+    <a href="{{ url_for('admin.listar_articulos') }}">Artículos</a> <i class="fa-solid fa-chevron-right"></i>
+    <span>Editar #{{ articulo.id if articulo else '' }}</span>
+  </div>
 
-  <form action="{{ url_for('admin.editar_articulo', id=articulo.id) }}" method="POST">
-    <div class="form-group">
-      <label>Nombre:</label>
-      <input type="text" name="nombre" value="{{ articulo.nombre }}" required />
+  <div class="history-container">
+    <div class="history-header">
+      <h1>Editar Artículo{% if articulo %} — {{ articulo.nombre_art }}{% endif %}</h1>
+      <p>Modificá los datos del artículo en el inventario.</p>
+      {% if fetch_error %}
+        <p class="form-error-msg">{{ fetch_error }}</p>
+      {% endif %}
     </div>
 
-    <div class="form-group">
-      <label>Tipo:</label>
-      <select name="tipo" required>
-        <option value="Libro" {% if articulo.tipo == 'Libro' %}selected{% endif %}>Libro</option>
-        <option value="Computadora" {% if articulo.tipo == 'Computadora' %}selected{% endif %}>
-          Computadora
-        </option>
-        <option value="Accesorio" {% if articulo.tipo == 'Accesorio' %}selected{% endif %}>
-          Accesorio
-        </option>
-      </select>
-    </div>
+    <form
+      action="{{ url_for('admin.editar_articulo', id=articulo.id) }}"
+      method="POST"
+      class="admin-form admin-form-container">
 
-    <div class="form-group">
-      <label>Sección:</label>
-      <input type="text" name="seccion" value="{{ articulo.seccion }}" required />
-    </div>
+      <div class="form-grid-2">
+        <div class="data-group">
+          <label for="nombre">Nombre del Artículo</label>
+          <input
+            type="text"
+            id="nombre"
+            name="nombre"
+            class="admin-input"
+            required
+            value="{{ articulo.nombre_art if articulo else '' }}"
+            placeholder="Ej: Osciloscopio Rigol" />
+        </div>
+        <div class="data-group">
+          <label for="tipo">Tipo</label>
+          <select id="tipo" name="tipo" class="admin-select" required>
+            <option value="">Seleccione un tipo</option>
+            <option value="electronica" {% if articulo and articulo.tipo in ['electronica','Electronicos','Electrónica'] %}selected{% endif %}>Electrónica</option>
+            <option value="libros" {% if articulo and articulo.tipo in ['libros','Libros','Libro'] %}selected{% endif %}>Libros</option>
+            <option value="herramientas" {% if articulo and articulo.tipo in ['herramientas','Herramientas','Herramienta'] %}selected{% endif %}>Herramientas</option>
+            <option value="material" {% if articulo and articulo.tipo in ['material','Material'] %}selected{% endif %}>Material</option>
+            <option value="equipo" {% if articulo and articulo.tipo in ['equipo','Equipo'] %}selected{% endif %}>Equipo</option>
+          </select>
+        </div>
+      </div>
 
-    <div class="form-group">
-      <label>Stock:</label>
-      <input type="number" name="stock" value="{{ articulo.stock }}" required />
-    </div>
+      <div class="admin-form-grid">
+        <div class="data-group">
+          <label for="stock">Stock</label>
+          <input
+            type="number"
+            id="stock"
+            name="stock"
+            class="admin-input"
+            min="0"
+            value="{{ articulo.stock if articulo else 1 }}" />
+        </div>
+        <div class="data-group">
+          <label for="seccion">Sección / Ubicación</label>
+          <input
+            type="text"
+            id="seccion"
+            name="seccion"
+            class="admin-input"
+            value="{{ articulo.seccion if articulo else '' }}"
+            placeholder="Ej: Laboratorio 4" />
+        </div>
+        <div class="data-group form-check-group">
+          <input
+            type="checkbox"
+            id="necesita_reparacion"
+            name="necesita_reparacion"
+            class="form-check-input"
+            {% if articulo and articulo.necesita_reparacion %}checked{% endif %} />
+          <label for="necesita_reparacion" class="form-check-label">¿Necesita reparación?</label>
+        </div>
+      </div>
 
-    <div class="form-group">
-      <label>
-        <input
-          type="checkbox"
-          name="necesita_reparacion"
-          {% if articulo.necesita_reparacion %}checked{% endif %} />
-        ¿Necesita reparación?
-      </label>
-    </div>
-
-    <button type="submit" class="btn-primary">Guardar Cambios</button>
-  </form>
+      <div class="admin-form-actions">
+        <button type="button" class="btn-secondary" onclick="history.back()">Cancelar</button>
+        <button type="submit" class="register-btn-nav">Guardar Cambios</button>
+      </div>
+    </form>
+  </div>
 {% endblock %}

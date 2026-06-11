@@ -114,6 +114,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   attachSimpleFormValidations();
 
+  document.querySelectorAll(".reportes-bar").forEach((bar) => {
+    const w = bar.dataset.width;
+    if (w) bar.style.setProperty("--bar-width", w + "px");
+  });
+  
   const faqItems = document.querySelectorAll(".faq-item");
 
   faqItems.forEach((item) => {
