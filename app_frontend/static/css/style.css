@@ -2371,7 +2371,22 @@ h3 {
   border: 2px solid #009be5
 }
 
+.btn-create-abm {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 5px;
+  color: #77dd44;
+  background-color: white;
+  line-height: 1;
+  margin-bottom: 8px;
+  display: block;
+  border: 2px solid #77dd44;
+}
+
 .btn-delete-abm {
+  text-align: center;
   font-size: 15px;
   font-weight: 600;
   padding: 6px 12px;

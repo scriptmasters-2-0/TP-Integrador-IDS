@@ -265,13 +265,6 @@ def usuarios():
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
-    """usuarios, error = get_json("/usuario", token=token)
-    return render_template(
-        "admin/usuarios.html",
-        usuarios=usuarios if isinstance(usuarios, list) else [],
-        fetch_error=error,
-    )"""
-
     if request.method == "POST":
         id_usuario = request.form.get("id")
         data = {
@@ -287,7 +280,8 @@ def usuarios():
         return redirect(url_for("admin.usuarios"))
     
     page = request.args.get("page", 1, type=int)
-    usuarios = usuario_servicio.obtener_usuarios(params={"page": page}, token=token)    
+    nombre_usuario = request.args.get("usuario")
+    usuarios = usuario_servicio.obtener_usuarios(params={"page": page, "usuario": nombre_usuario}, token=token)    
     usuario_editado = None
     id_editar = request.args.get("editar")
 
@@ -302,26 +296,26 @@ def usuarios():
         usuarios=usuarios,
         page=page,
         usuario_editado=usuario_editado,
+        creando_usuario=request.args.get("creando_usuario") == "1",
     )
 
-"""
+
 @admin_bp.route("/usuarios/eliminar", methods=["POST"])
 def eliminar_usuario():
-    Elimina un usuario desde el rol administrador.
-
+    """Elimina un usuario del sistema."""
     token = session.get("token")
     rol = session.get("rol")
-
     if not token:
         return redirect(url_for("public.login"))
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
-    id_usuario = request.form.get("id")
-    eliminar_usuario(id_usuario)
+    id = request.form.get("id")
+    
+    usuario_servicio.eliminar_usuario(id, token=token)
 
     return redirect(url_for("admin.usuarios"))
-"""
+
 
 @admin_bp.route("/reportes/morosidad")
 def reporte_morosidad():
@@ -489,16 +483,3 @@ def editar_usuario(id):
     usuario_servicio.actualizar_usuario(id, payload, token=token)
 
     return redirect(url_for("admin.usuario_detalle", id=id))
-
-@admin_bp.route("/usuarios/<int:id>/eliminar", methods=["POST"])
-def eliminar_usuario(id):
-    """Elimina un usuario del sistema."""
-    token = session.get("token")
-    rol = session.get("rol")
-    if not token:
-        return redirect(url_for("public.login"))
-    if rol not in ["admin", "bibliotecario"]:
-        return redirect(url_for("public.home"))
-
-    usuario_servicio.eliminar_usuario(id, token=token)
-    return redirect(url_for("admin.usuarios"))
