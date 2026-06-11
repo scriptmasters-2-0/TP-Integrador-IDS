@@ -2324,13 +2324,6 @@ h3 {
   width: 220px;
 }
 
-.reportes-bar {
-  height: 26px;
-  border-radius: 6px;
-  background-color: #00aeef;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-}
-
 .reportes-bar-value {
   font-weight: bold;
 }
@@ -2853,7 +2846,7 @@ h3 {
 .reportes-bar {
   width: var(--bar-width, 0px);
   height: 24px;
-  background-color: var(--color-primary);
+  background-color: #00aeef;
   border-radius: 4px;
   transition: width 0.4s ease;
 }
