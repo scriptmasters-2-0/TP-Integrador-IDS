@@ -10,7 +10,7 @@
   </li>
   <li>
     <a href="{{ url_for('admin.reportes') }}" class="{% if request.endpoint == 'admin.reportes' %}active{% endif %}">
-      <i class="fa-solid fa-clipboard-list"></i> Reportes
+      <i class="fa-solid fa-chart-bar"></i> Reportes
     </a>
   </li>
   <li>
@@ -25,12 +25,12 @@
   </li>
   <li>
     <a href="{{ url_for('admin.crear_articulo') }}" class="{% if request.endpoint == 'admin.crear_articulo' %}active{% endif %}">
-      <i class="fa-solid fa-plus"></i> Nuevo Artí­culo
+      <i class="fa-solid fa-plus"></i> Nuevo Artículo
     </a>
   </li>
   <li>
     <a href="{{ url_for('admin.normativas') }}" class="{% if request.endpoint == 'admin.normativas' %}active{% endif %}">
-      <i class="fa-solid fa-clipboard-list"></i> Normativas
+      <i class="fa-solid fa-scale-balanced"></i> Normativas
     </a>
   </li>
   <li>
@@ -40,7 +40,7 @@
   </li>
   <li>
     <a href="{{ url_for('admin.reporte_morosidad') }}" class="{% if request.endpoint == 'admin.reporte_morosidad' %}active{% endif %}">
-      <i class="fa-solid fa-chart-column"></i> Morosidad
+      <i class="fa-solid fa-triangle-exclamation"></i> Morosidad
     </a>
   </li>
 {% endblock %}
@@ -65,11 +65,7 @@
           <div class="reportes-bar-row">
             <div class="reportes-bar-label">{{ carrera.carrera }}</div>
 
-            <div class="reportes-bar-container">
-              <div
-                class="reportes-bar"
-                style="width: {{ carrera.cantidad_reservas * 25 }}px;"></div>
-            </div>
+            <div class="reportes-bar" data-width="{{ [carrera.cantidad_reservas * 25, 400] | min }}"></div>
 
             <div class="reportes-bar-value">{{ carrera.cantidad_reservas }}</div>
           </div>

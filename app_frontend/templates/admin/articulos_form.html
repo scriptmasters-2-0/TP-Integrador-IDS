@@ -1,6 +1,10 @@
 {% extends "layouts/base_dashboard.html" %} 
 
-{% block usuario_name %}Administrador{% endblock %}
+{% block usuario_name %}
+  {% if session.rol == 'admin' %}Administrador
+  {% elif session.rol == 'bibliotecario' %}Bibliotecario
+  {% else %}{{ session.nombre or 'Usuario' }}{% endif %}
+{% endblock %}
 
 {% block sidebar_links %}
   <li>
@@ -10,7 +14,7 @@
   </li>
   <li>
     <a href="{{ url_for('admin.reportes') }}" class="{% if request.endpoint == 'admin.reportes' %}active{% endif %}">
-      <i class="fa-solid fa-clipboard-list"></i> Reportes
+      <i class="fa-solid fa-chart-bar"></i> Reportes
     </a>
   </li>
   <li>
@@ -20,7 +24,7 @@
   </li>
   <li>
     <a href="{{ url_for('admin.listar_articulos') }}" class="{% if request.endpoint == 'admin.listar_articulos' %}active{% endif %}">
-      <i class="fa-solid fa-box"></i> Artículos
+      <i class="fa-solid fa-box-open"></i> Artículos
     </a>
   </li>
   <li>
@@ -30,7 +34,7 @@
   </li>
   <li>
     <a href="{{ url_for('admin.normativas') }}" class="{% if request.endpoint == 'admin.normativas' %}active{% endif %}">
-      <i class="fa-solid fa-clipboard-list"></i> Normativas
+      <i class="fa-solid fa-scale-balanced"></i> Normativas
     </a>
   </li>
   <li>
@@ -40,7 +44,7 @@
   </li>
   <li>
     <a href="{{ url_for('admin.reporte_morosidad') }}" class="{% if request.endpoint == 'admin.reporte_morosidad' %}active{% endif %}">
-      <i class="fa-solid fa-chart-column"></i> Morosidad
+      <i class="fa-solid fa-triangle-exclamation"></i> Morosidad
     </a>
   </li>
 {% endblock %}

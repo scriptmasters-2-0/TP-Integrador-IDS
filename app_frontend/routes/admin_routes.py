@@ -2,7 +2,7 @@
 
 from flask import Blueprint, redirect, render_template, request, session, url_for
 
-from servicios.api_client import get_json, obtener_detalle_reserva, post_json
+from servicios.api_client import obtener_detalle_reserva
 from servicios.normativas_servicio import (
     actualizar_normativa,
     crear_normativa,
@@ -13,6 +13,8 @@ from servicios.reports_servicio import obtener_reportes
 from servicios.articulos_servicio import eliminar_articulo
 from servicios import articulos_servicio
 from servicios import usuario_servicio
+from servicios import penalizaciones_servicio
+from servicios import reservas_servicio
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -78,11 +80,37 @@ def listar_articulos():
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
-    articulos = articulos_servicio.obtener_articulos()
+    filtro_tipo = request.args.get("tipo", "").strip().lower()
+    filtro_seccion = request.args.get("seccion", "").strip().lower()
+    filtro_nombre = request.args.get("nombre", "").strip().lower()
+    pagina = request.args.get("page", 1, type=int)
+
+    from servicios.paginacion_servicio import paginar_lista
+
+    todos = articulos_servicio.obtener_articulos(token=token)
+
+    tipos = sorted({(a.get("tipo") or "").strip() for a in todos if a.get("tipo")})
+    secciones = sorted({(a.get("seccion") or "").strip() for a in todos if a.get("seccion")})
+
+    filtrados = todos
+    if filtro_tipo:
+        filtrados = [a for a in filtrados if filtro_tipo in (a.get("tipo") or "").lower()]
+    if filtro_seccion:
+        filtrados = [a for a in filtrados if filtro_seccion in (a.get("seccion") or "").lower()]
+    if filtro_nombre:
+        filtrados = [a for a in filtrados if filtro_nombre in (a.get("nombre_art") or "").lower()]
+
+    articulos_pagina, pagination = paginar_lista(filtrados, pagina=pagina, por_pagina=10)
 
     return render_template(
         "admin/articulos.html",
-        articulos=articulos,
+        articulos=articulos_pagina,
+        pagination=pagination,
+        tipos=tipos,
+        secciones=secciones,
+        filtro_tipo=filtro_tipo,
+        filtro_seccion=filtro_seccion,
+        filtro_nombre=filtro_nombre,
     )
 
 
@@ -123,10 +151,10 @@ def guardar_articulo():
         "necesita_reparacion": False,
     }
 
-    _, error, _ = post_json("/articulos", payload, token=token)
+    resultado = articulos_servicio.crear_articulo(payload, token=token)
 
-    if error:
-        return redirect(url_for("admin.crear_articulo", error=error))
+    if not resultado:
+        return redirect(url_for("admin.crear_articulo", error="No se pudo crear el artículo"))
 
     return redirect(
         url_for("admin.crear_articulo", exito="Artículo creado correctamente")
@@ -305,14 +333,9 @@ def reporte_morosidad():
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
-    nombre_usuario = request.args.get("usuario")
-    url = "/penalizaciones"
-    if nombre_usuario:
-        url += f"?usuario={nombre_usuario}"
+    penalizaciones = penalizaciones_servicio.obtener_penalizaciones(token=token)
 
-    penalizaciones, error = get_json(url, token=token)
-
-    return render_template("admin/morosidad.html", penalizaciones=penalizaciones, fetch_error=error)
+    return render_template("admin/morosidad.html", penalizaciones=penalizaciones)
 
 
 @admin_bp.route("/articulos/<int:id>/editar", methods=["GET", "POST"])
@@ -337,19 +360,24 @@ def editar_articulo(id):
             "necesita_reparacion": request.form.get("necesita_reparacion") == "on",
         }
 
-        _, error = post_json(
-            f"/articulos/{id}/update", data=datos_actualizados, token=token
-        )
+        resultado = articulos_servicio.actualizar_articulo(id, datos_actualizados, token=token)
 
-        if error:
-            return render_template("admin/editar_articulo.html", fetch_error=error)
+        if not resultado:
+            articulo = articulos_servicio.obtener_articulo(id, token=token)
+            return render_template(
+                "admin/editar_articulo.html",
+                articulo=articulo,
+                fetch_error="No se pudo actualizar el artículo. Intentá de nuevo.",
+            )
 
         return redirect(url_for("admin.listar_articulos"))
 
-    articulo, error = get_json(f"/articulos/{id}", token=token)
+    articulo = articulos_servicio.obtener_articulo(id, token=token)
 
     return render_template(
-        "admin/editar_articulo.html", articulo=articulo, fetch_error=error
+        "admin/editar_articulo.html",
+        articulo=articulo,
+        fetch_error=None,
     )
 
 
@@ -367,26 +395,19 @@ def lista_reservas():
     usuario = request.args.get("usuario")
     fecha = request.args.get("fecha")
 
-    lista_filtros = []
-
+    params = {}
     if estado:
-        lista_filtros.append(f"estado={estado}")
+        params["estado"] = estado
     if usuario:
-        lista_filtros.append(f"usuario={usuario}")
+        params["usuario"] = usuario
     if fecha:
-        lista_filtros.append(f"fecha={fecha}")
+        params["fecha"] = fecha
 
-    query_params = ""
-    if lista_filtros:
-        query_params = "?" + "&".join(lista_filtros)
-
-    url_final = f"/reservas{query_params}"
-    reservas, error = get_json(url_final, token=token)
+    reservas = reservas_servicio.obtener_reservas(params=params or None)
 
     return render_template(
         "admin/reservas.html",
-        reservas=reservas or [],
-        fetch_error=error,
+        reservas=reservas,
     )
 
 
@@ -400,7 +421,7 @@ def listar_penalizaciones():
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
-    penalizaciones, error = get_json("/penalizaciones", token=token)
+    penalizaciones = penalizaciones_servicio.obtener_penalizaciones(token=token)
 
     lista_penalizaciones = []
 
@@ -419,7 +440,6 @@ def listar_penalizaciones():
     return render_template(
         "admin/penalizaciones.html",
         penalizaciones=lista_penalizaciones,
-        fetch_error=error,
     )
 
 
@@ -433,7 +453,7 @@ def levantar_penalizacion(id):
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
-    post_json(f"/penalizaciones/{id}/resolve", {}, token=token)
+    penalizaciones_servicio.actualizar_parcial_penalizacion(id, {}, token=token)
     return redirect(url_for("admin.listar_penalizaciones"))
 
 @admin_bp.route("/usuarios/<int:id>", methods=["GET"])
@@ -480,5 +500,5 @@ def eliminar_usuario(id):
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
-    post_json(f"/usuarios/{id}", {}, token=token)
+    usuario_servicio.eliminar_usuario(id, token=token)
     return redirect(url_for("admin.usuarios"))
