@@ -19,7 +19,7 @@
   </li>
   <li>
     <a href="{{ url_for('admin.lista_reservas') }}" class="{% if request.endpoint == 'admin.lista_reservas' %}active{% endif %}">
-      <i class="fa-solid fa-clipboard-list"></i> Préstamos
+      <i class="fa-solid fa-clipboard-list"></i> Reservas
     </a>
   </li>
   <li>
@@ -52,7 +52,7 @@
 {% block dashboard_content %}
   <div class="breadcrumb reveal">
     <a href="{{ url_for('admin.dashboard') }}">Admin</a> <i class="fa-solid fa-chevron-right"></i>
-    <a href="{{ url_for('admin.listar_articulos') }}">Préstamos</a>
+    <a href="{{ url_for('admin.listar_articulos') }}">Reservas</a>
     <i class="fa-solid fa-chevron-right"></i> <span>Detalle #RES-{{ reserva.id }}</span>
   </div>
 

@@ -19,7 +19,7 @@
   </li>
   <li>
     <a href="{{ url_for('admin.lista_reservas') }}" class="{% if request.endpoint == 'admin.lista_reservas' %}active{% endif %}">
-      <i class="fa-solid fa-clipboard-list"></i> Préstamos
+      <i class="fa-solid fa-clipboard-list"></i> Reservas
     </a>
   </li>
   <li>
@@ -52,13 +52,13 @@
 {% block dashboard_content %}
   <div class="breadcrumb reveal">
     <a href="{{ url_for('admin.dashboard') }}">Admin</a> <i class="fa-solid fa-chevron-right"></i>
-    <span>Préstamos</span>
+    <span>Reservas</span>
   </div>
 
   <div class="history-container">
     <div class="history-header">
-      <h1>Gestión de Préstamos</h1>
-      <p>Consulta y gestiona el historial de préstamos del sistema.</p>
+      <h1>Gestión de Reservas</h1>
+      <p>Consulta y gestiona el historial de reservas del sistema.</p>
     </div>
 
     <form method="GET" class="data-grid mb-4">
@@ -118,7 +118,7 @@
           {% else %}
             <tr>
               <td colspan="6" class="text-center text-muted">
-                {{ fetch_error if fetch_error else 'No hay préstamos para mostrar.' }}
+                {{ fetch_error if fetch_error else 'No hay reservas para mostrar.' }}
               </td>
             </tr>
           {% endif %}
