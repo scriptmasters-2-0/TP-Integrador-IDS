@@ -13,6 +13,14 @@ public_bp = Blueprint("public", __name__)
 @public_bp.route("/")
 def home():
     """Renderiza la pagina de inicio."""
+    token = session.get("token");
+    if token:
+        rol = session.get("rol", "alumno")
+        if rol in ("admin", "bibliotecario"):
+            return redirect(url_for("admin.dashboard"))
+        if rol in ("profesor", "profesor"):
+            return redirect(url_for("profesor.mis_reservas"))
+        return redirect(url_for("alumno.perfil"))
     return render_template("public/index.html")
 
 
