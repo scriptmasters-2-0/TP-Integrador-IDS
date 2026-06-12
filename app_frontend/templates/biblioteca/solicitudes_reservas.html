@@ -1,0 +1,106 @@
+{% extends "layouts/base_dashboard.html" %}
+
+{% block usuario_name %}Bibliotecario{% endblock %}
+
+{% block sidebar_links %}
+  <li>
+    <a href="{{ url_for('admin.dashboard') }}" class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+      <i class="fa-solid fa-gauge"></i> Dashboard
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.reportes') }}" class="{% if request.endpoint == 'admin.reportes' %}active{% endif %}">
+      <i class="fa-solid fa-chart-bar"></i> Reportes
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.lista_reservas') }}" class="{% if request.endpoint == 'admin.lista_reservas' %}active{% endif %}">
+      <i class="fa-solid fa-clipboard-list"></i> Préstamos
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.listar_articulos') }}" class="{% if request.endpoint == 'admin.listar_articulos' %}active{% endif %}">
+      <i class="fa-solid fa-box"></i> Artículos
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.crear_articulo') }}" class="{% if request.endpoint == 'admin.crear_articulo' %}active{% endif %}">
+      <i class="fa-solid fa-plus"></i> Nuevo Artículo
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.normativas') }}" class="{% if request.endpoint == 'admin.normativas' %}active{% endif %}">
+      <i class="fa-solid fa-scale-balanced"></i> Normativas
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.usuarios') }}" class="{% if request.endpoint == 'admin.usuarios' %}active{% endif %}">
+      <i class="fa-solid fa-users"></i> Usuarios
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.reporte_morosidad') }}" class="{% if request.endpoint == 'admin.reporte_morosidad' %}active{% endif %}">
+      <i class="fa-solid fa-triangle-exclamation"></i> Morosidad
+    </a>
+  </li>
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="dashboard-card">
+    <div class=dashboard-card-content>
+      <h3>Solicitudes de reservas</h3>
+      <p>Gestiona las reservas pendientes</p>
+
+      <a href="{{ url_for('admin.lista_reservas') }}" class="register-btn-nav">
+        Volver a reservas
+      </a>
+    </div>
+  </div>
+
+<div class="history-container">
+    <div class="history-header">
+        <h1>Solicitudes de reserva</h1>
+        <p>Reservas pendientes de evaluación</p>
+    </div>
+
+    <div class="history-table-wrapper">
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>ID Reserva</th>
+                    <th>Usuario</th>
+                    <th>Artículo</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for reserva in reservas %}
+                <tr>
+                    <td>{{ reserva.id }}</td>
+                    <td>{{ reserva.nombre }}</td>
+                    <td>{{ reserva.nombre_art }}</td>
+                    <td>{{ reserva.estado_reserva }}</td>
+
+                    <td>
+                        <form action="{{ url_for('biblioteca.modificar_estado', id_reserva=reserva.id) }}" method="post">
+                            <input type="hidden" name="estado_reserva" value="aprobado">
+                            <button type="submit" class="btn-edit-abm">
+                                Aceptar
+                            </button>
+
+                            <input type="hidden" name="estado_reserva" value="cancelado">
+                            <button type="submit" class="btn-delete-abm">
+                                Rechazar
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

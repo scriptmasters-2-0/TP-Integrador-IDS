@@ -42,6 +42,7 @@ def establecer_estado_reserva(reserva_id, status_data):
     status_data: dict (ej., {"status": "returned"})
     Devuelve True en caso de éxito, {} en caso de fallo.
     """
+    print("data:", status_data)
     payload, error, status = patch_json(f"/reservas/{reserva_id}/status", status_data)
     if error:
         return False
@@ -51,3 +52,15 @@ def establecer_estado_reserva(reserva_id, status_data):
 def obtener_qr_reserva(id_reserva):
     """Descripción: función obtener_qr_reserva."""
     return get_json(f"/qr/reservas/{id_reserva}")
+
+
+def obtener_solicitudes():
+    """GET /reservas/solicitudes
+    Devuelve una lista de reservas pendientes
+    """
+    payload, error = get_json("/reservas/solicitudes")
+
+    if error:
+        return []
+    
+    return payload or []

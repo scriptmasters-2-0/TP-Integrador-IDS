@@ -756,14 +756,14 @@ VALUES
   (
     'Guitarra Acústica Yamaha F310',
     'Heramientas',
-    ' ',
+    'Otros',
     4,
     1
   ),
   (
     'Bajo Eléctrico Squier Affinity',
     'Electronicos',
-    ' ',
+    'Otros',
     7,
     2,
     0
@@ -971,7 +971,7 @@ VALUES
   (
     'Kit de Limpieza de Contactos (Alcohol Iso)',
     'Accesorios',
-    ' ',
+    'Otros',
     3,
     10,
     0

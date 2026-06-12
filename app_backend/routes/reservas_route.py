@@ -150,12 +150,14 @@ def patch_reserva_status(reserva_id):
         return jsonify({"error": MSG_BAD_REQUEST}), HTTP_BAD_REQUEST
 
     try:
-        data = request.get_json()
+        data = request.form.to_dict()
     except Exception:
         data = None
 
     is_valid, error = valid_reserva_status_update(data)
     if not is_valid:
+        print("DATA:", data)
+        print("ERROR:", error)
         return jsonify({"error": MSG_BAD_REQUEST, "detail": error}), HTTP_BAD_REQUEST
 
     conn = obtener_conexion()
@@ -204,6 +206,48 @@ def patch_reserva_status(reserva_id):
 
     except Exception:
         return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
+
+    finally:
+        try:
+            if cursor:
+                cursor.close()
+        except Exception:
+            pass
+        try:
+            conn.close()
+        except Exception:
+            pass
+
+
+@reservas_bp.route("/api/reservas/solicitudes", methods=["GET"])
+@requiere_auth(roles=["bibliotecario"])
+def listar_solicitudes():
+    """Muestra las solicitudes de reserva en estado pendiente"""
+    conn = obtener_conexion()
+    if conn is None:
+        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
+    
+    try:
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT
+                r.id, r.id_usuario, u.nombre, a.nombre_art, r.estado_reserva 
+            FROM reserva r
+            JOIN usuario u
+                ON r.id_usuario = u.id
+            JOIN articulos a
+                ON r.id_reservado = a.id
+            WHERE r.estado_reserva = 'pendiente'
+            ORDER BY fecha_retiro DESC
+        """)
+
+        solicitudes = cursor.fetchall()
+        return jsonify(solicitudes), HTTP_OK
+
+    except Exception as e:
+        print("ERROR:", str(e))
+        return jsonify({"error": str(e)}), HTTP_INTERNAL_SERVER_ERROR
 
     finally:
         try:
