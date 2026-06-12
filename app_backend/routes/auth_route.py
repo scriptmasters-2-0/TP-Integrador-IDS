@@ -230,12 +230,6 @@ def login():
         contrasenia_hash = usuario.get("contrasenia_hash", "")
 
         if not validar_contrasenia(contrasenia, contrasenia_hash) and contrasenia_hash != "":
-            print(
-                validar_contrasenia(
-                    "contrasenia",
-                    "$2b$12$KIXe8T3G/R/y1P.4yHxz/e/N.t.C79.A8aZ3vA.j1gX.oDkM3p6X2",
-                )
-            )
             return (
                 jsonify({"error": MSG_UNAUTHORIZED, "detail": "invalid_credentials"}),
                 HTTP_UNAUTHORIZED,
@@ -311,10 +305,20 @@ def obtener_perfil():
         cursor = conn.cursor(dictionary=True)
 
         sql_query = """
-            SELECT id, nombre, email, puntaje, rol, carrera, contrasenia_hash
-            FROM usuario
-            WHERE id = %(usuario_id)s
-            LIMIT 1
+            SELECT
+                u.id,
+                u.nombre,
+                u.email,
+                u.puntaje,
+                u.rol,
+                u.carrera,
+                u.contrasenia_hash,
+                COUNT(p.id) AS penalizaciones
+            FROM usuario u
+            LEFT JOIN penalizacion p ON u.id = p.id_usuario
+            WHERE u.id = %(usuario_id)s AND u.activo = 1
+            GROUP BY u.id
+            LIMIT 1;
         """
         value = {"usuario_id": request.usuario_id}
 
@@ -334,6 +338,7 @@ def obtener_perfil():
             "puntaje": usuario.get("puntaje"),
             "rol": usuario.get("rol"),
             "carrera": usuario.get("carrera"),
+            "penalizaciones": usuario.get("penalizaciones", 0),
         }
 
         return jsonify({"usuario": usuario_profile}), HTTP_OK

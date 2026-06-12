@@ -48,20 +48,22 @@
 
     <div class="profile-card data-card">
       {% if mensaje %}
-      <div class="alert alert-success">
-        <i class="fa-solid fa-circle-check"></i> {{ mensaje }}
-        <div class="user-score-box">
-        <div class="score-icon">
-          <i class="fa-solid fa-star"></i>
+        <div class="alert alert-success">
+          <i class="fa-solid fa-circle-check"></i> {{ mensaje }}
         </div>
-        <div class="score-details">
-          <span class="score-value">Sin multas</span>
-          <span class="score-label">Estado de cuenta</span>
-        </div>
-      </div>
-      </div>
       {% endif %}
-
+      {% if usuario.penalizaciones %}
+        <div class="user-score-box">
+          <div class="score-icon">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <div class="score-details">
+            <span class="score-value">Con multas</span>
+            <span class="score-label">Tienes penalizaciones activas. Consulta la sección de penalizaciones para más detalles.</span>
+          </div>
+        </div>
+      {% endif %}
+      <br/>
       <h3>Información Personal</h3>
       <div class="data-grid">
         <div class="data-group">
@@ -74,7 +76,7 @@
         </div>
         <div class="data-group">
           <label>Correo Institucional</label>
-          <div class="data-value">{{ perfil.email if perfil and perfil.email else '—' }}</div>
+          <div class="data-value">{{ usuario.email | default('—') }}</div>
         </div>
         <div class="data-group">
           <label>Carrera</label>
