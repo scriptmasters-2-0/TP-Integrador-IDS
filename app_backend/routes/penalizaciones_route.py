@@ -62,7 +62,7 @@ def listar_penalizaciones_db():
     return penalizaciones
 
 
-def crear_penalizacion_db(id_usuario, motivo):
+def crear_penalizacion_db(id_usuario, motivo, severidad="media"):
     """Inserta una nueva penalización activa en la base de datos.
 
     Crea una penalización con duración de 15 días a partir de la
@@ -72,6 +72,8 @@ def crear_penalizacion_db(id_usuario, motivo):
         id_usuario (int): Identificador del usuario a penalizar.
             Debe ser un entero positivo.
         motivo (str): Motivo de la penalización. No debe estar vacío.
+        severidad (str): Severidad de la penalización ('baja', 'media', 'alta').
+            Por defecto 'media'.
 
     Returns:
         int: Identificador generado para la nueva penalización.
@@ -81,17 +83,16 @@ def crear_penalizacion_db(id_usuario, motivo):
     cursor = conexion.cursor()
     cursor.execute(
         """
-        INSERT INTO penalizacion (id_usuario, motivo, fecha_inicio, fecha_fin, activa)
-        VALUES (%s, %s, NOW(), DATE_ADD(NOW(), INTERVAL 15 DAY), TRUE)
+        INSERT INTO penalizacion (id_usuario, motivo, fecha_inicio, fecha_fin, activa, severidad)
+        VALUES (%s, %s, NOW(), DATE_ADD(NOW(), INTERVAL 15 DAY), TRUE, %s)
         """,
-        (id_usuario, motivo),
+        (id_usuario, motivo, severidad),
     )
     conexion.commit()
     id_generado = cursor.lastrowid
     cursor.close()
     conexion.close()
     return id_generado
-
 
 def format_penalty(row):
     """Formatea una fila de penalización de la BD como respuesta de la API.
@@ -348,8 +349,8 @@ def listar_penalizaciones():
 
     try:
         cursor = conn.cursor(dictionary=True)
-        penalizaciones_query  = """SELECT nombre, nombre_art, severidad, motivo, activa,
-            DATE_FORMAT(fecha_fin, '%d/%m/%y') as fecha_fin, DATEDIFF(CURDATE(), fecha_fin) as retrazo
+        penalizaciones_query = """SELECT penalizacion.id, nombre, nombre_art, severidad, motivo, activa, fecha_inicio,
+    DATE_FORMAT(fecha_fin, '%d/%m/%y') as fecha_fin, DATEDIFF(CURDATE(), fecha_fin) as retrazo
             FROM penalizacion
             INNER JOIN usuario ON penalizacion.id_usuario = usuario.id
             LEFT JOIN reserva ON penalizacion.id_reserva = reserva.id
@@ -407,12 +408,13 @@ def crear_penalizacion():
     """Crea una nueva penalización para un usuario.
 
     Requiere un JWT válido con rol admin y un cuerpo JSON con los
-    campos 'usuario_id' y 'reason'.
+    campos 'usuario_id' y 'reason'. Opcionalmente 'severidad'
+    ('baja', 'media', 'alta'; por defecto 'media').
 
     Returns:
         tuple: Respuesta JSON con la penalización creada y código
-            HTTP 201. Retorna 400 si faltan datos obligatorios,
-            o 404 si el usuario no existe.
+            HTTP 201. Retorna 400 si faltan datos obligatorios o si
+            la severidad es inválida, o 404 si el usuario no existe.
 
     """
     datos = request.get_json()
@@ -422,11 +424,15 @@ def crear_penalizacion():
 
     id_usuario = datos["usuario_id"]
     motivo = datos["reason"]
+    severidad = datos.get("severidad", "media")
+
+    if severidad not in ("baja", "media", "alta"):
+        return jsonify({"error": "severidad inválida"}), HTTP_BAD_REQUEST
 
     if not usuario_existe(id_usuario):
         return jsonify({"error": "Usuario no encontrado"}), HTTP_NOT_FOUND
 
-    id_penalizacion = crear_penalizacion_db(id_usuario, motivo)
+    id_penalizacion = crear_penalizacion_db(id_usuario, motivo, severidad)
     penalizacion = obtener_penalizacion_por_id(id_penalizacion)
 
     return jsonify(penalizacion), HTTP_CREATED

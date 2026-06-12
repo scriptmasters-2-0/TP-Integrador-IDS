@@ -1,6 +1,10 @@
 {% extends "layouts/base_dashboard.html" %}
 
-{% block usuario_name %}Administrador{% endblock %}
+{% block usuario_name %}
+  {% if session.rol == 'admin' %}Administrador
+  {% elif session.rol == 'bibliotecario' %}Bibliotecario
+  {% else %}{{ session.nombre or 'Usuario' }}{% endif %}
+{% endblock %}
 
 {% block sidebar_links %}
   <li>
@@ -39,6 +43,11 @@
     </a>
   </li>
   <li>
+    <a href="{{ url_for('admin.listar_penalizaciones') }}" class="{% if request.endpoint == 'admin.listar_penalizaciones' %}active{% endif %}">
+      <i class="fa-solid fa-ban"></i> Penalizaciones
+    </a>
+  </li>
+  <li>
     <a href="{{ url_for('admin.reporte_morosidad') }}" class="{% if request.endpoint == 'admin.reporte_morosidad' %}active{% endif %}">
       <i class="fa-solid fa-triangle-exclamation"></i> Morosidad
     </a>
@@ -54,26 +63,46 @@
   <div class="history-container">
     <div class="history-header">
       <h2>Reporte de morosidad</h2>
-      <p>Visualiza reservas vencidos y usuarios con penalizaciones activas.</p>
+      <p>Visualiza reservas vencidas y usuarios con penalizaciones activas.</p>
+      <a href="{{ url_for('admin.listar_penalizaciones') }}" class="res-btn btn-secondary">
+        <i class="fa-solid fa-ban"></i> Ir a Penalizaciones
+      </a>
     </div>
+
     <form method="get" class="history-filter-form">
       <div class="filter-group">
-        <input type="text" name="usuario" id="usuario" class="admin-input" placeholder="Buscar por nombre">
-      <br/>
-      <button type="submit" class="res-btn btn-primary">Buscar</button>
+        <input
+          type="text"
+          name="usuario"
+          id="usuario"
+          class="admin-input"
+          placeholder="Buscar por nombre"
+          value="{{ usuario }}"
+        >
+      </div>
+      <div class="filter-actions-group">
+        <button type="submit" class="res-btn btn-primary">
+          <i class="fa-solid fa-magnifying-glass"></i> Buscar
+        </button>
+        {% if usuario %}
+          <a href="{{ url_for('admin.reporte_morosidad') }}" class="res-btn btn-secondary">
+            <i class="fa-solid fa-xmark"></i> Limpiar
+          </a>
+        {% endif %}
       </div>
     </form>
-    <br/>
+
     <div class="history-table-wrapper">
       <table class="history-table">
         <thead>
           <tr>
             <th>Usuario</th>
-            <th>Articulo</th>
+            <th>Artículo</th>
             <th>Severidad</th>
             <th>Vencimiento</th>
             <th>Días de retraso</th>
             <th>Estado</th>
+            <th class="text-center">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -85,16 +114,16 @@
                   {% if p.nombre_art %}
                     {{ p.nombre_art }}
                   {% else %}
-                    <span class="text-muted ">(Artículo eliminado)</span>
+                    <span class="text-muted">(Artículo eliminado)</span>
                   {% endif %}
                 </td>
                 <td>{{ p.severidad }}</td>
                 <td>{{ p.fecha_fin if p.fecha_fin else '-' }}</td>
                 <td>
-                  {% if p.retrazo > 0 %}
+                  {% if p.retrazo and p.retrazo > 0 %}
                     {{ p.retrazo }}
                   {% else %}
-                  -
+                    -
                   {% endif %}
                 </td>
                 <td>
@@ -104,11 +133,22 @@
                     <span class="badge bg-success-light text-success">Vencida</span>
                   {% endif %}
                 </td>
+                <td class="text-center">
+                  {% if p.activa and p.id and session.rol == 'bibliotecario' %}
+                    <form action="{{ url_for('admin.levantar_penalizacion', id=p.id) }}" method="POST" class="inline-form">
+                      <button type="submit" class="btn-icon" title="Levantar Penalización">
+                        <i class="fa-solid fa-check-circle"></i>
+                      </button>
+                    </form>
+                  {% else %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
+                </td>
               </tr>
             {% endfor %}
           {% else %}
             <tr>
-              <td colspan="5" class="text-center text-muted">
+              <td colspan="7" class="text-center text-muted">
                 {{ fetch_error if fetch_error else 'No hay penalizaciones para mostrar.' }}
               </td>
             </tr>
@@ -116,5 +156,43 @@
         </tbody>
       </table>
     </div>
+
+    {% if pagination and pagination.total_pages > 1 %}
+      <div class="pagination-container">
+        <ul class="pagination">
+          <li>
+            <a
+              href="{{ url_for('admin.reporte_morosidad', page=pagination.prev_page, usuario=usuario) }}"
+              class="page-link {% if not pagination.has_prev %}disabled{% endif %}"
+            >
+              <i class="fa-solid fa-chevron-left"></i>
+            </a>
+          </li>
+
+          {% for p in pagination.pages %}
+            {% if p is none %}
+              <li><span class="page-dots">…</span></li>
+            {% else %}
+              <li>
+                <a
+                  href="{{ url_for('admin.reporte_morosidad', page=p, usuario=usuario) }}"
+                  class="page-link {% if p == pagination.page %}active{% endif %}"
+                >{{ p }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+
+          <li>
+            <a
+              href="{{ url_for('admin.reporte_morosidad', page=pagination.next_page, usuario=usuario) }}"
+              class="page-link {% if not pagination.has_next %}disabled{% endif %}"
+            >
+              <i class="fa-solid fa-chevron-right"></i>
+            </a>
+          </li>
+        </ul>
+      </div>
+    {% endif %}
+
   </div>
 {% endblock %}

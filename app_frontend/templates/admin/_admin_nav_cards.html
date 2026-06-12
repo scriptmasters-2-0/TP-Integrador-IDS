@@ -29,6 +29,11 @@
     <h3>Usuarios</h3>
     <a href="{{ url_for('admin.usuarios') }}" class="dashboard-card-link">Ver usuarios</a>
   </div>
+  <div class="dashboard-card {% if request.endpoint == 'admin.listar_penalizaciones' %}active-card{% endif %}">
+    <i class="fa-solid fa-ban"></i>
+    <h3>Penalizaciones</h3>
+    <a href="{{ url_for('admin.listar_penalizaciones') }}" class="dashboard-card-link">Ver penalizaciones</a>
+  </div>
   <div class="dashboard-card {% if request.endpoint == 'admin.reporte_morosidad' %}active-card{% endif %}">
     <i class="fa-solid fa-chart-column"></i>
     <h3>Morosidad</h3>

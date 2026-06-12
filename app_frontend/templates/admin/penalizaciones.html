@@ -1,5 +1,11 @@
 {% extends "layouts/base_dashboard.html" %}
 
+{% block usuario_name %}
+  {% if session.rol == 'admin' %}Administrador
+  {% elif session.rol == 'bibliotecario' %}Bibliotecario
+  {% else %}{{ session.nombre or 'Usuario' }}{% endif %}
+{% endblock %}
+
 {% block sidebar_links %}
   <li>
     <a href="{{ url_for('admin.dashboard') }}" class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
@@ -37,6 +43,11 @@
     </a>
   </li>
   <li>
+    <a href="{{ url_for('admin.listar_penalizaciones') }}" class="{% if request.endpoint == 'admin.listar_penalizaciones' %}active{% endif %}">
+      <i class="fa-solid fa-ban"></i> Penalizaciones
+    </a>
+  </li>
+  <li>
     <a href="{{ url_for('admin.reporte_morosidad') }}" class="{% if request.endpoint == 'admin.reporte_morosidad' %}active{% endif %}">
       <i class="fa-solid fa-triangle-exclamation"></i> Morosidad
     </a>
@@ -51,41 +62,70 @@
 
   <div class="history-container">
     <div class="history-header">
-      <h1>Gestión de Penalizaciones</h1>
-      <p>Listado de penalizaciones activas y su gravedad.</p>
+      <div class="history-header-top">
+        <div>
+          <h2>Penalizaciones</h2>
+          <p>Listado de penalizaciones registradas en el sistema.</p>
+        </div>
+        {% if session.rol == 'bibliotecario' %}
+          <a href="{{ url_for('admin.crear_penalizacion') }}" class="res-btn btn-primary">
+            <i class="fa-solid fa-plus"></i> Nueva Penalización
+          </a>
+        {% endif %}
+      </div>
     </div>
 
     <div class="history-table-wrapper">
       <table class="history-table">
         <thead>
           <tr>
-            <th>ID</th>
+            <th>#</th>
             <th>Usuario</th>
-            <th>Gravedad</th>
-            <th>Fecha</th>
-            <th class="text-center">Acciones</th>
+            <th>Severidad</th>
+            <th>Fecha Inicio</th>
+            <th>Estado</th>
+            {% if session.rol == 'bibliotecario' %}
+              <th class="text-center">Acciones</th>
+            {% endif %}
           </tr>
         </thead>
         <tbody>
-          {% for p in penalizaciones if p.activa %}
-            <tr>
-              <td>{{ p.id }}</td>
-              <td>{{ p.usuario_nombre }}</td>
-              <td><span class="badge">{{ p.severidad }}</span></td>
-              <td>{{ p.fecha_inicio }}</td>
-              <td class="text-center">
-                <form action="{{ url_for('admin.levantar_penalizacion', id=p.id) }}" method="POST">
-                  <button type="submit" class="btn-icon" title="Levantar Penalización">
-                    <i class="fa-solid fa-check-circle"></i>
-                  </button>
-                </form>
-              </td>
-            </tr>
+          {% if penalizaciones %}
+            {% for p in penalizaciones %}
+              <tr>
+                <td>{{ p.id }}</td>
+                <td>{{ p.usuario_nombre }}</td>
+                <td>{{ p.severidad | capitalize }}</td>
+                <td>{{ p.fecha_inicio if p.fecha_inicio else '-' }}</td>
+                <td>
+                  {% if p.activa %}
+                    <span class="badge bg-danger-light text-danger">Activa</span>
+                  {% else %}
+                    <span class="badge bg-success-light text-success">Levantada</span>
+                  {% endif %}
+                </td>
+                {% if session.rol == 'bibliotecario' %}
+                  <td class="text-center">
+                    {% if p.activa and p.id %}
+                      <form action="{{ url_for('admin.levantar_penalizacion', id=p.id) }}" method="POST" class="inline-form">
+                        <button type="submit" class="btn-icon" title="Levantar Penalización">
+                          <i class="fa-solid fa-check-circle"></i>
+                        </button>
+                      </form>
+                    {% else %}
+                      <span class="text-muted">—</span>
+                    {% endif %}
+                  </td>
+                {% endif %}
+              </tr>
+            {% endfor %}
           {% else %}
             <tr>
-              <td colspan="5" class="text-center">No hay penalizaciones activas.</td>
+              <td colspan="{% if session.rol == 'bibliotecario' %}6{% else %}5{% endif %}" class="text-center text-muted">
+                No hay penalizaciones para mostrar.
+              </td>
             </tr>
-          {% endfor %}
+          {% endif %}
         </tbody>
       </table>
     </div>

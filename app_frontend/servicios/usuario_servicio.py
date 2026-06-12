@@ -10,6 +10,8 @@ def obtener_usuarios(params=None, token=None):
     Devuelve una lista en caso de éxito, [] en caso de fallo.
     """
     payload, error = get_json("/usuarios", token=token, params=params)
+    print("DEBUG payload:", payload)
+    print("DEBUG error:", error)
     if error:
         return []
     return payload or []
