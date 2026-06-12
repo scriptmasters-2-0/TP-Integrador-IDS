@@ -109,7 +109,7 @@ def historial():
 
     total_historial = len(historial_datos)
     estado_opciones = estados_disponibles(historial_datos)
-    historial_datos = filtrar_historial_reservas(historial_datos, filtros)
+    historial_datos, filter_error = filtrar_historial_reservas(historial_datos, filtros)
 
     page = request.args.get("page", 1, type=int) or 1
     historial_datos, pagination = paginar_lista(
@@ -125,6 +125,7 @@ def historial():
         filtros=filtros,
         filtros_activos=filtros_activos,
         filtros_url=filtros_url,
+        filter_error=filter_error,
         estado_opciones=estado_opciones,
         total_historial=total_historial,
         pagination=pagination,

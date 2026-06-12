@@ -3,6 +3,9 @@
 from datetime import date, datetime
 import unicodedata
 
+MSG_FECHAS_INVALIDAS = "Ingresá fechas válidas."
+MSG_RANGO_INVALIDO = "La fecha desde no puede ser posterior a la fecha hasta."
+
 
 def normalizar_texto(valor):
     """Normaliza texto para comparar sin mayusculas ni tildes."""
@@ -27,6 +30,34 @@ def _parsear_fecha(valor):
         return date.fromisoformat(texto[:10])
     except ValueError:
         return None
+
+
+def _parsear_fecha_filtro(valor):
+    if not valor:
+        return None, None
+
+    texto = str(valor).strip()
+    if not texto:
+        return None, None
+
+    try:
+        return date.fromisoformat(texto), None
+    except ValueError:
+        return None, MSG_FECHAS_INVALIDAS
+
+
+def validar_fechas_filtros(filtros):
+    """Valida fechas de filtros y devuelve fechas parseadas junto al error."""
+    filtros = filtros or {}
+    fecha_desde, error_desde = _parsear_fecha_filtro(filtros.get("fecha_desde"))
+    fecha_hasta, error_hasta = _parsear_fecha_filtro(filtros.get("fecha_hasta"))
+
+    if error_desde or error_hasta:
+        return None, None, MSG_FECHAS_INVALIDAS
+    if fecha_desde and fecha_hasta and fecha_desde > fecha_hasta:
+        return None, None, MSG_RANGO_INVALIDO
+
+    return fecha_desde, fecha_hasta, None
 
 
 def _coincide_texto(reserva, busqueda):
@@ -65,16 +96,16 @@ def filtrar_historial_reservas(reservas, filtros):
     filtros = filtros or {}
     busqueda = normalizar_texto(filtros.get("q"))
     estado = str(filtros.get("estado") or "").strip()
-    fecha_desde = _parsear_fecha(filtros.get("fecha_desde"))
-    fecha_hasta = _parsear_fecha(filtros.get("fecha_hasta"))
+    fecha_desde, fecha_hasta, filter_error = validar_fechas_filtros(filtros)
 
-    return [
+    resultado = [
         reserva
         for reserva in reservas or []
         if _coincide_texto(reserva, busqueda)
         and _coincide_estado(reserva, estado)
-        and _coincide_fechas(reserva, fecha_desde, fecha_hasta)
+        and (filter_error is not None or _coincide_fechas(reserva, fecha_desde, fecha_hasta))
     ]
+    return resultado, filter_error
 
 
 def estados_disponibles(reservas):

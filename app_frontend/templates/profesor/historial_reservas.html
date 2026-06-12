@@ -33,7 +33,7 @@
 
   <div class="history-container reveal delay-2">
     <div class="history-header">
-      <h2 class="mt-0">Mi historial de préstamos</h2>
+      <h2 class="mt-0">Mi historial de reservas</h2>
       <p class="text-muted">Registro completo de tus reservas pasadas.</p>
     </div>
 
@@ -72,7 +72,7 @@
             <tr>
               <td colspan="3" class="text-center text-muted p-4">
                 <i class="fa-solid fa-clock-rotate-left empty-icon"></i>
-                No hay préstamos registrados
+                {{ fetch_error if fetch_error else 'No hay reservas registradas' }}
               </td>
             </tr>
           {% endif %}

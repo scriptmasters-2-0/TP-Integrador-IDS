@@ -119,6 +119,9 @@
             <a href="{{ url_for('alumno.historial') }}">Limpiar</a>
           </div>
         {% endif %}
+        {% if filter_error %}
+          <p class="text-danger fw-bold mt-3">{{ filter_error }}</p>
+        {% endif %}
       </form>
     {% endif %}
 

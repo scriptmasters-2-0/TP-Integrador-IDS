@@ -1184,16 +1184,23 @@ h3 {
 
 .history-search-button,
 .history-filter-toggle {
-  min-height: 49px;
+  box-sizing: border-box;
+  height: 52px;
+  min-height: 52px;
   white-space: nowrap;
 }
 
 .history-advanced-filters {
   position: relative;
+  height: 52px;
 }
 
 .history-advanced-filters summary {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
   list-style: none;
+  padding: 0 25px !important;
 }
 
 .history-advanced-filters summary::-webkit-details-marker {
