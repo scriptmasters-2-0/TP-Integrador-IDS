@@ -6,6 +6,7 @@ requieren autenticación.
 """
 
 from functools import wraps
+import traceback
 
 import bcrypt
 import jwt
@@ -311,10 +312,20 @@ def obtener_perfil():
         cursor = conn.cursor(dictionary=True)
 
         sql_query = """
-            SELECT id, nombre, email, puntaje, rol, carrera, contrasenia_hash
-            FROM usuario
-            WHERE id = %(usuario_id)s
-            LIMIT 1
+            SELECT
+                u.id,
+                u.nombre,
+                u.email,
+                u.puntaje,
+                u.rol,
+                u.carrera,
+                u.contrasenia_hash,
+                COUNT(p.id) AS penalizaciones
+            FROM usuario u
+            LEFT JOIN penalizacion p ON u.id = p.id_usuario
+            WHERE u.id = %(usuario_id)s AND u.activo = 1
+            GROUP BY u.id
+            LIMIT 1;
         """
         value = {"usuario_id": request.usuario_id}
 
@@ -334,6 +345,7 @@ def obtener_perfil():
             "puntaje": usuario.get("puntaje"),
             "rol": usuario.get("rol"),
             "carrera": usuario.get("carrera"),
+            "penalizaciones": usuario.get("penalizaciones", 0),
         }
 
         return jsonify({"usuario": usuario_profile}), HTTP_OK
