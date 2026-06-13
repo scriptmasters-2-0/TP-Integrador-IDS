@@ -17,6 +17,7 @@
       <i class="fa-solid fa-chart-bar"></i> Reportes
     </a>
   </li>
+  <li>
     <a href="{{ url_for('admin.lista_reservas') }}" class="{% if request.endpoint == 'admin.lista_reservas' %}active{% endif %}">
       <i class="fa-solid fa-clipboard-list"></i> Préstamos
     </a>
@@ -33,7 +34,7 @@
   </li>
   <li>
     <a href="{{ url_for('admin.normativas') }}" class="{% if request.endpoint == 'admin.normativas' %}active{% endif %}">
-      <i class="fa-solid fa-scale-balanced"></i> Normativas
+      <i class="fa-solid fa-clipboard-list"></i> Normativas
     </a>
   </li>
   <li>
@@ -48,13 +49,13 @@
   </li>
   <li>
     <a href="{{ url_for('admin.reporte_morosidad') }}" class="{% if request.endpoint == 'admin.reporte_morosidad' %}active{% endif %}">
-      <i class="fa-solid fa-triangle-exclamation"></i> Morosidad
+      <i class="fa-solid fa-chart-column"></i> Morosidad
     </a>
   </li>
 {% endblock %}
 {% block dashboard_content %}
   <div class="breadcrumb reveal">
-    <a href="{{ url_for('admin.dashboard') }}">Admin</a> <i class="fa-solid fa-chevron-right"></i>
+    <a href="{{ url_for('admin.dashboard') }}">{% if session.rol == 'bibliotecario' %}Bibliotecario{% else %}Admin{% endif %}</a> <i class="fa-solid fa-chevron-right"></i>
     <a href="{{ url_for('admin.listar_articulos') }}">Artículos</a> <i class="fa-solid fa-chevron-right"></i>
     <span>{{ "Editar" if articulo else "Nuevo" }}</span>
   </div>
