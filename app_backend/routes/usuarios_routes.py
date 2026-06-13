@@ -5,6 +5,8 @@ y eliminar (baja lógica) usuarios del sistema.
 """
 
 import logging
+from datetime import timezone
+from zoneinfo import ZoneInfo
 
 import mysql.connector
 from flask import Blueprint, jsonify, request
@@ -29,6 +31,30 @@ from validators import valid_id, valid_usuario, valid_usuario_update
 logging.basicConfig(level=logging.ERROR)
 
 usuarios_bp = Blueprint("usuarios", __name__)
+ARGENTINA_TZ = ZoneInfo("America/Argentina/Buenos_Aires")
+
+
+def _datetime_to_argentina_iso(value):
+    """Convierte un datetime de base de datos a ISO 8601 en hora argentina."""
+    if value is None:
+        return None
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=timezone.utc)
+    return value.astimezone(ARGENTINA_TZ).isoformat(timespec="seconds")
+
+
+def format_usuario_reserva(row):
+    """Formatea una reserva de usuario para evitar serialización GMT de Flask."""
+    nombre_articulo = row.get("nombre_articulo")
+    return {
+        "id": row.get("id"),
+        "id_reservado": row.get("id_reservado"),
+        "nombre_articulo": nombre_articulo,
+        "nombre_art": nombre_articulo,
+        "estado_reserva": row.get("estado_reserva"),
+        "fecha_retiro": _datetime_to_argentina_iso(row.get("fecha_retiro")),
+        "fecha_regreso": _datetime_to_argentina_iso(row.get("fecha_regreso")),
+    }
 
 
 @usuarios_bp.route("/api/usuarios", methods=["GET"])
@@ -206,7 +232,7 @@ def get_usuario_reservas(usuario_id):
         values = {"usuario_id": usuario_id}
 
         cursor.execute(sql_query, values)
-        reservas = cursor.fetchall()
+        reservas = [format_usuario_reserva(row) for row in cursor.fetchall()]
 
         if len(reservas) == 0:
             return (

@@ -10,13 +10,19 @@ from servicios.api_client import (
     obtener_perfil_usuario,
     post_json,
 )
-from servicios.usuario_servicio import obtener_penalizaciones_usuario
+from servicios.fechas_servicio import formatear_fecha_argentina
+from servicios.historial_filtros_servicio import (
+    estados_disponibles,
+    filtrar_historial_reservas,
+)
+from servicios.paginacion_servicio import DEFAULT_PER_PAGE, paginar_lista
+from servicios.usuario_servicio import (
+    obtener_penalizaciones_usuario,
+    obtener_reservas_usuario_con_error,
+)
 
 logger = logging.getLogger(__name__)
 alumno_bp = Blueprint("alumno", __name__, url_prefix="/alumno")
-
-
-
 
 
 @alumno_bp.route("/perfil")
@@ -65,30 +71,64 @@ def historial():
     if not token or not usuario:
         return redirect(url_for("public.login"))
     usuario_id = usuario.get("id")
+    filtros = {
+        "q": (request.args.get("q") or "").strip(),
+        "estado": (request.args.get("estado") or "").strip(),
+        "fecha_desde": (request.args.get("fecha_desde") or "").strip(),
+        "fecha_hasta": (request.args.get("fecha_hasta") or "").strip(),
+    }
+    filtros_activos = any(filtros.values())
+    filtros_url = {clave: valor for clave, valor in filtros.items() if valor}
 
     historial_datos = []
-    payload, error = get_json(f"/usuarios/{usuario_id}/reservas", token=token)
+    payload, error = obtener_reservas_usuario_con_error(usuario_id, token=token)
     if usuario_id and not error and isinstance(payload, list):
         for reserva in payload:
+            nombre_articulo = (
+                reserva.get("nombre_articulo")
+                or reserva.get("nombre_art")
+                or "Artículo no disponible"
+            )
+            estado_reserva = reserva.get("estado_reserva") or "desconocido"
             historial_datos.append(
                 {
                     "id": reserva.get("id", 1),
-                    "fecha": reserva.get("fecha_retiro", "Desconocida"),
-                    "nombre_equipo": reserva.get("nombre_art", "Artículo"),
+                    "fecha": formatear_fecha_argentina(reserva.get("fecha_retiro")),
+                    "fecha_filtro": reserva.get("fecha_retiro"),
+                    "nombre_equipo": nombre_articulo,
                     "id_equipo": reserva.get("id_reservado"),
                     "sede": reserva.get("seccion", "Sede FIUBA"),
-                    "estado_texto": reserva.get("estado_reserva", "Pendiente"),
+                    "estado_texto": estado_reserva,
                     "estado_clase": (
                         "badge-warning"
-                        if reserva.get("estado_reserva") == "pendiente"
+                        if estado_reserva == "pendiente"
                         else "badge-success"
                     ),
                 }
             )
 
+    total_historial = len(historial_datos)
+    estado_opciones = estados_disponibles(historial_datos)
+    historial_datos, filter_error = filtrar_historial_reservas(historial_datos, filtros)
+
+    page = request.args.get("page", 1, type=int) or 1
+    historial_datos, pagination = paginar_lista(
+        historial_datos,
+        pagina=page,
+        por_pagina=DEFAULT_PER_PAGE,
+    )
 
     return render_template(
-        "alumno/historial.html", historial=historial_datos, fetch_error=error
+        "alumno/historial.html",
+        historial=historial_datos,
+        fetch_error=error,
+        filtros=filtros,
+        filtros_activos=filtros_activos,
+        filtros_url=filtros_url,
+        filter_error=filter_error,
+        estado_opciones=estado_opciones,
+        total_historial=total_historial,
+        pagination=pagination,
     )
 
 
@@ -126,7 +166,7 @@ def nueva_reserva():
 
 @alumno_bp.route("/reservas/<int:id>/comprobante")
 def comprobante(id):
-    """Renderiza el comprobante de un préstamo específico para el alumno."""
+    """Renderiza el comprobante de una reserva específica para el alumno."""
     token = session.get("token")
     usuario = session.get("usuario")
     if not token or not usuario:
@@ -137,14 +177,14 @@ def comprobante(id):
         
         reserva = {
             "id": datos_api.get("id", id),
-            "estado_texto": datos_api.get("estado_reserva", "Pendiente"),
+            "estado_texto": datos_api.get("estado_reserva", "pendiente"),
             "estado_clase": "status-active",
             "equipo_nombre": datos_api.get("nombre_art", "Material no especificado"),
             "equipo_id": datos_api.get("id_reservado", "N/A"),
             "sede": datos_api.get("seccion", "Sede Central FIUBA"),
-            "fecha_reserva": datos_api.get("fecha_retiro", "N/A"),
-            "fecha_retiro": datos_api.get("fecha_retiro", "N/A"),
-            "fecha_limite": datos_api.get("fecha_regreso", "N/A"),
+            "fecha_reserva": formatear_fecha_argentina(datos_api.get("fecha_retiro")),
+            "fecha_retiro": formatear_fecha_argentina(datos_api.get("fecha_retiro")),
+            "fecha_limite": formatear_fecha_argentina(datos_api.get("fecha_regreso")),
             "titular_nombre": datos_api.get("nombre", "Alumno"),
             "titular_legajo": datos_api.get("id_usuario", "N/A"),
         }
@@ -169,26 +209,13 @@ def comprobante(id):
 
 @alumno_bp.route("/reservas/id/comprobante")
 def comprobante_sin_id():
-    """Renderiza el comprobante de un reserva especifico para el alumno (sin id)."""
+    """Redirige comprobantes sin reserva al historial."""
     token = session.get("token")
     usuario = session.get("usuario")
     if not token or not usuario:
         return redirect(url_for("public.login"))
-        
-    reserva = {
-        "id": "-",
-        "estado_texto": "No seleccionado",
-        "estado_clase": "status-inactive",
-        "equipo_nombre": "-",
-        "equipo_id": "-",
-        "sede": "-",
-        "fecha_reserva": "-",
-        "fecha_retiro": "-",
-        "fecha_limite": "-",
-        "titular_nombre": usuario.get("nombre", "Alumno"),
-        "titular_legajo": usuario.get("legajo", "-"),
-    }
-    return render_template("alumno/comprobante.html", reserva=reserva)
+
+    return redirect(url_for("alumno.historial"))
 
 
 # TODO: Implement POST handlers for profile management
@@ -243,8 +270,8 @@ def reserva_detalle(id):
     reserva = {
         "id": datos_api.get("id"),
         "estado": datos_api.get("estado_reserva"),
-        "fecha_retiro": datos_api.get("fecha_retiro"),
-        "fecha_regreso": datos_api.get("fecha_regreso"),
+        "fecha_retiro": formatear_fecha_argentina(datos_api.get("fecha_retiro")),
+        "fecha_regreso": formatear_fecha_argentina(datos_api.get("fecha_regreso")),
         "qr_url": f"https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=FIUBA-RES-{datos_api.get('id')}",
     }
 

@@ -9,18 +9,13 @@
     </a>
   </li>
   <li>
-    <a href="{{ url_for('alumno.historial') }}">
+    <a href="{{ url_for('alumno.historial') }}" class="active">
       <i class="fa-solid fa-list-check"></i> Mis reservas
     </a>
   </li>
   <li>
     <a href="{{ url_for('alumno.nueva_reserva') }}">
       <i class="fa-solid fa-plus"></i> Nueva reserva
-    </a>
-  </li>
-  <li>
-    <a href="{{ url_for('alumno.comprobante_sin_id') }}" class="active">
-      <i class="fa-solid fa-file-invoice"></i> Comprobante
     </a>
   </li>
   <li>
@@ -36,7 +31,7 @@
     <i class="fa-solid fa-chevron-right"></i>
     <a href="{{ url_for('alumno.historial') }}">Mis reservas</a>
     <i class="fa-solid fa-chevron-right"></i>
-    <span>Comprobante</span>
+    <span>Comprobante #{{ reserva.id }}</span>
   </div>
 
   <div class="ticket-container reveal delay-2">
@@ -125,10 +120,14 @@
     </div>
 
     <div class="ticket-actions mt-4">
-      <button class="res-btn btn-secondary btn-inline" onclick="window.print()">
+      <button type="button" class="res-btn btn-secondary btn-inline" data-ticket-print>
         <i class="fa-solid fa-print"></i> Imprimir
       </button>
-      <button class="res-btn btn-primary btn-inline">
+      <button
+        type="button"
+        class="res-btn btn-primary btn-inline"
+        data-ticket-pdf
+        data-ticket-file-name="comprobante-reserva-{{ reserva.id }}">
         <i class="fa-solid fa-download"></i> Descargar PDF
       </button>
     </div>

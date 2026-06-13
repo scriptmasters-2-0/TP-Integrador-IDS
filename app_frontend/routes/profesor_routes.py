@@ -6,7 +6,7 @@ from servicios import articulos_servicio, reservas_servicio
 from servicios.api_client import get_json
 from servicios.fechas_servicio import formatear_fecha_argentina
 from servicios.paginacion_servicio import DEFAULT_PER_PAGE, paginar_lista
-from servicios.reservas_servicio import obtener_qr_reserva, establecer_estado_reserva
+from servicios.reservas_servicio import establecer_estado_reserva, obtener_qr_reserva
 from servicios.usuario_servicio import obtener_reservas_usuario_con_error
 
 profesor_bp = Blueprint("profesor", __name__, url_prefix="/profesor")
@@ -207,8 +207,8 @@ def historial_reserva():
     return render_template(
         "profesor/historial_reservas.html",
         reservas=reservas_formateadas,
-        pagination=pagination,
         fetch_error=error,
+        pagination=pagination,
     )
 
 

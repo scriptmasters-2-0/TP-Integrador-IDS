@@ -6,7 +6,7 @@
   </div>
   <div class="dashboard-card {% if request.endpoint == 'admin.lista_reservas' %}active-card{% endif %}">
     <i class="fa-solid fa-clipboard-list"></i>
-    <h3>Gestionar reservas</h3>
+    <h3>Reservas</h3>
     <a href="{{ url_for('admin.lista_reservas') }}" class="dashboard-card-link">Ver reservas</a>
   </div>
   <div class="dashboard-card {% if request.endpoint == 'admin.reportes' %}active-card{% endif %}">
