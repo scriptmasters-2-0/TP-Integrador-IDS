@@ -3,6 +3,8 @@
 from flask import Blueprint, redirect, render_template, request, session, url_for
 
 from servicios.api_client import obtener_detalle_reserva
+from servicios.fechas_servicio import formatear_fecha_argentina
+from servicios.paginacion_servicio import paginar_lista, DEFAULT_PER_PAGE
 from servicios.normativas_servicio import (
     actualizar_normativa,
     crear_normativa,
@@ -326,18 +328,29 @@ def reporte_morosidad():
         return redirect(url_for("public.home"))
 
     usuario = request.args.get("usuario")
+    page = request.args.get("page", 1, type=int)
     params = {"usuario": usuario} if usuario else {}
 
-    penalizaciones = penalizaciones_servicio.obtener_penalizaciones(
+    penalizaciones_raw = penalizaciones_servicio.obtener_penalizaciones(
         params=params or None, token=token
     )
+
+    penalizaciones_formateadas = []
+    if isinstance(penalizaciones_raw, list):
+        for p in penalizaciones_raw:
+            penalizaciones_formateadas.append({
+                **p,
+                "fecha_fin": formatear_fecha_argentina(p.get("fecha_fin")),
+            })
+
+    penalizaciones, pagination = paginar_lista(penalizaciones_formateadas, pagina=page)
 
     return render_template(
         "admin/morosidad.html",
         penalizaciones=penalizaciones,
         usuario=usuario or "",
         fetch_error=None,
-        pagination=None,
+        pagination=pagination,
     )
 
 @admin_bp.route("/articulos/<int:id>/editar", methods=["GET", "POST"])
@@ -432,16 +445,20 @@ def listar_penalizaciones():
             lista_penalizaciones.append(
                 {
                     "id": p.get("id"),
-                    "usuario_nombre": p.get("nombre", "Desconocido"),   
+                    "usuario_nombre": p.get("nombre", "Desconocido"),
                     "severidad": p.get("severidad", "Media"),
-                    "fecha_inicio": p.get("fecha_inicio", "N/A"),         
+                    "fecha_inicio": formatear_fecha_argentina(p.get("fecha_inicio")),
                     "activa": p.get("activa", True),
                 }
             )
 
+    page = request.args.get("page", 1, type=int)
+    lista_penalizaciones, pagination = paginar_lista(lista_penalizaciones, pagina=page)
+
     return render_template(
         "admin/penalizaciones.html",
         penalizaciones=lista_penalizaciones,
+        pagination=pagination,
     )
 
 
