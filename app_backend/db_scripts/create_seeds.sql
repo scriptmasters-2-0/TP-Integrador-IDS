@@ -755,10 +755,11 @@ VALUES
   ),
   (
     'Guitarra Acústica Yamaha F310',
-    'Heramientas',
+    'Herramienta',
     'Otros',
     4,
-    1
+    1,
+    0
   ),
   (
     'Bajo Eléctrico Squier Affinity',
@@ -802,8 +803,8 @@ VALUES
   ),
   (
     'Sensor Ultrasónico HC-SR04',
-    'Acceesorios',
-    'Tecnogia',
+    'Accesorios',
+    'Tecnologia',
     15,
     40,
     0

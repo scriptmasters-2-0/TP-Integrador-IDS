@@ -85,16 +85,22 @@
                     <td>{{ reserva.estado_reserva }}</td>
 
                     <td>
-                        <form action="{{ url_for('biblioteca.modificar_estado', id_reserva=reserva.id) }}" method="post">
-                            <input type="hidden" name="estado_reserva" value="aprobado">
-                            <button type="submit" class="btn-edit-abm">
-                                Aceptar
-                            </button>
+                        <form action="{{ url_for('biblioteca.modificar_estado', id_reserva=reserva.id) }}"
+                              method="POST"
+                              onsubmit="return confirm('Desea aprobar la reserva');">
+                          <input type="hidden" name="estado_reserva" value="aprobado">
+                          <button type="submit" class="btn-edit-abm">
+                              Aceptar
+                          </button>
+                        </form>
 
-                            <input type="hidden" name="estado_reserva" value="cancelado">
-                            <button type="submit" class="btn-delete-abm">
-                                Rechazar
-                            </button>
+                        <form action="{{ url_for('biblioteca.modificar_estado', id_reserva=reserva.id) }}"
+                              method="POST"
+                              onsubmit="return confirm('¿Dsea rechazar la reserva?');">
+                          <input type="hidden" name="estado_reserva" value="cancelado">
+                          <button type="submit" class="btn-delete-abm">
+                              Rechazar
+                          </button>
                         </form>
                     </td>
                 </tr>

@@ -218,9 +218,26 @@ def comprobante(id):
     token = session.get("token")
     if not token or session.get("rol") != "profesor":
         return redirect(url_for("public.login"))
+
+    reserva, error = get_json(f"/reservas/{id}", token=token)
+
+    if error:
+        return render_template(
+            "profesor/comprobante.html",
+            qr=None,
+            fetch_error=error
+        )
+
+    if reserva.get("estado_reserva") != "aprobado":
+        return render_template(
+            "profesor/comprobante.html",
+            qr=None,
+            acceso_denegado=True
+        )
+
     qr, error = obtener_qr_reserva(id)
 
-    return render_template("profesor/comprobante.html", qr=qr)
+    return render_template("profesor/comprobante.html", qr=qr, acceso_denegado=False)
 
 
 @profesor_bp.route("/profesor-mis-reservas")

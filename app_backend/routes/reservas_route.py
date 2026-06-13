@@ -150,7 +150,7 @@ def patch_reserva_status(reserva_id):
         return jsonify({"error": MSG_BAD_REQUEST}), HTTP_BAD_REQUEST
 
     try:
-        data = request.form.to_dict()
+        data = request.get_json()
     except Exception:
         data = None
 

@@ -42,7 +42,7 @@ def establecer_estado_reserva(reserva_id, status_data):
     status_data: dict (ej., {"status": "returned"})
     Devuelve True en caso de éxito, {} en caso de fallo.
     """
-    print("data:", status_data)
+    
     payload, error, status = patch_json(f"/reservas/{reserva_id}/status", status_data)
     if error:
         return False

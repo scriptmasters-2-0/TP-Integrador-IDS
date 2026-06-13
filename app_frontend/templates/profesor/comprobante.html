@@ -33,6 +33,22 @@
     <span>Comprobante</span>
   </div>
 
+  {% if acceso_denegado %}
+    <div class="history-container reveal delay-1">
+      <div class="empty-state">
+        <i class="fa-solid fa-lock empty-icon text-warning"></i>
+        <h3>Comprobante no disponible</h3>
+        <p>Los comprobantes son visibles solo si la reserva fue aprobada.</p>
+      </div>
+
+      <div class="ticket-actions">
+        <a href="{{ url_for('profesor.dashboard') }}" class="res-btn btn-secondary btn-inline">
+          <i class="fa-solid fa-arrow-left"></i>Volver
+        </a>
+      </div>
+    </div>
+  {% endif %}
+  
   <div class="ticket-container reveal delay-2">
     <div class="ticket">
 
