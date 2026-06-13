@@ -98,7 +98,7 @@
 
                         <form action="{{ url_for('biblioteca.modificar_estado', id_reserva=reserva.id) }}"
                               method="POST"
-                              onsubmit="return confirm('¿Dsea rechazar la reserva?');">
+                              onsubmit="return confirm('¿Desea rechazar la reserva?');">
                           <input type="hidden" name="estado_reserva" value="cancelado">
                           <button type="submit" class="btn-delete-abm">
                               Rechazar

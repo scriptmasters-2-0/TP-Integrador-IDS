@@ -156,8 +156,6 @@ def patch_reserva_status(reserva_id):
 
     is_valid, error = valid_reserva_status_update(data)
     if not is_valid:
-        print("DATA:", data)
-        print("ERROR:", error)
         return jsonify({"error": MSG_BAD_REQUEST, "detail": error}), HTTP_BAD_REQUEST
 
     conn = obtener_conexion()
