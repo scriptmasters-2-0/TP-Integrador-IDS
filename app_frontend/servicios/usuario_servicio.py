@@ -82,7 +82,6 @@ def obtener_reservas_usuario_con_error(usuario_id, params=None, token=None):
         return [], error
     return payload or [], None
 
-
 def obtener_penalizaciones_usuario(usuario_id, params=None, token=None):
     """GET /usuarios/{id}/penalizaciones
     Devuelve una lista de penalizaciones del usuario en caso de éxito, [] en caso de fallo.
