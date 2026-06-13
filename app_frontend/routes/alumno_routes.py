@@ -174,6 +174,7 @@ def comprobante(id):
 
     try:
         datos_api = obtener_detalle_reserva(id)
+        
         reserva = {
             "id": datos_api.get("id", id),
             "estado_texto": datos_api.get("estado_reserva", "pendiente"),
@@ -254,9 +255,18 @@ def reserva_detalle(id):
 
     if error:
         return render_template(
-            "alumno/reserva_detalle_alumno.html", reserva=None, fetch_error=error
+            "alumno/reserva_detalle_alumno.html", 
+            reserva=None, 
+            fetch_error=error
         )
 
+    if datos_api.get("estado_reserva") != "aprobado":
+        return render_template(
+            "alumno/reserva_detalle_alumno.html", 
+            reserva=None, 
+            acceso_denegado=True
+        )
+        
     reserva = {
         "id": datos_api.get("id"),
         "estado": datos_api.get("estado_reserva"),

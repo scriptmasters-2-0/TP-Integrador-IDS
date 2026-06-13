@@ -194,11 +194,13 @@ def reportes():
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
-    rta = obtener_reportes("careers")
+    rta_carreras = obtener_reportes("careers")
+    carreras = rta_carreras.get("datos", [])
 
-    carreras = rta.get("datos", [])
+    rta_articulos = obtener_reportes("articles")
+    articulos = rta_articulos.get("datos", [])
 
-    return render_template("admin/reportes.html", carreras=carreras)
+    return render_template("admin/reportes.html", carreras=carreras, articulos=articulos)
 
 
 @admin_bp.route("/normativas", methods=["GET", "POST"])

@@ -556,7 +556,7 @@ VALUES
   (
     'Osciloscopio Digital Rigol DS1054Z',
     'Electronicos',
-    'Laboratorio Electronica',
+    'Laboratorio',
     3,
     5,
     0
@@ -564,31 +564,31 @@ VALUES
   (
     'Multímetro Fluke 117',
     'Herramienta',
-    'Taller',
+    'Laboratorio',
     7,
     12,
     0
   ),
   (
     'Estación de Soldado Hakko FX-888D',
-    'Equipo',
-    'Laboratorio Electronica',
+    'Electronicos',
+    'Laboratorio',
     5,
     4,
     1
   ),
   (
     'Placa Arduino UNO R3',
-    'Material',
-    'Pañol Robotica',
+    'Accesorios',
+    'Tecnologia',
     15,
     30,
     0
   ),
   (
     'Raspberry Pi 4 Model B (4GB)',
-    'Material',
-    'Pañol Robotica',
+    'Electronicos',
+    'Tecnologia',
     7,
     15,
     0
@@ -596,7 +596,7 @@ VALUES
   (
     'Taladro Inalámbrico Bosch 18V',
     'Herramienta',
-    'Taller Mecanico',
+    'Tecnologia',
     3,
     6,
     0
@@ -604,71 +604,71 @@ VALUES
   (
     'Crimpeadora RJ45 Rj11 AMP',
     'Herramienta',
-    'Redes',
+    'Tecnologia',
     5,
     8,
     0
   ),
   (
     'Tester de Redes LAN',
-    'Equipo',
-    'Redes',
+    'Electronicos',
+    'Laboratorio',
     3,
     4,
     0
   ),
   (
     'Router Cisco ISR 4321',
-    'Equipo',
-    'Laboratorio Redes',
+    'Electronicos',
+    'Laboratorio',
     14,
     2,
     0
   ),
   (
     'Switch Catalyst 2960-X',
-    'Equipo',
-    'Laboratorio Redes',
+    'Electronicos',
+    'Laboratorio',
     14,
     3,
     1
   ),
   (
     'Libro: Clean Code - Robert C. Martin',
-    'Material',
-    'Biblioteca CS',
+    'Libro',
+    'Biblioteca',
     21,
     5,
     0
   ),
   (
     'Libro: Diseño Digital - Mano & Ciletti',
-    'Material',
-    'Biblioteca Electronica',
+    'Libro',
+    'Biblioteca',
     14,
     3,
     0
   ),
   (
     'Fuente de Alimentacion Regulable 30V 5A',
-    'Equipo',
-    'Laboratorio Electronica',
+    'Electronicos',
+    'Laboratorio',
     5,
     8,
     0
   ),
   (
     'Generador de Funciones 20MHz',
-    'Equipo',
-    'Laboratorio Electronica',
+    'Electronicos',
+    'Laboratorio',
     3,
     4,
     0
   ),
   (
     'Protoboard 830 Puntos',
-    'Material',
-    'Pañol Robotica',
+    'Accesorios',
+    'Tecnologia',
     15,
     50,
     0
@@ -676,39 +676,39 @@ VALUES
   (
     'Set de Destornilladores de Precisión Wiha',
     'Herramienta',
-    'Taller',
+    'Tecnologia',
     7,
     10,
     0
   ),
   (
     'Kit de Componentes Pasivos (Res/Cap)',
-    'Material',
-    'Pañol Robotica',
+    'Accesorios',
+    'Tecnologia',
     15,
     20,
     0
   ),
   (
     'Impresora 3D Creality Ender 3 V2',
-    'Equipo',
-    'Laboratorio Fabricacion',
+    'Electronicos',
+    'Laboratorio',
     2,
     3,
     0
   ),
   (
     'Filamento PLA 1KG (Varios Colores)',
-    'Material',
-    'Laboratorio Fabricacion',
+    'Accesorios',
+    'Tecnologia',
     3,
     15,
     0
   ),
   (
     'Cámara Térmica FLIR C5',
-    'Equipo',
-    'Taller',
+    'Electronicos',
+    'Laboratorio',
     2,
     1,
     0
@@ -716,7 +716,7 @@ VALUES
   (
     'Pinza Amperimétrica UNI-T UT204',
     'Herramienta',
-    'Taller',
+    'Tecnologia',
     5,
     6,
     0
@@ -724,87 +724,87 @@ VALUES
   (
     'Calibre Digital Mitutoyo 150mm',
     'Herramienta',
-    'Taller Mecanico',
+    'Tecnologia',
     5,
     4,
     0
   ),
   (
     'Proyector Epson PowerLite E20',
-    'Equipo',
-    'Audiovisual',
+    'Proyector',
+    'Tecnologia',
     1,
     5,
     0
   ),
   (
     'Microfono Condensador Audio-Technica',
-    'Instrumento',
-    'Audiovisual',
+    'Electronicos',
+    'Tecnologia',
     3,
     2,
     0
   ),
   (
     'Teclado Controlador MIDI M-Audio 49',
-    'Instrumento',
-    'Musica',
+    'Electronicos',
+    'Tecnologia',
     7,
     3,
     0
   ),
   (
     'Guitarra Acústica Yamaha F310',
-    'Instrumento',
-    'Musica',
-    7,
+    'Herramienta',
+    'Otros',
     4,
-    1
+    1,
+    0
   ),
   (
     'Bajo Eléctrico Squier Affinity',
-    'Instrumento',
-    'Musica',
+    'Electronicos',
+    'Otros',
     7,
     2,
     0
   ),
   (
     'Amplificador Fender Champion 20',
-    'Equipo',
-    'Musica',
+    'Electronicos',
+    'Tecnologia',
     3,
     3,
     0
   ),
   (
     'Libro: Cálculo - James Stewart',
-    'Material',
-    'Biblioteca General',
+    'Libro',
+    'Biblioteca',
     21,
     10,
     0
   ),
   (
     'Libro: Física Universitaria - Sears Zemansky',
-    'Material',
-    'Biblioteca General',
+    'Libro',
+    'Biblioteca',
     21,
     12,
     1
   ),
   (
     'Módulo ESP32 NodeMCU',
-    'Material',
-    'Pañol Robotica',
+    'Accesorios',
+    'Tecnologia',
     15,
     25,
     0
   ),
   (
     'Sensor Ultrasónico HC-SR04',
-    'Material',
-    'Pañol Robotica',
+    'Accesorios',
+    'Tecnologia',
     15,
     40,
     0
@@ -812,7 +812,7 @@ VALUES
   (
     'Amoladora Angular Makita 115mm',
     'Herramienta',
-    'Taller Mecanico',
+    'Tecnologia',
     3,
     4,
     0
@@ -820,7 +820,7 @@ VALUES
   (
     'Sierra Circular DeWalt',
     'Herramienta',
-    'Taller Mecanico',
+    'Tecnologia',
     3,
     2,
     0
@@ -828,7 +828,7 @@ VALUES
   (
     'Set de Llaves Combinadas Bahco',
     'Herramienta',
-    'Taller',
+    'Laboratorio',
     7,
     5,
     0
@@ -836,23 +836,23 @@ VALUES
   (
     'Cautín Tipo Lapiz 40W',
     'Herramienta',
-    'Laboratorio Electronica',
+    'Laboratorio',
     5,
     15,
     0
   ),
   (
     'Malla Desoldadora',
-    'Material',
-    'Laboratorio Electronica',
+    'Accesorios',
+    'Laboratorio',
     15,
     30,
     0
   ),
   (
     'Estaño 60/40 1mm (Rollo 250g)',
-    'Material',
-    'Laboratorio Electronica',
+    'Accesorios',
+    'Laboratorio',
     15,
     20,
     0
@@ -860,63 +860,63 @@ VALUES
   (
     'Lupa con Iluminación LED',
     'Herramienta',
-    'Laboratorio Electronica',
+    'Laboratorio',
     5,
     8,
     0
   ),
   (
     'Módulo de Relés 4 Canales 5V',
-    'Material',
-    'Pañol Robotica',
+    'Accesorios',
+    'Tecnologia',
     15,
     15,
     0
   ),
   (
     'Servomotor SG90',
-    'Material',
-    'Pañol Robotica',
+    'Accesorios',
+    'Tecnologia',
     15,
     30,
     0
   ),
   (
     'Microcontrolador PIC16F877A',
-    'Material',
-    'Pañol Robotica',
+    'Accesorios',
+    'Tecnologia',
     15,
     20,
     0
   ),
   (
     'Programador PICkit 3',
-    'Equipo',
-    'Laboratorio Electronica',
+    'Electronicos',
+    'Laboratorio',
     5,
     5,
     0
   ),
   (
     'Analizador Lógico 8 Canales 24MHz',
-    'Equipo',
-    'Laboratorio Electronica',
+    'Electronicos',
+    'Laboratorio',
     5,
     4,
     0
   ),
   (
     'Cable HDMI 3 Metros',
-    'Material',
-    'Audiovisual',
+    'Accesorios',
+    'Bedelia',
     7,
     15,
     0
   ),
   (
     'Cámara Reflex Canon EOS Rebel T7',
-    'Equipo',
-    'Audiovisual',
+    'Electronicos',
+    'Tecnologia',
     2,
     2,
     0
@@ -924,31 +924,55 @@ VALUES
   (
     'Trípode Manfrotto',
     'Herramienta',
-    'Audiovisual',
+    'Tecnologia',
     3,
     3,
     0
   ),
   (
     'Libro: Redes de Computadoras - Tanenbaum',
-    'Material',
-    'Biblioteca CS',
+    'Libro',
+    'Biblioteca',
     14,
     4,
     0
   ),
   (
     'Pizarra Blanca Magnética Móvil',
-    'Equipo',
-    'Aulas',
+    'Herramienta',
+    'Bedelia',
     1,
     5,
     0
   ),
   (
+    'Set de marcadores para pizarra',
+    'Herramienta',
+    'Bedelia',
+    1,
+    10,
+    0
+  ),
+  (
+    'Alargue reforzado 10m',
+    'Accesorios',
+    'Bedelia',
+    1,
+    5,
+    0
+  ),
+  (
+    'Puntero láser inalabrico Logitech R400',
+    'Herramienta',
+    'Bedelia',
+    1,
+    8,
+    0
+  ),
+  (
     'Kit de Limpieza de Contactos (Alcohol Iso)',
-    'Material',
-    'Taller',
+    'Accesorios',
+    'Otros',
     3,
     10,
     0

@@ -134,26 +134,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   attachTicketActions();
 
-  const attachTicketActions = () => {
-    const printButtons = document.querySelectorAll("[data-ticket-print], [data-ticket-pdf]");
-
-    printButtons.forEach((button) => {
-      button.addEventListener("click", () => {
-        const originalTitle = document.title;
-        const ticketFileName = button.dataset.ticketFileName;
-        if (ticketFileName) {
-          document.title = ticketFileName;
-        }
-        window.print();
-        window.setTimeout(() => {
-          document.title = originalTitle;
-        }, 1000);
-      });
-    });
-  };
-
-  attachTicketActions();
-
   document.querySelectorAll(".reportes-bar").forEach((bar) => {
     const w = bar.dataset.width;
     if (w) bar.style.setProperty("--bar-width", w + "px");

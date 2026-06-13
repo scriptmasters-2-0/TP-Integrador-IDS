@@ -55,6 +55,21 @@
     <span>Reservas</span>
   </div>
 
+  {% if session.rol == 'bibliotecario' %}
+  <div class="history-header">
+    <div class="dashboard-card">
+      <div class=dashboard-card-content>
+        <h3>Solicitudes de reservas</h3>
+        <p>Gestiona las reservas pendientes</p>
+
+        <a href="{{ url_for('biblioteca.listar_pendientes') }}" class="register-btn-nav">
+          Ver solicitudes
+        </a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
   <div class="history-container">
     <div class="history-header">
       <h1>Gestión de Reservas</h1>
