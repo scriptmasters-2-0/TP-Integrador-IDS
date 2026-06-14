@@ -7,7 +7,6 @@ from flask import Blueprint, redirect, render_template, request, session, url_fo
 from servicios.api_client import (
     get_json,
     obtener_detalle_reserva,
-    obtener_perfil_usuario,
     post_json,
 )
 from servicios.fechas_servicio import formatear_fecha_argentina
@@ -17,9 +16,10 @@ from servicios.historial_filtros_servicio import (
 )
 from servicios.paginacion_servicio import DEFAULT_PER_PAGE, paginar_lista
 from servicios.usuario_servicio import (
-    obtener_penalizaciones_usuario,
     obtener_reservas_usuario_con_error,
+    actualizar_usuario,
 )
+from servicios.auth_servicio import obtener_mi_perfil
 
 logger = logging.getLogger(__name__)
 alumno_bp = Blueprint("alumno", __name__, url_prefix="/alumno")
@@ -37,7 +37,6 @@ def perfil():
         return redirect(url_for("public.login"))
 
     try:
-        from servicios.auth_servicio import obtener_mi_perfil
         perfil_fresco = obtener_mi_perfil(token=token)
         if perfil_fresco and "usuario" in perfil_fresco:
             usuario = perfil_fresco["usuario"]
@@ -56,8 +55,6 @@ def cambiar_contrasena():
     nueva_contrasena = request.form.get("nueva_contrasena")
     usuario_id = usuario.get("id")
     
-    from servicios.usuario_servicio import actualizar_usuario
-    # Se actualiza enviando el campo contrasenia
     actualizar_usuario(usuario_id, {"contrasenia": nueva_contrasena}, token=token)
     
     return redirect(url_for("alumno.perfil", mensaje="Contraseña actualizada exitosamente"))
@@ -216,14 +213,6 @@ def comprobante_sin_id():
         return redirect(url_for("public.login"))
 
     return redirect(url_for("alumno.historial"))
-
-
-# TODO: Implement POST handlers for profile management
-# These handlers are placeholders for features to be implemented:
-# - @alumno_bp.route("/perfil/cambiar-contrasena", methods=["POST"]) - Change contrasenia
-# - @alumno_bp.route("/perfil/solicitar-correccion", methods=["POST"]) - Request data correction
-# Currently, these buttons are disabled in the template (alumno/perfil.html)
-# Backend endpoints in /api/usuarios/*/contrasenia and /api/usuarios/*/corrections should be created
 
 
 @alumno_bp.route("/dashboard")
