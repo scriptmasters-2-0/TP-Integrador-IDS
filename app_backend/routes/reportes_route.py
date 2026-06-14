@@ -104,6 +104,18 @@ def obtener_reporte_db(tipo_reporte):
             ORDER BY cantidad_reservas DESC
         """)
 
+    elif tipo_reporte == "articles":
+        cursor.execute("""
+            SELECT
+                articulos.nombre_art,
+                COUNT(reserva.id) AS cantidad_reservas
+            FROM reserva
+            JOIN articulos
+                ON reserva.id_reservado = articulos.id
+            GROUP BY articulos.nombre_art
+            ORDER BY cantidad_reservas DESC
+        """)
+
     for fila in cursor:
         resultado.append(fila)
 
@@ -124,7 +136,7 @@ def obtener_reportes():
     tipo = request.args.get("type")
     formato = request.args.get("format")
 
-    tipos_validos = ["pending", "returned", "overdue", "all", "careers"]
+    tipos_validos = ["pending", "returned", "overdue", "all", "careers", "articles"]
 
     if tipo not in tipos_validos:
         return jsonify({"error": "Tipo de reporte inválido"}), HTTP_BAD_REQUEST
