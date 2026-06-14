@@ -79,9 +79,8 @@ def dashboard():
         fetch_error=error,
     )
 
-@profesor_bp.route("/mis-reservas")
-def mis_reservas():
-    """Vista de reservas activas e historial del profesor con tabs."""
+@profesor_bp.route("/historial", methods=["GET"])
+def historial_reserva():
     token = session.get("token")
     if not token or session.get("rol") != "profesor":
         return redirect(url_for("public.login"))
@@ -89,33 +88,45 @@ def mis_reservas():
     usuario_id = (session.get("usuario") or {}).get("id")
     payload, error = obtener_reservas_usuario_con_error(usuario_id, token=token)
 
-    reservas_activas = []
-    reservas_historicas = []
+    q = (request.args.get("q") or "").strip().lower()
+    estado_filtro = (request.args.get("estado") or "").strip()
+
+    reservas_formateadas = []
+    estados_vistos = set()
 
     if not error and isinstance(payload, list):
         for reserva in payload:
-            estado = reserva.get("estado_reserva", "")
-            entrada = {
+            estado = reserva.get("estado_reserva", "pendiente")
+            estados_vistos.add(estado)
+            nombre = (
+                reserva.get("nombre_articulo")
+                or reserva.get("nombre_art")
+                or "Artículo"
+            )
+            reservas_formateadas.append({
                 "id": reserva.get("id"),
-                "nombre_articulo": (
-                    reserva.get("nombre_articulo")
-                    or reserva.get("nombre_art")
-                    or "Artículo"
-                ),
+                "nombre_articulo": nombre,
                 "estado_reserva": estado,
-                "fecha_retiro": formatear_fecha_argentina(reserva.get("fecha_retiro")),
                 "fecha_regreso": formatear_fecha_argentina(reserva.get("fecha_regreso")),
-            }
-            if estado in ("pendiente", "aprobado", "entregado"):
-                reservas_activas.append(entrada)
-            else:  
-                reservas_historicas.append(entrada)
+            })
+
+    if q:
+        reservas_formateadas = [r for r in reservas_formateadas if q in r["nombre_articulo"].lower()]
+    if estado_filtro:
+        reservas_formateadas = [r for r in reservas_formateadas if r["estado_reserva"] == estado_filtro]
+
+    page = request.args.get("page", 1, type=int) or 1
+    reservas_formateadas, pagination = paginar_lista(
+        reservas_formateadas, pagina=page, por_pagina=DEFAULT_PER_PAGE,
+    )
 
     return render_template(
-        "profesor/mis-reservas.html",
-        reservas_activas=reservas_activas,
-        reservas_historicas=reservas_historicas,
+        "profesor/historial_reservas.html",
+        reservas=reservas_formateadas,
         fetch_error=error,
+        pagination=pagination,
+        estado_opciones=sorted(estados_vistos),
+        filtros={"q": q, "estado": estado_filtro},
     )
 
 @profesor_bp.route("/prestamos/<int:id>", methods=["GET"])
@@ -172,10 +183,9 @@ def guardar_reserva():
 
     return redirect(url_for("profesor.mis_reservas"))
 
-
-@profesor_bp.route("/historial", methods=["GET"])
-def historial_reserva():
-    """Muestra el historial completo de reservas históricas de un profesor."""
+@profesor_bp.route("/mis-reservas")
+def mis_reservas():
+    """Vista de reservas activas e historial del profesor con tabs."""
     token = session.get("token")
     if not token or session.get("rol") != "profesor":
         return redirect(url_for("public.login"))
@@ -183,34 +193,34 @@ def historial_reserva():
     usuario_id = (session.get("usuario") or {}).get("id")
     payload, error = obtener_reservas_usuario_con_error(usuario_id, token=token)
 
-    reservas_formateadas = []
+    reservas_activas = []
+    reservas_historicas = []
+
     if not error and isinstance(payload, list):
         for reserva in payload:
-            reservas_formateadas.append({
+            estado = reserva.get("estado_reserva", "")
+            entrada = {
                 "id": reserva.get("id"),
                 "nombre_articulo": (
                     reserva.get("nombre_articulo")
                     or reserva.get("nombre_art")
                     or "Artículo"
                 ),
-                "estado_reserva": reserva.get("estado_reserva", "pendiente"),
+                "estado_reserva": estado,
+                "fecha_retiro": formatear_fecha_argentina(reserva.get("fecha_retiro")),
                 "fecha_regreso": formatear_fecha_argentina(reserva.get("fecha_regreso")),
-            })
-
-    page = request.args.get("page", 1, type=int) or 1
-    reservas_formateadas, pagination = paginar_lista(
-        reservas_formateadas,
-        pagina=page,
-        por_pagina=DEFAULT_PER_PAGE,
-    )
+            }
+            if estado in ("pendiente", "aprobado", "entregado"):
+                reservas_activas.append(entrada)
+            else:
+                reservas_historicas.append(entrada)
 
     return render_template(
-        "profesor/historial_reservas.html",
-        reservas=reservas_formateadas,
+        "profesor/mis-reservas.html",
+        reservas_activas=reservas_activas,
+        reservas_historicas=reservas_historicas,
         fetch_error=error,
-        pagination=pagination,
     )
-
 
 @profesor_bp.route("/reservas/<int:id>/comprobante", methods=["GET"])
 def comprobante(id):
