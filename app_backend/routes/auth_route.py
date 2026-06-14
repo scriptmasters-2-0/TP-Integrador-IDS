@@ -6,6 +6,7 @@ requieren autenticación.
 """
 
 from functools import wraps
+import traceback
 
 import bcrypt
 import jwt
