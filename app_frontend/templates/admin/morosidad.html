@@ -1,6 +1,10 @@
 {% extends "layouts/base_dashboard.html" %}
 
-{% block usuario_name %}Administrador{% endblock %}
+{% block usuario_name %}
+  {% if session.rol == 'admin' %}Administrador
+  {% elif session.rol == 'bibliotecario' %}Bibliotecario
+  {% else %}{{ session.nombre or 'Usuario' }}{% endif %}
+{% endblock %}
 
 {% block sidebar_links %}
   <li>
@@ -30,7 +34,7 @@
   </li>
   <li>
     <a href="{{ url_for('admin.normativas') }}" class="{% if request.endpoint == 'admin.normativas' %}active{% endif %}">
-      <i class="fa-solid fa-scale-balanced"></i> Normativas
+      <i class="fa-solid fa-clipboard-list"></i> Normativas
     </a>
   </li>
   <li>
@@ -39,37 +43,68 @@
     </a>
   </li>
   <li>
+    <a href="{{ url_for('admin.listar_penalizaciones') }}" class="{% if request.endpoint == 'admin.listar_penalizaciones' %}active{% endif %}">
+      <i class="fa-solid fa-ban"></i> Penalizaciones
+    </a>
+  </li>
+  <li>
     <a href="{{ url_for('admin.reporte_morosidad') }}" class="{% if request.endpoint == 'admin.reporte_morosidad' %}active{% endif %}">
-      <i class="fa-solid fa-triangle-exclamation"></i> Morosidad
+      <i class="fa-solid fa-chart-column"></i> Morosidad
     </a>
   </li>
 {% endblock %}
 
 {% block dashboard_content %}
   <div class="breadcrumb reveal">
-    <a href="{{ url_for('admin.dashboard') }}">Admin</a> <i class="fa-solid fa-chevron-right"></i>
+    <a href="{{ url_for('admin.dashboard') }}">{% if session.rol == 'bibliotecario' %}Bibliotecario{% else %}Admin{% endif %}</a> <i class="fa-solid fa-chevron-right"></i>
     <span>Morosidad</span>
   </div>
 
-  <div class="history-container">
+  <div class="history-container reveal">
     <div class="history-header">
-      <h2>Reporte de morosidad</h2>
-      <p>Visualiza reservas vencidos y usuarios con penalizaciones activas.</p>
+      <div class="flex-between-center">
+        <div>
+          <h2>Reporte de morosidad</h2>
+          <p>Visualiza reservas vencidas y usuarios con penalizaciones activas.</p>
+        </div>
+        <div class="header-actions" style="display:flex; gap:10px;">
+          <a href="{{ url_for('admin.listar_penalizaciones') }}" class="register-btn-nav btn-secondary">
+            <i class="fa-solid fa-ban"></i> Ir a Penalizaciones
+          </a>
+        </div>
+      </div>
     </div>
-    <form method="get" class="history-filter-form">
-      <div class="filter-group">
-        <input type="text" name="usuario" id="usuario" class="admin-input" placeholder="Buscar por nombre">
-      <br/>
-      <button type="submit" class="res-btn btn-primary">Buscar</button>
+
+    <form method="get" class="data-grid mb-4">
+      <div class="data-group">
+        <label for="usuario">Nombre</label>
+        <input
+          type="text"
+          name="usuario"
+          id="usuario"
+          class="admin-input"
+          placeholder="Buscar por nombre..."
+          value="{{ usuario }}"
+        >
+      </div>
+      <div class="filter-actions-group">
+        <button type="submit" class="register-btn-nav">
+          <i class="fa-solid fa-magnifying-glass"></i> Buscar
+        </button>
+        {% if usuario %}
+          <a href="{{ url_for('admin.reporte_morosidad') }}" class="btn-secondary res-btn">
+            <i class="fa-solid fa-xmark"></i> Limpiar
+          </a>
+        {% endif %}
       </div>
     </form>
-    <br/>
+
     <div class="history-table-wrapper">
       <table class="history-table">
         <thead>
           <tr>
             <th>Usuario</th>
-            <th>Articulo</th>
+            <th>Artículo</th>
             <th>Severidad</th>
             <th>Vencimiento</th>
             <th>Días de retraso</th>
@@ -85,30 +120,35 @@
                   {% if p.nombre_art %}
                     {{ p.nombre_art }}
                   {% else %}
-                    <span class="text-muted ">(Artículo eliminado)</span>
+                    <span class="text-muted">(Artículo eliminado)</span>
                   {% endif %}
                 </td>
-                <td>{{ p.severidad }}</td>
-                <td>{{ p.fecha_fin if p.fecha_fin else '-' }}</td>
+                <td>{{ p.severidad | capitalize }}</td>
                 <td>
-                  {% if p.retrazo > 0 %}
-                    {{ p.retrazo }}
+                  <div class="date-cell">
+                    <i class="fa-regular fa-calendar"></i>
+                    {{ p.fecha_fin if p.fecha_fin else '-' }}
+                  </div>
+                </td>
+                <td>
+                  {% if p.retrazo and p.retrazo > 0 %}
+                    {{ p.retrazo }} días
                   {% else %}
-                  -
+                    <span class="text-muted">No tiene</span>
                   {% endif %}
                 </td>
                 <td>
                   {% if p.activa %}
                     <span class="badge bg-danger-light text-danger">Activa</span>
                   {% else %}
-                    <span class="badge bg-success-light text-success">Vencida</span>
+                    <span class="badge bg-success-light text-success">Finalizada</span>
                   {% endif %}
                 </td>
               </tr>
             {% endfor %}
           {% else %}
             <tr>
-              <td colspan="5" class="text-center text-muted">
+              <td colspan="6" class="text-center text-muted">
                 {{ fetch_error if fetch_error else 'No hay penalizaciones para mostrar.' }}
               </td>
             </tr>
@@ -116,5 +156,39 @@
         </tbody>
       </table>
     </div>
+
+    {% if pagination and pagination.total_pages > 1 %}
+      <div class="pagination-container">
+        <ul class="pagination">
+          <li>
+            <a href="{{ url_for('admin.reporte_morosidad', page=pagination.prev_page, usuario=usuario) }}"
+               class="page-link {% if not pagination.has_prev %}disabled{% endif %}">
+              <i class="fa-solid fa-chevron-left"></i>
+            </a>
+          </li>
+          {% for p in pagination.pages %}
+            {% if p is none %}
+              <li><span class="page-dots">…</span></li>
+            {% else %}
+              <li>
+                <a href="{{ url_for('admin.reporte_morosidad', page=p, usuario=usuario) }}"
+                   class="page-link {% if p == pagination.page %}active{% endif %}">{{ p }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+          <li>
+            <a href="{{ url_for('admin.reporte_morosidad', page=pagination.next_page, usuario=usuario) }}"
+               class="page-link {% if not pagination.has_next %}disabled{% endif %}">
+              <i class="fa-solid fa-chevron-right"></i>
+            </a>
+          </li>
+        </ul>
+        </div>
+          <p class="text-center text-muted text-sm mt-3">
+            Mostrando {{ pagination.first_item }}–{{ pagination.last_item }} de {{ pagination.total_items }}
+          </p>
+      </div>
+    {% endif %}
+
   </div>
 {% endblock %}

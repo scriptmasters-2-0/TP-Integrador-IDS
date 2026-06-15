@@ -1,0 +1,105 @@
+{% extends "layouts/base_dashboard.html" %}
+
+{% block sidebar_links %}
+  <li>
+    <a href="{{ url_for('admin.dashboard') }}" class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+      <i class="fa-solid fa-gauge"></i> Dashboard
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.reportes') }}" class="{% if request.endpoint == 'admin.reportes' %}active{% endif %}">
+      <i class="fa-solid fa-chart-bar"></i> Reportes
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.lista_reservas') }}" class="{% if request.endpoint == 'admin.lista_reservas' %}active{% endif %}">
+      <i class="fa-solid fa-clipboard-list"></i> Préstamos
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.listar_articulos') }}" class="{% if request.endpoint == 'admin.listar_articulos' %}active{% endif %}">
+      <i class="fa-solid fa-box"></i> Artículos
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.crear_articulo') }}" class="{% if request.endpoint == 'admin.crear_articulo' %}active{% endif %}">
+      <i class="fa-solid fa-plus"></i> Nuevo Artículo
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.normativas') }}" class="{% if request.endpoint == 'admin.normativas' %}active{% endif %}">
+      <i class="fa-solid fa-clipboard-list"></i> Normativas
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.usuarios') }}" class="{% if request.endpoint == 'admin.usuarios' %}active{% endif %}">
+      <i class="fa-solid fa-users"></i> Usuarios
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.listar_penalizaciones') }}" class="{% if request.endpoint == 'admin.listar_penalizaciones' %}active{% endif %}">
+      <i class="fa-solid fa-ban"></i> Penalizaciones
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.reporte_morosidad') }}" class="{% if request.endpoint == 'admin.reporte_morosidad' %}active{% endif %}">
+      <i class="fa-solid fa-chart-column"></i> Morosidad
+    </a>
+  </li>
+{% endblock %}
+
+{% block dashboard_content %}
+  <div class="breadcrumb reveal">
+    <a href="{{ url_for('admin.dashboard') }}">{% if session.rol == 'bibliotecario' %}Bibliotecario{% else %}Admin{% endif %}</a> <i class="fa-solid fa-chevron-right"></i>
+    <a href="{{ url_for('admin.listar_penalizaciones') }}">Penalizaciones</a> <i class="fa-solid fa-chevron-right"></i>
+    <span>Nueva</span>
+  </div>
+
+  <div class="history-container">
+    <div class="history-header">
+      <h1>Nueva Penalización</h1>
+      <p>Asigná una penalización a un usuario indicando el motivo.</p>
+    </div>
+
+    {% if form_error %}
+      <div class="alert alert-danger">{{ form_error }}</div>
+    {% endif %}
+
+    <div class="admin-form-container">
+      <form method="POST" class="admin-form">
+        <div class="form-group">
+          <label for="usuario_id">Usuario</label>
+          <select name="usuario_id" id="usuario_id" class="admin-select" required>
+            <option value="">Seleccionar usuario</option>
+            {% for u in usuarios %}
+              <option value="{{ u.id }}">{{ u.nombre }} ({{ u.email }})</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-top: 20px;">
+          <label for="reason">Motivo</label>
+          <textarea name="reason" id="reason" class="admin-input" rows="3" required></textarea>
+        </div>
+
+        <div class="form-group" style="margin-top: 20px;">
+          <label for="severidad">Severidad</label>
+          <select name="severidad" id="severidad" class="admin-select">
+            <option value="baja">Baja</option>
+            <option value="media" selected>Media</option>
+            <option value="alta">Alta</option>
+          </select>
+        </div>
+
+        <div class="admin-form-actions">
+          <button type="submit" class="res-btn btn-primary">
+            <i class="fa-solid fa-check"></i> Crear penalización
+          </button>
+          <a href="{{ url_for('admin.listar_penalizaciones') }}" class="res-btn btn-secondary">
+            <i class="fa-solid fa-xmark"></i> Cancelar
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

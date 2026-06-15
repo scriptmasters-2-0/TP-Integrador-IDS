@@ -39,6 +39,7 @@ def format_reserva(row):
     return {
         "id": row.get("id"),
         "id_usuario": row.get("id_usuario"),
+        "usuario_nombre": row.get("usuario_nombre"),  
         "id_reservado": row.get("id_reservado"),
         "nombre_art": row.get("nombre_art"),
         "estado_reserva": row.get("estado_reserva"),
@@ -54,28 +55,58 @@ def format_reserva(row):
 @reservas_bp.route("/api/reservas", methods=["GET"])
 @requiere_auth(roles=["admin", "profesor", "bibliotecario", "alumno"])
 def listar_reservas():
-    """Descripción: función listar_reservas."""
     conn = obtener_conexion()
     if conn is None:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
     cursor = None
     try:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute(
+        es_admin = request.usuario_rol in ("admin", "bibliotecario")
+
+        if es_admin:
+            estado = request.args.get("estado")
+            usuario_id = request.args.get("usuario")
+            fecha = request.args.get("fecha")
+
+            query = """
+                SELECT r.id, r.id_usuario, u.nombre AS usuario_nombre,
+                       r.id_reservado, a.nombre_art,
+                       r.estado_reserva, r.fecha_retiro, r.fecha_regreso
+                FROM reserva r
+                JOIN articulos a ON r.id_reservado = a.id
+                JOIN usuario u ON r.id_usuario = u.id
+                WHERE 1=1
             """
-            SELECT r.id, r.id_usuario, r.id_reservado,
-                   a.nombre_art, r.estado_reserva,
-                   r.fecha_retiro, r.fecha_regreso
-            FROM reserva r
-            JOIN articulos a ON r.id_reservado = a.id
-            WHERE r.id_usuario = %(usuario_id)s
-            ORDER BY r.fecha_retiro DESC
-        """,
-            {"usuario_id": request.usuario_id},
-        )
+            params = {}
+            if estado:
+                query += " AND r.estado_reserva = %(estado)s"
+                params["estado"] = estado
+            if usuario_id:
+                query += " AND r.id_usuario = %(usuario_id)s"
+                params["usuario_id"] = usuario_id
+            if fecha:
+                query += " AND DATE(r.fecha_retiro) = %(fecha)s"
+                params["fecha"] = fecha
+
+            query += " ORDER BY r.fecha_retiro DESC"
+            cursor.execute(query, params)
+        else:
+            cursor.execute("""
+                SELECT r.id, r.id_usuario, u.nombre AS usuario_nombre,
+                       r.id_reservado, a.nombre_art,
+                       r.estado_reserva, r.fecha_retiro, r.fecha_regreso
+                FROM reserva r
+                JOIN articulos a ON r.id_reservado = a.id
+                JOIN usuario u ON r.id_usuario = u.id
+                WHERE r.id_usuario = %(usuario_id)s
+                ORDER BY r.fecha_retiro DESC
+            """, {"usuario_id": request.usuario_id})
+
         reservas = [format_reserva(row) for row in cursor.fetchall()]
         return jsonify(reservas), HTTP_OK
-    except Exception:
+
+    except Exception as e:
+        print("ERROR listar_reservas:", e)
         return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
     finally:
         try:
@@ -86,6 +117,7 @@ def listar_reservas():
             conn.close()
         except Exception:
             pass
+
 
 
 def obtener_detalle_reserva_db(reserva_id):

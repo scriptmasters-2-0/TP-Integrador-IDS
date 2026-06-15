@@ -3,6 +3,8 @@
 from flask import Blueprint, redirect, render_template, request, session, url_for
 
 from servicios.api_client import obtener_detalle_reserva
+from servicios.fechas_servicio import formatear_fecha_argentina
+from servicios.paginacion_servicio import paginar_lista, DEFAULT_PER_PAGE
 from servicios.normativas_servicio import (
     actualizar_normativa,
     crear_normativa,
@@ -19,9 +21,6 @@ from servicios import reservas_servicio
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
-
-
-
 @admin_bp.route("/reservas/<int:id>", methods=["GET", "POST"])
 def reserva_detalle(id):
     """Renderiza y procesa la vista de detalle de préstamo para administradores."""
@@ -35,15 +34,22 @@ def reserva_detalle(id):
     if request.method == "POST":
         return redirect(url_for("admin.reserva_detalle", id=id))
 
+    estado_clases = {
+        "pendiente": "status-pending",
+        "aprobado": "status-aprobado",
+        "devuelto": "status-devuelto",
+        "rechazado": "status-rechazado",
+        "cancelado": "status-cancelado",
+    }
+
     try:
         datos_api = obtener_detalle_reserva(id)
+        estado = datos_api.get("estado_reserva", "pendiente")
         reserva = {
             "id": datos_api.get("id", id),
-            "estado_general": datos_api.get("estado_reserva", "pendiente"),
-            "estado_texto": datos_api.get("estado_reserva", "Pendiente"),
-            "estado_clase": "status-pending"
-            if datos_api.get("estado_reserva") == "pendiente"
-            else "status-active",
+            "estado_general": estado,
+            "estado_texto": estado,
+            "estado_clase": estado_clases.get(estado, "status-pending"),
             "equipo_nombre": datos_api.get("nombre_art", "Material no especificado"),
             "equipo_id": datos_api.get("id_reservado", "N/A"),
             "titular_nombre": datos_api.get("nombre", "Alumno"),
@@ -57,7 +63,7 @@ def reserva_detalle(id):
             "id": id,
             "estado_general": "error",
             "estado_texto": "Error al cargar",
-            "estado_clase": "status-error",
+            "estado_clase": "status-pending",
             "equipo_nombre": "No disponible",
             "equipo_id": "N/A",
             "titular_nombre": "Usuario",
@@ -159,6 +165,7 @@ def guardar_articulo():
     return redirect(
         url_for("admin.crear_articulo", exito="Artículo creado correctamente")
     )
+
 
 @admin_bp.route("/articulos/<int:id>/eliminar", methods=["POST"])
 def eliminar_articulo_route(id):
@@ -278,12 +285,12 @@ def usuarios():
         }
         if id_usuario:
             usuario_servicio.actualizar_usuario(id_usuario, data, token=token)
-        
+
         return redirect(url_for("admin.usuarios"))
-    
+
     page = request.args.get("page", 1, type=int)
     nombre_usuario = request.args.get("usuario")
-    usuarios = usuario_servicio.obtener_usuarios(params={"page": page, "usuario": nombre_usuario}, token=token)    
+    usuarios = usuario_servicio.obtener_usuarios(params={"page": page, "usuario": nombre_usuario}, token=token)
     usuario_editado = None
     id_editar = request.args.get("editar")
 
@@ -313,7 +320,6 @@ def eliminar_usuario():
         return redirect(url_for("public.home"))
 
     id = request.form.get("id")
-    
     usuario_servicio.eliminar_usuario(id, token=token)
 
     return redirect(url_for("admin.usuarios"))
@@ -321,7 +327,7 @@ def eliminar_usuario():
 
 @admin_bp.route("/reportes/morosidad")
 def reporte_morosidad():
-    """Renderiza la vista de reporte de morosidad para administradores."""
+    """Reporte de morosidad."""
     token = session.get("token")
     rol = session.get("rol")
     if not token:
@@ -329,9 +335,31 @@ def reporte_morosidad():
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
-    penalizaciones = penalizaciones_servicio.obtener_penalizaciones(token=token)
+    usuario = request.args.get("usuario")
+    page = request.args.get("page", 1, type=int)
+    params = {"usuario": usuario} if usuario else {}
 
-    return render_template("admin/morosidad.html", penalizaciones=penalizaciones)
+    penalizaciones_raw = penalizaciones_servicio.obtener_penalizaciones(
+        params=params or None, token=token
+    )
+
+    penalizaciones_formateadas = []
+    if isinstance(penalizaciones_raw, list):
+        for p in penalizaciones_raw:
+            penalizaciones_formateadas.append({
+                **p,
+                "fecha_fin": formatear_fecha_argentina(p.get("fecha_fin")),
+            })
+
+    penalizaciones, pagination = paginar_lista(penalizaciones_formateadas, pagina=page)
+
+    return render_template(
+        "admin/morosidad.html",
+        penalizaciones=penalizaciones,
+        usuario=usuario or "",
+        fetch_error=None,
+        pagination=pagination,
+    )
 
 
 @admin_bp.route("/articulos/<int:id>/editar", methods=["GET", "POST"])
@@ -390,6 +418,7 @@ def lista_reservas():
     estado = request.args.get("estado")
     usuario = request.args.get("usuario")
     fecha = request.args.get("fecha")
+    page = request.args.get("page", 1, type=int)
 
     params = {}
     if estado:
@@ -399,11 +428,25 @@ def lista_reservas():
     if fecha:
         params["fecha"] = fecha
 
-    reservas = reservas_servicio.obtener_reservas(params=params or None)
+    raw = reservas_servicio.obtener_reservas(params=params or None)
+
+    reservas = [
+        {
+            "id": r.get("id"),
+            "usuario_nombre": r.get("usuario_nombre", f"Usuario #{r.get('id_usuario')}"),
+            "nombre_art": r.get("nombre_art", "—"),
+            "estado_reserva": r.get("estado_reserva", "—"),
+            "fecha": formatear_fecha_argentina(r.get("fecha_retiro")),
+        }
+        for r in raw
+    ]
+
+    reservas_paginadas, pagination = paginar_lista(reservas, pagina=page)
 
     return render_template(
         "admin/reservas.html",
-        reservas=reservas,
+        reservas=reservas_paginadas,
+        pagination=pagination,
     )
 
 
@@ -426,16 +469,69 @@ def listar_penalizaciones():
             lista_penalizaciones.append(
                 {
                     "id": p.get("id"),
-                    "usuario_nombre": p.get("nombre_usuario", "Desconocido"),
+                    "usuario_nombre": p.get("nombre", "Desconocido"),
                     "severidad": p.get("severidad", "Media"),
-                    "fecha_inicio": p.get("fecha_inicio", "N/A"),
+                    "fecha_inicio": formatear_fecha_argentina(p.get("fecha_inicio")),
                     "activa": p.get("activa", True),
                 }
             )
 
+    page = request.args.get("page", 1, type=int)
+    lista_penalizaciones, pagination = paginar_lista(lista_penalizaciones, pagina=page)
+
     return render_template(
         "admin/penalizaciones.html",
         penalizaciones=lista_penalizaciones,
+        pagination=pagination,
+    )
+
+
+@admin_bp.route("/penalizaciones/nueva", methods=["GET", "POST"])
+def crear_penalizacion():
+    """Formulario de alta de penalización (solo bibliotecario)."""
+    token = session.get("token")
+    rol = session.get("rol")
+    if not token:
+        return redirect(url_for("public.login"))
+    if rol not in ["admin", "bibliotecario"]:
+        return redirect(url_for("public.home"))
+
+    if rol != "bibliotecario":
+        return redirect(url_for("admin.listar_penalizaciones"))
+
+    if request.method == "POST":
+        usuario_id = request.form.get("usuario_id")
+        motivo = request.form.get("reason")
+
+        if not usuario_id or not motivo:
+            usuarios = usuario_servicio.obtener_usuarios(token=token)
+            return render_template(
+                "admin/penalizaciones_form.html",
+                usuarios=usuarios,
+                form_error="Usuario y motivo son obligatorios.",
+            )
+
+        resultado = penalizaciones_servicio.crear_penalizacion(
+            {"usuario_id": usuario_id, "reason": motivo, "severidad": request.form.get("severidad", "media")},
+            token=token,
+        )
+
+        if not resultado:
+            usuarios = usuario_servicio.obtener_usuarios(token=token)
+            return render_template(
+                "admin/penalizaciones_form.html",
+                usuarios=usuarios,
+                form_error="No se pudo crear la penalización.",
+            )
+
+        return redirect(url_for("admin.listar_penalizaciones"))
+
+    usuarios = usuario_servicio.obtener_usuarios(token=token)
+
+    return render_template(
+        "admin/penalizaciones_form.html",
+        usuarios=usuarios,
+        form_error=None,
     )
 
 
@@ -449,8 +545,12 @@ def levantar_penalizacion(id):
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
-    penalizaciones_servicio.actualizar_parcial_penalizacion(id, {}, token=token)
+    if rol != "bibliotecario":
+        return redirect(url_for("admin.listar_penalizaciones"))
+
+    penalizaciones_servicio.actualizar_parcial_penalizacion(id, {"status": "Levantada"}, token=token)
     return redirect(url_for("admin.listar_penalizaciones"))
+
 
 @admin_bp.route("/usuarios/<int:id>", methods=["GET"])
 def usuario_detalle(id):
@@ -475,6 +575,8 @@ def editar_usuario(id):
         return redirect(url_for("public.login"))
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
+    if rol != "bibliotecario":
+        return redirect(url_for("admin.usuario_detalle", id=id))
 
     payload = {
         "rol": request.form.get("rol"),

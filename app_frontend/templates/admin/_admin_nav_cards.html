@@ -10,17 +10,17 @@
     <a href="{{ url_for('admin.lista_reservas') }}" class="dashboard-card-link">Ver reservas</a>
   </div>
   <div class="dashboard-card {% if request.endpoint == 'admin.reportes' %}active-card{% endif %}">
-    <i class="fa-solid fa-chart-pie"></i>
+    <i class="fa-solid fa-chart-bar"></i>
     <h3>Reportes</h3>
     <a href="{{ url_for('admin.reportes') }}" class="dashboard-card-link">Ver reportes</a>
   </div>
   <div class="dashboard-card {% if request.endpoint == 'admin.listar_articulos' %}active-card{% endif %}">
-    <i class="fa-solid fa-box"></i>
+    <i class="fa-solid fa-box-open"></i>
     <h3>Artículos</h3>
     <a href="{{ url_for('admin.listar_articulos') }}" class="dashboard-card-link">Ver artículos</a>
   </div>
   <div class="dashboard-card {% if request.endpoint == 'admin.normativas' %}active-card{% endif %}">
-    <i class="fa-solid fa-file-contract"></i>
+    <i class="fa-solid fa-clipboard-list"></i>
     <h3>Normativas</h3>
     <a href="{{ url_for('admin.normativas') }}" class="dashboard-card-link">Ver normativas</a>
   </div>
@@ -28,6 +28,11 @@
     <i class="fa-solid fa-users"></i>
     <h3>Usuarios</h3>
     <a href="{{ url_for('admin.usuarios') }}" class="dashboard-card-link">Ver usuarios</a>
+  </div>
+  <div class="dashboard-card {% if request.endpoint == 'admin.listar_penalizaciones' %}active-card{% endif %}">
+    <i class="fa-solid fa-ban"></i>
+    <h3>Penalizaciones</h3>
+    <a href="{{ url_for('admin.listar_penalizaciones') }}" class="dashboard-card-link">Ver penalizaciones</a>
   </div>
   <div class="dashboard-card {% if request.endpoint == 'admin.reporte_morosidad' %}active-card{% endif %}">
     <i class="fa-solid fa-chart-column"></i>
