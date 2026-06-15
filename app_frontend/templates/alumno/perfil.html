@@ -1,7 +1,5 @@
 {% extends "layouts/base_dashboard.html" %}
 
-{% block usuario_name %}{{ usuario.nombre | default('Alumno') }}{% endblock %}
-
 {% block sidebar_links %}
   <li>
     <a href="{{ url_for('alumno.perfil') }}" class="active">

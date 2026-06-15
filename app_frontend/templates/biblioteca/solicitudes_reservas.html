@@ -1,7 +1,5 @@
 {% extends "layouts/base_dashboard.html" %}
 
-{% block usuario_name %}Bibliotecario{% endblock %}
-
 {% block sidebar_links %}
   <li>
     <a href="{{ url_for('admin.dashboard') }}" class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}">

@@ -1,7 +1,5 @@
 {% extends "layouts/base_dashboard.html" %}
 
-{% block usuario_name %}{{ session.get('usuario', {}).get('nombre', 'Alumno') }}{% endblock %}
-
 {% block sidebar_links %}
   <li>
     <a href="{{ url_for('alumno.perfil') }}">
