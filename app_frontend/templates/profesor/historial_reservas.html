@@ -20,7 +20,7 @@
     <a href="{{ url_for('profesor.nueva_reserva') }}"><i class="fa-solid fa-plus"></i> Nueva reserva</a>
   </li>
   <li>
-    <a href="{{ url_for('profesor.historial_reserva') }}"  class="active"><i class="fa-solid fa-clock-rotate-left"></i> Historial</a>
+    <a href="{{ url_for('profesor.historial_reserva') }}" class="active"><i class="fa-solid fa-clock-rotate-left"></i> Historial</a>
   </li>
 {% endblock %}
 
@@ -37,6 +37,53 @@
       <p class="text-muted">Registro completo de tus reservas pasadas.</p>
     </div>
 
+    <form method="GET" action="{{ url_for('profesor.historial_reserva') }}" class="history-filters mb-4">
+      <div class="history-filter-bar">
+        <div class="data-group history-filter-search">
+          <label for="q">Buscador</label>
+          <input
+            id="q"
+            type="search"
+            name="q"
+            class="admin-input"
+            placeholder="Nombre del artículo"
+            value="{{ filtros.q }}" />
+        </div>
+        <button type="submit" class="res-btn btn-primary btn-inline history-search-button">
+          <i class="fa-solid fa-magnifying-glass"></i> Buscar
+        </button>
+        <details class="history-advanced-filters">
+          <summary class="res-btn btn-secondary btn-inline history-filter-toggle">
+            <i class="fa-solid fa-sliders"></i>
+            Filtros{% if filtros.estado %} activos{% endif %}
+          </summary>
+          <div class="history-filter-panel">
+            <div class="data-group">
+              <label for="estado">Estado</label>
+              <select id="estado" name="estado" class="admin-select">
+                <option value="">Todos</option>
+                {% for estado in estado_opciones %}
+                  <option value="{{ estado }}" {% if filtros.estado == estado %}selected{% endif %}>
+                    {{ estado }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="history-filter-panel-actions">
+              <button type="submit" class="res-btn btn-primary btn-inline">
+                <i class="fa-solid fa-filter"></i> Aplicar filtros
+              </button>
+              {% if filtros.q or filtros.estado %}
+                <a href="{{ url_for('profesor.historial_reserva') }}" class="res-btn btn-secondary btn-inline">
+                  <i class="fa-solid fa-rotate-left"></i> Limpiar
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        </details>
+      </div>
+    </form>
+
     <div class="history-table-wrapper">
       <table class="history-table">
         <thead>
@@ -52,11 +99,7 @@
               <tr>
                 <td>{{ p.nombre_articulo }}</td>
                 <td>
-                  <span class="badge
-                    {% if p.estado_reserva == 'pendiente' %}badge-warning
-                    {% elif p.estado_reserva == 'devuelto' %}badge-success
-                    {% elif p.estado_reserva == 'cancelado' %}badge-danger
-                    {% else %}badge-success{% endif %}">
+                  <span class="badge status-{{ p.estado_reserva }}">
                     {{ p.estado_reserva }}
                   </span>
                 </td>
@@ -78,42 +121,44 @@
           {% endif %}
         </tbody>
       </table>
-      {% if pagination %}
-      <p class="text-muted mt-3">
-        Mostrando {{ pagination.first_item }}-{{ pagination.last_item }} de {{ pagination.total_items }} reservas
-      </p>
-    {% endif %}
 
-    {% if pagination and pagination.total_pages > 1 %}
-      <div class="pagination-container">
-        <ul class="pagination">
-          <li>
-            <a href="{{ url_for('profesor.historial_reserva', page=pagination.prev_page) if pagination.has_prev else '#' }}"
-               class="page-link {% if not pagination.has_prev %}disabled{% endif %}">
-              <i class="fa-solid fa-chevron-left"></i>
-            </a>
-          </li>
-          {% for page_number in pagination.pages %}
-            {% if page_number %}
-              <li>
-                <a href="{{ url_for('profesor.historial_reserva', page=page_number) }}"
-                   class="page-link {% if page_number == pagination.page %}active{% endif %}">
-                  {{ page_number }}
-                </a>
-              </li>
-            {% else %}
-              <li><span class="page-dots">...</span></li>
-            {% endif %}
-          {% endfor %}
-          <li>
-            <a href="{{ url_for('profesor.historial_reserva', page=pagination.next_page) if pagination.has_next else '#' }}"
-               class="page-link {% if not pagination.has_next %}disabled{% endif %}">
-              <i class="fa-solid fa-chevron-right"></i>
-            </a>
-          </li>
-        </ul>
-      </div>
-    {% endif %}
+      {% if pagination %}
+        <p class="text-muted mt-3">
+          Mostrando {{ pagination.first_item }}-{{ pagination.last_item }} de {{ pagination.total_items }} reservas
+        </p>
+      {% endif %}
+
+      {% if pagination and pagination.total_pages > 1 %}
+        <div class="pagination-container">
+          <ul class="pagination">
+            <li>
+              <a href="{{ url_for('profesor.historial_reserva', page=pagination.prev_page, q=filtros.q, estado=filtros.estado) if pagination.has_prev else '#' }}"
+                 class="page-link {% if not pagination.has_prev %}disabled{% endif %}">
+                <i class="fa-solid fa-chevron-left"></i>
+              </a>
+            </li>
+            {% for page_number in pagination.pages %}
+              {% if page_number %}
+                <li>
+                  <a href="{{ url_for('profesor.historial_reserva', page=page_number, q=filtros.q, estado=filtros.estado) }}"
+                     class="page-link {% if page_number == pagination.page %}active{% endif %}">
+                    {{ page_number }}
+                  </a>
+                </li>
+              {% else %}
+                <li><span class="page-dots">...</span></li>
+              {% endif %}
+            {% endfor %}
+            <li>
+              <a href="{{ url_for('profesor.historial_reserva', page=pagination.next_page, q=filtros.q, estado=filtros.estado) if pagination.has_next else '#' }}"
+                 class="page-link {% if not pagination.has_next %}disabled{% endif %}">
+                <i class="fa-solid fa-chevron-right"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      {% endif %}
+
     </div>
   </div>
 {% endblock %}

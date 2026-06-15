@@ -66,7 +66,6 @@
       <div class=dashboard-card-content>
         <h3>Solicitudes de reservas</h3>
         <p>Gestiona las reservas pendientes</p>
-
         <a href="{{ url_for('biblioteca.listar_pendientes') }}" class="register-btn-nav">
           Ver solicitudes
         </a>
@@ -84,20 +83,22 @@
     <form method="GET" class="data-grid mb-4">
       <div class="data-group">
         <label>ID Usuario</label>
-        <input type="text" name="usuario" class="admin-input" placeholder="Buscar por usuario..." />
+        <input type="text" name="usuario" class="admin-input" placeholder="Buscar por usuario..." value="{{ request.args.get('usuario', '') }}" />
       </div>
       <div class="data-group">
         <label>Estado</label>
         <select name="estado" class="admin-select">
-          <option value="">Todos</option>
-          <option value="pendiente">Pendiente</option>
-          <option value="en_curso">En Curso</option>
-          <option value="finalizado">Finalizado</option>
+          <option value="" {% if not request.args.get('estado') %}selected{% endif %}>Todos</option>
+          <option value="pendiente" {% if request.args.get('estado') == 'pendiente' %}selected{% endif %}>Pendiente</option>
+          <option value="aprobado" {% if request.args.get('estado') == 'aprobado' %}selected{% endif %}>Aprobado</option>
+          <option value="devuelto" {% if request.args.get('estado') == 'devuelto' %}selected{% endif %}>Devuelto</option>
+          <option value="rechazado" {% if request.args.get('estado') == 'rechazado' %}selected{% endif %}>Rechazado</option>
+          <option value="cancelado" {% if request.args.get('estado') == 'cancelado' %}selected{% endif %}>Cancelado</option>
         </select>
       </div>
       <div class="data-group">
         <label>Fecha</label>
-        <input type="date" name="fecha" class="admin-input" />
+        <input type="date" name="fecha" class="admin-input" value="{{ request.args.get('fecha', '') }}" />
       </div>
       <div class="data-group align-items-end">
         <button type="submit" class="register-btn-nav">Filtrar</button>
@@ -123,10 +124,10 @@
                 <td>{{ p.id }}</td>
                 <td>{{ p.usuario_nombre }}</td>
                 <td>{{ p.nombre_art }}</td>
-                <td><span class="badge">{{ p.estado_reserva }}</span></td>
+                <td><span class="badge status-{{ p.estado_reserva }}">{{ p.estado_reserva }}</span></td>
                 <td>{{ p.fecha }}</td>
                 <td class="text-center">
-                  <a
+                  
                     href="{{ url_for('admin.reserva_detalle', id=p.id) }}"
                     class="btn-icon"
                     title="Ver Detalle">
@@ -145,5 +146,40 @@
         </tbody>
       </table>
     </div>
+
+    {% if pagination %}
+    <div class="pagination-container">
+      <ul class="pagination">
+        <li>
+          <a href="?page={{ pagination.prev_page }}&estado={{ request.args.get('estado', '') }}&usuario={{ request.args.get('usuario', '') }}&fecha={{ request.args.get('fecha', '') }}"
+             class="page-link {% if not pagination.has_prev %}disabled{% endif %}">
+            <i class="fa-solid fa-chevron-left"></i>
+          </a>
+        </li>
+        {% for p in pagination.pages %}
+          {% if p is none %}
+            <li><span class="page-dots">…</span></li>
+          {% else %}
+            <li>
+              <a href="?page={{ p }}&estado={{ request.args.get('estado', '') }}&usuario={{ request.args.get('usuario', '') }}&fecha={{ request.args.get('fecha', '') }}"
+                 class="page-link {% if p == pagination.page %}active{% endif %}">
+                {{ p }}
+              </a>
+            </li>
+          {% endif %}
+        {% endfor %}
+        <li>
+          <a href="?page={{ pagination.next_page }}&estado={{ request.args.get('estado', '') }}&usuario={{ request.args.get('usuario', '') }}&fecha={{ request.args.get('fecha', '') }}"
+             class="page-link {% if not pagination.has_next %}disabled{% endif %}">
+            <i class="fa-solid fa-chevron-right"></i>
+          </a>
+        </li>
+      </ul>
+    </div>
+    <p class="text-center text-muted text-sm mt-3">
+      Mostrando {{ pagination.first_item }}–{{ pagination.last_item }} de {{ pagination.total_items }}
+    </p>
+    {% endif %}
+
   </div>
 {% endblock %}

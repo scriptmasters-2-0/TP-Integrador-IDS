@@ -3001,3 +3001,29 @@ h3 {
   border-radius: 4px;
   transition: width 0.4s ease;
 }
+
+/* Estados de reserva */
+.status-devuelto {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-rechazado {
+  background-color: #fce4e4;
+  color: #c62828;
+}
+
+.status-cancelado {
+  background-color: #f3f3f3;
+  color: #757575;
+}
+
+.status-aprobado {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.status-pendiente {
+  background-color: #fff8e1;
+  color: #f9a825;
+}

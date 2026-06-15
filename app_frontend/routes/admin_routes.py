@@ -21,8 +21,6 @@ from servicios import reservas_servicio
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
-
-
 @admin_bp.route("/reservas/<int:id>", methods=["GET", "POST"])
 def reserva_detalle(id):
     """Renderiza y procesa la vista de detalle de préstamo para administradores."""
@@ -36,15 +34,22 @@ def reserva_detalle(id):
     if request.method == "POST":
         return redirect(url_for("admin.reserva_detalle", id=id))
 
+    estado_clases = {
+        "pendiente": "status-pending",
+        "aprobado": "status-aprobado",
+        "devuelto": "status-devuelto",
+        "rechazado": "status-rechazado",
+        "cancelado": "status-cancelado",
+    }
+
     try:
         datos_api = obtener_detalle_reserva(id)
+        estado = datos_api.get("estado_reserva", "pendiente")
         reserva = {
             "id": datos_api.get("id", id),
-            "estado_general": datos_api.get("estado_reserva", "pendiente"),
-            "estado_texto": datos_api.get("estado_reserva", "Pendiente"),
-            "estado_clase": "status-pending"
-            if datos_api.get("estado_reserva") == "pendiente"
-            else "status-active",
+            "estado_general": estado,
+            "estado_texto": estado,
+            "estado_clase": estado_clases.get(estado, "status-pending"),
             "equipo_nombre": datos_api.get("nombre_art", "Material no especificado"),
             "equipo_id": datos_api.get("id_reservado", "N/A"),
             "titular_nombre": datos_api.get("nombre", "Alumno"),
@@ -58,7 +63,7 @@ def reserva_detalle(id):
             "id": id,
             "estado_general": "error",
             "estado_texto": "Error al cargar",
-            "estado_clase": "status-error",
+            "estado_clase": "status-pending",
             "equipo_nombre": "No disponible",
             "equipo_id": "N/A",
             "titular_nombre": "Usuario",
@@ -160,6 +165,7 @@ def guardar_articulo():
     return redirect(
         url_for("admin.crear_articulo", exito="Artículo creado correctamente")
     )
+
 
 @admin_bp.route("/articulos/<int:id>/eliminar", methods=["POST"])
 def eliminar_articulo_route(id):
@@ -279,12 +285,12 @@ def usuarios():
         }
         if id_usuario:
             usuario_servicio.actualizar_usuario(id_usuario, data, token=token)
-        
+
         return redirect(url_for("admin.usuarios"))
-    
+
     page = request.args.get("page", 1, type=int)
     nombre_usuario = request.args.get("usuario")
-    usuarios = usuario_servicio.obtener_usuarios(params={"page": page, "usuario": nombre_usuario}, token=token)    
+    usuarios = usuario_servicio.obtener_usuarios(params={"page": page, "usuario": nombre_usuario}, token=token)
     usuario_editado = None
     id_editar = request.args.get("editar")
 
@@ -314,7 +320,6 @@ def eliminar_usuario():
         return redirect(url_for("public.home"))
 
     id = request.form.get("id")
-    
     usuario_servicio.eliminar_usuario(id, token=token)
 
     return redirect(url_for("admin.usuarios"))
@@ -322,6 +327,7 @@ def eliminar_usuario():
 
 @admin_bp.route("/reportes/morosidad")
 def reporte_morosidad():
+    """Reporte de morosidad."""
     token = session.get("token")
     rol = session.get("rol")
     if not token:
@@ -354,6 +360,7 @@ def reporte_morosidad():
         fetch_error=None,
         pagination=pagination,
     )
+
 
 @admin_bp.route("/articulos/<int:id>/editar", methods=["GET", "POST"])
 def editar_articulo(id):
@@ -411,6 +418,7 @@ def lista_reservas():
     estado = request.args.get("estado")
     usuario = request.args.get("usuario")
     fecha = request.args.get("fecha")
+    page = request.args.get("page", 1, type=int)
 
     params = {}
     if estado:
@@ -420,11 +428,25 @@ def lista_reservas():
     if fecha:
         params["fecha"] = fecha
 
-    reservas = reservas_servicio.obtener_reservas(params=params or None)
+    raw = reservas_servicio.obtener_reservas(params=params or None)
+
+    reservas = [
+        {
+            "id": r.get("id"),
+            "usuario_nombre": r.get("usuario_nombre", f"Usuario #{r.get('id_usuario')}"),
+            "nombre_art": r.get("nombre_art", "—"),
+            "estado_reserva": r.get("estado_reserva", "—"),
+            "fecha": formatear_fecha_argentina(r.get("fecha_retiro")),
+        }
+        for r in raw
+    ]
+
+    reservas_paginadas, pagination = paginar_lista(reservas, pagina=page)
 
     return render_template(
         "admin/reservas.html",
-        reservas=reservas,
+        reservas=reservas_paginadas,
+        pagination=pagination,
     )
 
 
@@ -505,7 +527,6 @@ def crear_penalizacion():
         return redirect(url_for("admin.listar_penalizaciones"))
 
     usuarios = usuario_servicio.obtener_usuarios(token=token)
-    print("DEBUG usuarios:", usuarios)
 
     return render_template(
         "admin/penalizaciones_form.html",
