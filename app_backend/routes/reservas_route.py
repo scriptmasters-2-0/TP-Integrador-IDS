@@ -474,3 +474,59 @@ def create_reserva():
             conn.close()
         except Exception:
             pass
+
+
+@reservas_bp.route("/api/reservas/<int:reserva_id>/scan", methods=["PATCH"])
+@requiere_auth(roles=["bibliotecario"])
+def escanear_qr(reserva_id):
+    """Cambia el estado de la reserva (entregado/devuelto) al escanearel qr con una sesion abierta en bibliotecario"""
+
+    conn = obtener_conexion()
+    if conn is None:
+        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
+
+    cursor = None
+
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT estado_reserva
+            FROM reserva
+            WHERE id = %(id)s
+        """, {"id": reserva_id})
+
+        reserva = cursor.fetchone()
+
+        if reserva is None:
+            return jsonify({"error": "reserva no encontrada"}), HTTP_NOT_FOUND
+        
+        if reserva["estado_reserva"] == "aprobado":
+            nuevo_estado = "entregado"
+        elif reserva["estado_reserva"]  == "entregado":
+            nuevo_estado = "devuelto"
+        else:
+            return jsonify({"error": "Escaneo invalido"}), HTTP_BAD_REQUEST
+        
+        cursor.execute("""
+            UPDATE reserva
+            SET estado_reserva = %(estado)s
+            WHERE id = %(id)s
+        """, {"estado": nuevo_estado, "id": reserva_id})
+
+        conn.commit()
+
+        return jsonify({"reserva_id": reserva_id, "estado_reserva": nuevo_estado}), HTTP_OK
+
+    except Exception:
+        return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
+
+    finally:
+        try:
+            if cursor:
+                cursor.close()
+        except Exception:
+            pass
+        try:
+            conn.close()
+        except Exception:
+            pass

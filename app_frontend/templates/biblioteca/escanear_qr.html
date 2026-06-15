@@ -1,0 +1,77 @@
+{% extends "layouts/base_dashboard.html" %}
+
+{% block usuario_name %}Bibliotecario{% endblock %}
+
+{% block sidebar_links %}
+  <li>
+    <a href="{{ url_for('admin.dashboard') }}" class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+      <i class="fa-solid fa-gauge"></i> Dashboard
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.reportes') }}" class="{% if request.endpoint == 'admin.reportes' %}active{% endif %}">
+      <i class="fa-solid fa-chart-bar"></i> Reportes
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.lista_reservas') }}" class="{% if request.endpoint == 'admin.lista_reservas' %}active{% endif %}">
+      <i class="fa-solid fa-clipboard-list"></i> Préstamos
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.listar_articulos') }}" class="{% if request.endpoint == 'admin.listar_articulos' %}active{% endif %}">
+      <i class="fa-solid fa-box"></i> Artículos
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.crear_articulo') }}" class="{% if request.endpoint == 'admin.crear_articulo' %}active{% endif %}">
+      <i class="fa-solid fa-plus"></i> Nuevo Artículo
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.normativas') }}" class="{% if request.endpoint == 'admin.normativas' %}active{% endif %}">
+      <i class="fa-solid fa-scale-balanced"></i> Normativas
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.usuarios') }}" class="{% if request.endpoint == 'admin.usuarios' %}active{% endif %}">
+      <i class="fa-solid fa-users"></i> Usuarios
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('admin.reporte_morosidad') }}" class="{% if request.endpoint == 'admin.reporte_morosidad' %}active{% endif %}">
+      <i class="fa-solid fa-triangle-exclamation"></i> Morosidad
+    </a>
+  </li>
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="history-hader">
+  <h1>
+    <i class="fa-solid fa-qrcode"></i>
+    Escanear QR
+  </h1>
+  <p>Escanee el codigo de la reserva para registrar su nuevo estado.</p>
+</div>
+
+<div class="scanner-container">
+  <div id="preview"></div>
+  <div id="resultado" class="scan-resultado"></div>
+
+  <div class="ticket-actions mt-4">
+    <button id="btn-iniciar" class="res-btn btn-primary btn-inline">
+      <i class="fa-solid fa-camera"></i>
+      Iniciar Cámara
+    </button>
+
+    <button id="btn-detener" class="res-btn btn-secondary btn-inline">
+      <i class="fa-solid fa-stop"></i>
+      Detener Cámara
+    </button>
+  </div>
+</div>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="{{ url_for('static', filename='js/scanner-automatico.js')}}"></script>
+{% endblock %}

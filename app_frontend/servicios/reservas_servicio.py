@@ -64,3 +64,13 @@ def obtener_solicitudes():
         return []
     
     return payload or []
+
+
+def escanear_qr_reserva(id_reserva, token=None):
+    """PATCH /reservas/<int:id_reserva>/scan"""
+    payload, error, status = patch_json(f"/reservas/{id_reserva}/scan", token=token, data={})
+
+    if error:
+        return None, error
+
+    return payload, None
