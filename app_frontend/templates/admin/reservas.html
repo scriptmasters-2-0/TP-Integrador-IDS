@@ -59,25 +59,19 @@
     <a href="{{ url_for('admin.dashboard') }}">{% if session.rol == 'bibliotecario' %}Bibliotecario{% else %}Admin{% endif %}</a> <i class="fa-solid fa-chevron-right"></i>
     <span>Préstamos</span>
   </div>
+  
+  <div class="history-container">
+    <div class="history-header flex-between-center">
+      <div>
+        <h1>Gestión de Reservas</h1>
+        <p>Consulta y gestiona el historial de reservas del sistema.</p>
+      </div>
 
-  {% if session.rol == 'bibliotecario' %}
-  <div class="history-header">
-    <div class="dashboard-card">
-      <div class=dashboard-card-content>
-        <h3>Solicitudes de reservas</h3>
-        <p>Gestiona las reservas pendientes</p>
+      {% if session.rol == 'bibliotecario' %}
         <a href="{{ url_for('biblioteca.listar_pendientes') }}" class="register-btn-nav">
           Ver solicitudes
         </a>
-      </div>
-    </div>
-  </div>
-  {% endif %}
-
-  <div class="history-container">
-    <div class="history-header">
-      <h1>Gestión de Reservas</h1>
-      <p>Consulta y gestiona el historial de reservas del sistema.</p>
+      {% endif %}
     </div>
 
     <form method="GET" class="data-grid mb-4">

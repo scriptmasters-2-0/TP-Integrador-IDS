@@ -39,6 +39,11 @@
     </a>
   </li>
   <li>
+    <a href="{{ url_for('admin.listar_penalizaciones') }}" class="{% if request.endpoint == 'admin.listar_penalizaciones' %}active{% endif %}">
+      <i class="fa-solid fa-ban"></i> Penalizaciones
+    </a>
+  </li>
+  <li>
     <a href="{{ url_for('admin.reporte_morosidad') }}" class="{% if request.endpoint == 'admin.reporte_morosidad' %}active{% endif %}">
       <i class="fa-solid fa-triangle-exclamation"></i> Morosidad
     </a>
@@ -46,32 +51,32 @@
 {% endblock %}
 
 {% block dashboard_content %}
+  <div class="breadcrumb reveal">
+    <a href="{{ url_for('admin.dashboard') }}">{% if session.rol == 'bibliotecario' %}Bibliotecario{% else %}Admin{% endif %}</a> <i class="fa-solid fa-chevron-right"></i>
+    <span>Comprobantes</span>
+  </div> 
 
-<div class="history-hader">
-  <h1>
-    <i class="fa-solid fa-qrcode"></i>
-    Escanear QR
-  </h1>
-  <p>Escanee el codigo de la reserva para registrar su nuevo estado.</p>
-</div>
-
-<div class="scanner-container">
-  <div id="preview"></div>
-  <div id="resultado" class="scan-resultado"></div>
-
-  <div class="ticket-actions mt-4">
-    <button id="btn-iniciar" class="res-btn btn-primary btn-inline">
-      <i class="fa-solid fa-camera"></i>
-      Iniciar Cámara
-    </button>
-
-    <button id="btn-detener" class="res-btn btn-secondary btn-inline">
-      <i class="fa-solid fa-stop"></i>
-      Detener Cámara
-    </button>
+  <div class="history-hader">
+    <h3>Escanee el codigo de la reserva para registrar su nuevo estado.</h3>
   </div>
-</div>
 
-<script src="https://unpkg.com/html5-qrcode"></script>
-<script src="{{ url_for('static', filename='js/scanner-automatico.js')}}"></script>
-{% endblock %}
+  <div class="scanner-container">
+    <div id="preview"></div>
+    <div id="resultado" class="scan-resultado"></div>
+
+    <div class="ticket-actions mt-4">
+      <button id="btn-iniciar" class="res-btn btn-primary btn-inline">
+        <i class="fa-solid fa-camera"></i>
+        Iniciar Cámara
+      </button>
+
+      <button id="btn-detener" class="res-btn btn-secondary btn-inline">
+        <i class="fa-solid fa-stop"></i>
+        Detener Cámara
+      </button>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="{{ url_for('static', filename='js/scanner-automatico.js')}}"></script>
+  {% endblock %}

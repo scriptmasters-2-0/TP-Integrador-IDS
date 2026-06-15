@@ -60,9 +60,20 @@
     <a href="{{ url_for('admin.dashboard') }}">{% if session.rol == 'bibliotecario' %}Bibliotecario{% else %}Admin{% endif %}</a> <i class="fa-solid fa-chevron-right"></i>
     <span>Dashboard</span>
   </div>
+
   <div class="dashboard-content reveal">
-    <h2>Bienvenido al panel de administración</h2>
-    <p>Desde aquí puedes gestionar reservas, reportes, artículos, normativas y usuarios.</p>
+    <div class="admin-header-flex">
+      <div>
+        <h2>Bienvenido al panel de administración</h2>
+        <p>Desde aquí puedes gestionar reservas, reportes, artículos, normativas y usuarios.</p>
+      </div>
+      {% if session.rol == 'bibliotecario' %}
+        <a href="{{ url_for('biblioteca.abrir_escaner') }}" class="register-btn-nav">
+          <i class="fa-solid fa-qrcode"></i>
+          Escanear Reserva
+        </a>
+      {% endif %}
+    </div>
 {% include 'admin/_admin_nav_cards.html' %}
   </div>
 {% endblock %}
