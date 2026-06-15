@@ -39,7 +39,7 @@ def format_reserva(row):
     return {
         "id": row.get("id"),
         "id_usuario": row.get("id_usuario"),
-        "usuario_nombre": row.get("usuario_nombre"),  # ← esta línea
+        "usuario_nombre": row.get("usuario_nombre"),  
         "id_reservado": row.get("id_reservado"),
         "nombre_art": row.get("nombre_art"),
         "estado_reserva": row.get("estado_reserva"),
