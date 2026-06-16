@@ -1300,6 +1300,16 @@ h3 {
   vertical-align: middle;
 }
 
+.alumno-reservas-table .history-table th {
+  padding-top: 17px;
+  padding-bottom: 17px;
+}
+
+.alumno-reservas-table .history-table td {
+  padding-top: 26px;
+  padding-bottom: 26px;
+}
+
 .history-table tr:hover td {
   background-color: #f9f9f9;
 }

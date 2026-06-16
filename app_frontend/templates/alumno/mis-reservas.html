@@ -2,49 +2,90 @@
 
 {% block sidebar_links %}
   <li>
-    <a href="#"><i class="fa-solid fa-user"></i> Perfil</a>
+    <a href="{{ url_for('alumno.perfil') }}"><i class="fa-solid fa-user"></i> Perfil</a>
+  </li>
+  <li>
+    <a href="{{ url_for('alumno.dashboard') }}">
+      <i class="fa-solid fa-gauge"></i> Dashboard
+    </a>
   </li>
   <li>
     <a href="{{ url_for('alumno.alumno_mis_reservas') }}" class="active"
       ><i class="fa-solid fa-list-check"></i> Mis reservas</a
     >
   </li>
+  <li>
+    <a href="{{ url_for('alumno.nueva_reserva') }}"
+      ><i class="fa-solid fa-plus"></i> Nueva reserva</a
+    >
+  </li>
+  <li>
+    <a href="{{ url_for('alumno.historial') }}">
+      <i class="fa-solid fa-clock-rotate-left"></i> Historial
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('alumno.alumno_penalizaciones') }}">
+      <i class="fa-solid fa-triangle-exclamation"></i> Penalizaciones
+    </a>
+  </li>
 {% endblock %}
 
 {% block dashboard_content %}
-  <h2 class="reveal">Mis Reservas</h2>
+  <div class="breadcrumb reveal">
+    <a href="{{ url_for('alumno.dashboard') }}">Alumno</a>
+    <i class="fa-solid fa-chevron-right"></i>
+    <span>Mis reservas</span>
+  </div>
 
-  {% if reservas %}
-    <div class="history-table-wrapper">
+  <h2 class="reveal mt-0 mb-1">Mis reservas</h2>
+  <p class="text-muted reveal mb-4">Consultá tus reservas activas y en curso.</p>
+
+  {% if fetch_error %}
+    <p class="text-danger fw-bold mb-4">{{ fetch_error }}</p>
+  {% endif %}
+
+  {% if reservas_activas %}
+    <div class="history-table-wrapper table-card alumno-reservas-table reveal delay-2">
       <table class="history-table">
         <thead>
           <tr>
-            <th>Item</th>
+            <th>Artículo</th>
             <th>Estado</th>
-            <th>Fecha</th>
-            <th>Acciones</th>
+            <th>Fecha retiro</th>
+            <th>Fecha regreso</th>
+            <th class="text-center">Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {% for reserva in reservas %}
+          {% for reserva in reservas_activas %}
             <tr>
-              <td>{{ reserva | tojson }}</td>
+              <td><strong>{{ reserva.nombre_articulo }}</strong></td>
               <td>
-                <span
-                  class="badge {% if reserva.estado_reserva == 'pendiente' %}badge-warning{% elif reserva.estado_reserva == 'devuelto' %}badge-success{% else %}badge-success{% endif %}">
+                <span class="badge {% if reserva.estado_reserva == 'pendiente' %}badge-warning{% else %}badge-success{% endif %}">
                   {{ reserva.estado_reserva }}
                 </span>
               </td>
-              <td>{{ reserva.fecha_retiro[:10] if reserva.fecha_retiro else "—" }}</td>
-              <td>
+              <td>{{ reserva.fecha_retiro }}</td>
+              <td>{{ reserva.fecha_regreso }}</td>
+              <td class="text-center">
                 {% if reserva.estado_reserva == 'pendiente' %}
-                  <form
-                    action="{{ url_for('alumno.alumno_cancelar_reserva', id=reserva.id) }}"
-                    method="POST">
-                    <button type="submit" class="res-btn btn-secondary">
+                  <form action="{{ url_for('alumno.alumno_cancelar_reserva', id=reserva.id) }}" method="POST" class="inline-form">
+                    <input type="hidden" name="next_view" value="mis_reservas" />
+                    <button type="submit" class="res-btn btn-secondary btn-inline">
                       <i class="fa-solid fa-xmark"></i> Cancelar
                     </button>
                   </form>
+                {% elif reserva.estado_reserva == 'aprobado' %}
+                  <a href="{{ url_for('alumno.reserva_detalle', id=reserva.id) }}" class="res-btn btn-secondary btn-inline">
+                    <i class="fa-solid fa-eye"></i> Ver detalle
+                  </a>
+                {% elif reserva.estado_reserva == 'entregado' %}
+                  <a href="{{ url_for('alumno.comprobante', id=reserva.id) }}" class="res-btn btn-secondary btn-inline">
+                    <i class="fa-solid fa-file-invoice"></i> Ver comprobante
+                  </a>
+                {% else %}
+                  <span class="text-muted text-sm">—</span>
                 {% endif %}
               </td>
             </tr>
@@ -54,9 +95,12 @@
     </div>
   {% else %}
     <div class="empty-state reveal">
-      <i class="icon-success fa-solid fa-circle-check empty-icon"></i>
-      <h3>¡No tenés reservas vigentes!</h3>
-      <p>Tu historial está limpio.</p>
+      <i class="fa-solid fa-box-open empty-icon"></i>
+      <h3>No tenés reservas activas</h3>
+      <p>¿Necesitás reservar un material?</p>
+      <a href="{{ url_for('alumno.nueva_reserva') }}" class="res-btn btn-primary mt-3 badge-lg">
+        <i class="fa-solid fa-plus"></i> Nueva reserva
+      </a>
     </div>
   {% endif %}
 {% endblock %}

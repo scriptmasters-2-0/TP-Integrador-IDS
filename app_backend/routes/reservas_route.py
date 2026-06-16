@@ -9,11 +9,13 @@ from database import obtener_conexion
 from http_codes_and_messages import (
     HTTP_BAD_REQUEST,
     HTTP_CREATED,
+    HTTP_FORBIDDEN,
     HTTP_INTERNAL_SERVER_ERROR,
     HTTP_NOT_FOUND,
     HTTP_OK,
     MSG_BAD_REQUEST,
     MSG_DB_CONNECTION_FAILED,
+    MSG_FORBIDDEN,
     MSG_INTERNAL_SERVER_ERROR,
     MSG_NOT_FOUND,
 )
@@ -132,7 +134,7 @@ def obtener_detalle_reserva_db(reserva_id):
 
 
 @reservas_bp.route("/api/reservas/<int:reserva_id>/status", methods=["PATCH"])
-@requiere_auth(roles=["admin", "profesor", "bibliotecario"])
+@requiere_auth(roles=["admin", "profesor", "bibliotecario", "alumno"])
 def patch_reserva_status(reserva_id):
     """Actualiza el estado de un préstamo.
 
@@ -166,6 +168,38 @@ def patch_reserva_status(reserva_id):
 
     try:
         cursor = conn.cursor(dictionary=True)
+
+        if request.usuario_rol == "alumno":
+            cursor.execute(
+                """
+                SELECT id,
+                       id_usuario,
+                       id_reservado,
+                       estado_reserva,
+                       fecha_retiro,
+                       fecha_regreso
+                FROM reserva
+                WHERE id = %(reserva_id)s
+                """,
+                {"reserva_id": reserva_id},
+            )
+            reserva_actual = cursor.fetchone()
+
+            if not reserva_actual:
+                return jsonify({"message": MSG_NOT_FOUND}), HTTP_NOT_FOUND
+
+            if data.get("estado_reserva") != "cancelado":
+                return jsonify({"error": MSG_FORBIDDEN}), HTTP_FORBIDDEN
+
+            if reserva_actual.get("id_usuario") != request.usuario_id:
+                return jsonify({"error": MSG_FORBIDDEN}), HTTP_FORBIDDEN
+
+            if reserva_actual.get("estado_reserva") != "pendiente":
+                return (
+                    jsonify({"error": MSG_BAD_REQUEST, "detail": "reserva_not_pending"}),
+                    HTTP_BAD_REQUEST,
+                )
+
         cursor.execute(
             """
             UPDATE reserva

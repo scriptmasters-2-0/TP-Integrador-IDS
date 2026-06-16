@@ -5,7 +5,12 @@
     <a href="{{ url_for('alumno.perfil') }}"><i class="fa-solid fa-user"></i> Perfil</a>
   </li>
   <li>
-    <a href="{{ url_for('alumno.historial') }}"
+    <a href="{{ url_for('alumno.dashboard') }}">
+      <i class="fa-solid fa-gauge"></i> Dashboard
+    </a>
+  </li>
+  <li>
+    <a href="{{ url_for('alumno.alumno_mis_reservas') }}"
       ><i class="fa-solid fa-list-check"></i> Mis reservas</a
     >
   </li>
@@ -13,6 +18,11 @@
     <a href="{{ url_for('alumno.nueva_reserva') }}"
       ><i class="fa-solid fa-plus"></i> Nueva reserva</a
     >
+  </li>
+  <li>
+    <a href="{{ url_for('alumno.historial') }}">
+      <i class="fa-solid fa-clock-rotate-left"></i> Historial
+    </a>
   </li>
   <li>
     <a href="{{ url_for('alumno.alumno_penalizaciones') }}" class="active"

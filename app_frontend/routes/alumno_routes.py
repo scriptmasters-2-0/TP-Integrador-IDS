@@ -15,6 +15,7 @@ from servicios.historial_filtros_servicio import (
     filtrar_historial_reservas,
 )
 from servicios.paginacion_servicio import DEFAULT_PER_PAGE, paginar_lista
+from servicios.reservas_servicio import establecer_estado_reserva
 from servicios.usuario_servicio import (
     obtener_reservas_usuario_con_error,
     actualizar_usuario,
@@ -99,6 +100,8 @@ def historial():
                     "estado_clase": (
                         "badge-warning"
                         if estado_reserva == "pendiente"
+                        else "badge-danger"
+                        if estado_reserva == "cancelado"
                         else "badge-success"
                     ),
                 }
@@ -223,12 +226,47 @@ def dashboard():
     if not token or not usuario:
         return redirect(url_for("public.login"))
 
-    dashboard_data, error = get_json(
-        f"/alumno/dashboard/{usuario.get('id')}", token=token
-    )
+    usuario_id = usuario.get("id")
+    payload, error = obtener_reservas_usuario_con_error(usuario_id, token=token)
+    reservas = []
+    total_activas = 0
+    total_historicas = 0
+
+    if not error and isinstance(payload, list):
+        for reserva in payload:
+            estado = reserva.get("estado_reserva", "")
+            entrada = {
+                "id": reserva.get("id"),
+                "estado_clase": "status-pending" if estado == "pendiente" else "status-active",
+                "estado_texto": estado,
+                "equipo": (
+                    reserva.get("nombre_articulo")
+                    or reserva.get("nombre_art")
+                    or "Artículo no disponible"
+                ),
+                "fecha": formatear_fecha_argentina(reserva.get("fecha_retiro")),
+                "ubicacion": reserva.get("seccion", "Sede FIUBA"),
+            }
+            if estado in ("pendiente", "aprobado", "entregado"):
+                reservas.append(entrada)
+                total_activas += 1
+            else:
+                total_historicas += 1
+
+    penalizaciones = usuario.get("penalizaciones")
+    penalizaciones = penalizaciones if isinstance(penalizaciones, list) else []
+    estadisticas = {
+        "actuales": total_activas,
+        "historicas": total_historicas,
+        "penalizaciones": len(penalizaciones),
+    }
 
     return render_template(
-        "alumno/dashboard.html", dashboard=dashboard_data or {}, fetch_error=error
+        "alumno/dashboard.html",
+        reservas=reservas,
+        estadisticas=estadisticas,
+        penalizaciones=penalizaciones,
+        fetch_error=error,
     )
 
 
@@ -283,35 +321,58 @@ def alumno_penalizaciones():
         fetch_error=error,
     )
 
-@alumno_bp.route("/reservas/<int:id>/cancelar", methods=["POST"])
-def cancelar_reserva(id):
-    """Cancela una reserva pendiente del alumno."""
-    token = session.get("token")
-    usuario = session.get("usuario")
-    if not token or not usuario:
-        return redirect(url_for("public.login"))
-    post_json(f"/reservas/{id}/cancelar", {}, token=token)
-    return redirect(url_for("alumno.historial"))
-
 @alumno_bp.route("/mis-reservas")
 def alumno_mis_reservas():
-    """Alias para mis reservas del alumno."""
+    """Vista de reservas activas y en curso del alumno."""
     token = session.get("token")
     usuario = session.get("usuario")
     if not token or not usuario:
         return redirect(url_for("public.login"))
 
     usuario_id = usuario.get("id")
-    reservas, error = get_json(f"/usuarios/{usuario_id}/reservas", token=token)
+    payload, error = obtener_reservas_usuario_con_error(usuario_id, token=token)
+
+    reservas_activas = []
+    if not error and isinstance(payload, list):
+        for reserva in payload:
+            estado = reserva.get("estado_reserva", "")
+            if estado not in ("pendiente", "aprobado", "entregado"):
+                continue
+            reservas_activas.append(
+                {
+                    "id": reserva.get("id"),
+                    "nombre_articulo": (
+                        reserva.get("nombre_articulo")
+                        or reserva.get("nombre_art")
+                        or "Artículo"
+                    ),
+                    "estado_reserva": estado,
+                    "fecha_retiro": formatear_fecha_argentina(reserva.get("fecha_retiro")),
+                    "fecha_regreso": formatear_fecha_argentina(reserva.get("fecha_regreso")),
+                }
+            )
 
     return render_template(
         "alumno/mis-reservas.html",
-        reservas=reservas if isinstance(reservas, list) else [],
+        reservas_activas=reservas_activas,
         fetch_error=error,
     )
 
 
 @alumno_bp.route("/reservas/<int:id>/cancelar", methods=["POST"])
 def alumno_cancelar_reserva(id):
-    """Alias para cancelar reserva del alumno."""
-    return cancelar_reserva(id)
+    """Cancela una reserva pendiente del alumno."""
+    token = session.get("token")
+    usuario = session.get("usuario")
+    if not token or not usuario:
+        return redirect(url_for("public.login"))
+
+    next_view = request.form.get("next_view")
+    redirect_endpoint = (
+        "alumno.dashboard"
+        if next_view == "dashboard"
+        else "alumno.alumno_mis_reservas"
+    )
+
+    establecer_estado_reserva(id, {"estado_reserva": "cancelado"}, token=token)
+    return redirect(url_for(redirect_endpoint))
