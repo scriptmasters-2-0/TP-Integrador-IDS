@@ -3002,6 +3002,30 @@ h3 {
   transition: width 0.4s ease;
 }
 
+/*----escaneo qr----*/
+
+.scanner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.scan-resultado {
+  width: 100%;
+  max-width: 850px;
+  padding: 15px 20px;
+  background: var(--bg-light);
+}
+
+#preview {
+  width: 700px !important;
+  height: 500px !important;
+  background: black !important;
+  border-radius: 15px;
+  margin-top: 20px;
+}
+
 /* Estados de reserva */
 .status-devuelto {
   background-color: #e8f5e9;

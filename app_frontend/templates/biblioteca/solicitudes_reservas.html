@@ -39,6 +39,11 @@
     </a>
   </li>
   <li>
+    <a href="{{ url_for('admin.listar_penalizaciones') }}" class="{% if request.endpoint == 'admin.listar_penalizaciones' %}active{% endif %}">
+      <i class="fa-solid fa-ban"></i> Penalizaciones
+    </a>
+  </li>
+  <li>
     <a href="{{ url_for('admin.reporte_morosidad') }}" class="{% if request.endpoint == 'admin.reporte_morosidad' %}active{% endif %}">
       <i class="fa-solid fa-triangle-exclamation"></i> Morosidad
     </a>
@@ -47,25 +52,24 @@
 
 {% block dashboard_content %}
 
-<div class="history-header">
-  <div class="dashboard-card">
-    <div class=dashboard-card-content>  
-      <h3>Solicitudes de reservas</h3>
-      <p>Gestiona las reservas pendientes</p>
-
-      <a href="{{ url_for('admin.lista_reservas') }}" class="register-btn-nav">
-        Volver a reservas
-      </a>
-    </div>
+<div class="breadcrumb reveal">
+    <a href="{{ url_for('admin.dashboard') }}">Bibliotecario</a>
+    <i class="fa-solid fa-chevron-right"></i>
+    <span>Solicitudes reservas</span>
   </div>
-</div>
 
 <div class="history-container">
-    <div class="history-header">
+    <div class="history-header flex-between-center">
+      <div>
         <h1>Solicitudes de reserva</h1>
         <p>Reservas pendientes de evaluación</p>
+      </div>
+      {% if session.rol == 'bibliotecario' %}
+        <a href="{{ url_for('admin.lista_reservas') }}" class="register-btn-nav">
+          Volver a reservas
+        </a>
+      {% endif %}
     </div>
-
     <div class="history-table-wrapper">
         <table class="history-table">
             <thead>

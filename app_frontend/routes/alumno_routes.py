@@ -249,7 +249,7 @@ def reserva_detalle(id):
             fetch_error=error
         )
 
-    if datos_api.get("estado_reserva") != "aprobado":
+    if datos_api.get("estado_reserva") not in ["aprobado", "entregado"]:
         return render_template(
             "alumno/reserva_detalle_alumno.html", 
             reserva=None, 
