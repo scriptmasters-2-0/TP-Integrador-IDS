@@ -41,8 +41,8 @@
   <h2 class="reveal mt-0 mb-1">Mis reservas</h2>
   <p class="text-muted reveal mb-4">Consultá tus reservas activas y en curso.</p>
 
-  {% if fetch_error %}
-    <p class="text-danger fw-bold mb-4">{{ fetch_error }}</p>
+  {% if fetch_error or mensaje_error %}
+    <p class="text-danger fw-bold mb-4">{{ fetch_error or mensaje_error }}</p>
   {% endif %}
 
   {% if reservas_activas %}

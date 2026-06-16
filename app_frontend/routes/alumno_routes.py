@@ -226,6 +226,7 @@ def dashboard():
     if not token or not usuario:
         return redirect(url_for("public.login"))
 
+    mensaje_error = request.args.get("mensaje_error")
     usuario_id = usuario.get("id")
     payload, error = obtener_reservas_usuario_con_error(usuario_id, token=token)
     reservas = []
@@ -267,6 +268,7 @@ def dashboard():
         estadisticas=estadisticas,
         penalizaciones=penalizaciones,
         fetch_error=error,
+        mensaje_error=mensaje_error,
     )
 
 
@@ -329,6 +331,7 @@ def alumno_mis_reservas():
     if not token or not usuario:
         return redirect(url_for("public.login"))
 
+    mensaje_error = request.args.get("mensaje_error")
     usuario_id = usuario.get("id")
     payload, error = obtener_reservas_usuario_con_error(usuario_id, token=token)
 
@@ -356,6 +359,7 @@ def alumno_mis_reservas():
         "alumno/mis-reservas.html",
         reservas_activas=reservas_activas,
         fetch_error=error,
+        mensaje_error=mensaje_error,
     )
 
 
@@ -368,11 +372,23 @@ def alumno_cancelar_reserva(id):
         return redirect(url_for("public.login"))
 
     next_view = request.form.get("next_view")
-    redirect_endpoint = (
-        "alumno.dashboard"
-        if next_view == "dashboard"
-        else "alumno.alumno_mis_reservas"
+    redirect_endpoints = {
+        "dashboard": "alumno.dashboard",
+        "mis_reservas": "alumno.alumno_mis_reservas",
+    }
+    redirect_endpoint = redirect_endpoints.get(
+        next_view, "alumno.alumno_mis_reservas"
     )
 
-    establecer_estado_reserva(id, {"estado_reserva": "cancelado"}, token=token)
+    cancelada = establecer_estado_reserva(
+        id, {"estado_reserva": "cancelado"}, token=token
+    )
+    if not cancelada:
+        return redirect(
+            url_for(
+                redirect_endpoint,
+                mensaje_error="No se pudo cancelar la reserva.",
+            )
+        )
+
     return redirect(url_for(redirect_endpoint))

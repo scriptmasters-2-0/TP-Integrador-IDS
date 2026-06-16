@@ -18,7 +18,7 @@ def home():
         rol = session.get("rol", "alumno")
         if rol in ("admin", "bibliotecario"):
             return redirect(url_for("admin.dashboard"))
-        if rol in ("profesor", "profesor"):
+        if rol == "profesor":
             return redirect(url_for("profesor.mis_reservas"))
         return redirect(url_for("alumno.dashboard"))
     return render_template("public/index.html")
@@ -31,7 +31,7 @@ def logup():
         rol = session.get("rol", "alumno")
         if rol in ("admin", "bibliotecario"):
             return redirect(url_for("admin.dashboard"))
-        if rol in ("profesor", "profesor"):
+        if rol == "profesor":
             return redirect(url_for("profesor.mis_reservas"))
         return redirect(url_for("alumno.dashboard"))
 
@@ -70,7 +70,7 @@ def login():
         rol = session.get("rol", "alumno")
         if rol in ("admin", "bibliotecario"):
             return redirect(url_for("admin.dashboard"))
-        if rol in ("profesor", "profesor"):
+        if rol == "profesor":
             return redirect(url_for("profesor.dashboard"))
         return redirect(url_for("alumno.dashboard"))
 
@@ -131,7 +131,7 @@ def login_submit():
 
     if rol in ("admin", "bibliotecario"):
         return redirect(url_for("admin.dashboard"))
-    if rol in ("profesor", "profesor"):
+    if rol == "profesor":
         return redirect(url_for("profesor.dashboard"))
     return redirect(url_for("alumno.dashboard"))
 
