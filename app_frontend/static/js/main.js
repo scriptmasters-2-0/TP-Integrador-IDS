@@ -163,8 +163,8 @@ document.addEventListener("DOMContentLoaded", () => {
       greeting = "Buenas tardes";
     }
 
-    const userNameElement = document.getElementById("dashboard-usuario-name");
-    const userName = userNameElement ? userNameElement.textContent.trim() : "Usuario";
+    const userNameElement = document.getElementById("dashboard-user-name");
+    const userName = userNameElement?.textContent?.trim() || "Usuario";
 
     greetingElement.textContent = `${greeting}, ${userName}`;
 

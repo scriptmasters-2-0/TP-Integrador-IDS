@@ -1,8 +1,4 @@
-{% extends "layouts/base_dashboard.html" %} {% block usuario_name %}
-  {% if session.rol == 'admin' %}Administrador
-  {% elif session.rol == 'bibliotecario' %}Bibliotecario
-  {% else %}{{ session.nombre or 'Usuario' }}{% endif %}
-{% endblock %}
+{% extends "layouts/base_dashboard.html" %}
 {% block sidebar_links %}
   <li>
     <a href="{{ url_for('admin.dashboard') }}" class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}">

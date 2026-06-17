@@ -51,7 +51,23 @@
           </div>
           <div class="user-info">
             <span class="user-name" id="dashboard-user-name"
-              >{% block usuario_name %}Usuario{% endblock %}</span
+              >{% block usuario_name %}
+                {% set usuario_dashboard = session.get('usuario') or {} %}
+                {% set nombre_usuario_dashboard = usuario_dashboard.get('nombre', '') | trim %}
+                {% if nombre_usuario_dashboard %}
+                  {{ nombre_usuario_dashboard }}
+                {% elif session.get('rol') == 'admin' %}
+                  Admin
+                {% elif session.get('rol') == 'bibliotecario' %}
+                  Bibliotecario
+                {% elif session.get('rol') == 'profesor' %}
+                  Profesor
+                {% elif session.get('rol') == 'alumno' %}
+                  Alumno
+                {% else %}
+                  Usuario
+                {% endif %}
+              {% endblock %}</span
             >
             <div class="user-avatar"><i class="fa-solid fa-user-tie"></i></div>
           </div>
