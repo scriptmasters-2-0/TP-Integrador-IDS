@@ -2553,12 +2553,13 @@ h3 {
 
 /* catálogo */
 .catalogo-page {
-  padding: 20px;
+  padding: 40px 0;
 }
 
 .catalogo-container {
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .catalogo-title {
@@ -2613,6 +2614,7 @@ h3 {
   display: flex;
   flex-wrap: wrap;
   gap: 15px;
+  justify-content: center;
 }
 
 .catalogo-card {
