@@ -6,7 +6,7 @@ requieren autenticación.
 """
 
 from functools import wraps
-import traceback
+import logging
 
 import bcrypt
 import jwt
@@ -34,6 +34,7 @@ from http_codes_and_messages import (
 from validators import valid_login, valid_usuario
 
 auth_bp = Blueprint("auth", __name__)
+logger = logging.getLogger(__name__)
 
 
 def hashear_contrasenia(contrasenia):
@@ -66,7 +67,7 @@ def validar_contrasenia(contrasenia, contrasenia_hash):
         return bcrypt.checkpw(contrasenia.encode("utf-8"), contrasenia_hash.encode("utf-8"))
 
     except (ValueError, TypeError):
-        print("Error al verificar la contraseña")
+        logger.warning("Error al verificar la contraseña")
         return False
 
 
@@ -98,18 +99,18 @@ def decodificar_token(token):
     Returns:
         tuple: Una tupla (payload, mensaje) donde payload es un diccionario
             con los datos del token si es válido o None si no lo es, y
-            mensaje es un string indicando el estado ("Valid", "Expired"
-            o "Invalid").
+            mensaje es un string indicando el estado ("Válido", "Token expirado"
+            o "Token inválido").
 
     """
     try:
-        return jwt.decode(token, JWT_SECRETO, algorithms=[JWT_ALGORITMO]), "Valid"
+        return jwt.decode(token, JWT_SECRETO, algorithms=[JWT_ALGORITMO]), "Válido"
 
     except jwt.ExpiredSignatureError:
-        return None, "Expired"
+        return None, "Token expirado"
 
     except jwt.InvalidTokenError:
-        return None, "Invalid"
+        return None, "Token inválido"
 
 
 def extraer_token_del_header():
@@ -120,15 +121,15 @@ def extraer_token_del_header():
     Returns:
         tuple: Una tupla (token, mensaje) donde token es el string del JWT
             si se extrajo correctamente o None si el formato es incorrecto,
-            y mensaje indica el estado ("Ok" o "Incorrect token type").
+            y mensaje indica el estado ("OK" o "Tipo de token incorrecto").
 
     """
     header = request.headers.get("Authorization", "")
 
     if not header.startswith("Bearer "):
-        return None, "Incorrect token type"
+        return None, "Tipo de token incorrecto"
 
-    return header[len("Bearer ") :].strip(), "Ok"
+    return header[len("Bearer ") :].strip(), "OK"
 
 
 # decorator

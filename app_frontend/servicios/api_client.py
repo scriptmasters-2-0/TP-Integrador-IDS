@@ -33,7 +33,7 @@ def get_json(path, token=None, params=None):
         response = requests.get(_build_url(path), headers=headers, params=params, timeout=DEFAULT_TIMEOUT)
     except requests.RequestException as exc:
         error_msg = f"No se pudo conectar con backend: {exc}"
-        logger.warning(error_msg)
+        logger.warning("No se pudo conectar con backend: %s", exc)
         return None, error_msg
 
     if response.status_code >= HTTP_BAD_REQUEST:
@@ -42,14 +42,14 @@ def get_json(path, token=None, params=None):
             detail = payload.get("error") or payload.get("message") or str(payload)
         except Exception:
             detail = response.text or f"HTTP {response.status_code}"
-        logger.warning(f"Backend returned {response.status_code}: {detail}")
+        logger.warning("Backend devolvió %s: %s", response.status_code, detail)
         return None, detail
 
     try:
         return response.json(), None
     except Exception:
         error_msg = "Respuesta inválida del backend"
-        logger.error(error_msg)
+        logger.error("Respuesta inválida del backend")
         return None, error_msg
 
 
@@ -61,7 +61,7 @@ def post_json(path, data, token=None):
         response = requests.post(_build_url(path), json=data, headers=headers, timeout=DEFAULT_TIMEOUT)
     except requests.RequestException as exc:
         error_msg = f"No se pudo conectar con backend: {exc}"
-        logger.warning(error_msg)
+        logger.warning("No se pudo conectar con backend: %s", exc)
         return None, error_msg, 0
 
     payload = None
@@ -76,7 +76,7 @@ def post_json(path, data, token=None):
             detail = payload.get("error") or payload.get("message") or str(payload)
         elif response.text:
             detail = response.text
-        logger.warning(f"Backend returned {response.status_code}: {detail}")
+        logger.warning("Backend devolvió %s: %s", response.status_code, detail)
         return payload, detail, response.status_code
 
     return payload, None, response.status_code
@@ -90,7 +90,7 @@ def patch_json(path, data, token=None):
         response = requests.patch(_build_url(path), json=data, headers=headers, timeout=DEFAULT_TIMEOUT)
     except requests.RequestException as exc:
         error_msg = f"No se pudo conectar con backend: {exc}"
-        logger.warning(error_msg)
+        logger.warning("No se pudo conectar con backend: %s", exc)
         return None, error_msg, 0
 
     payload = None
@@ -105,7 +105,7 @@ def patch_json(path, data, token=None):
             detail = payload.get("error") or payload.get("message") or str(payload)
         elif response.text:
             detail = response.text
-        logger.warning(f"Backend returned {response.status_code}: {detail}")
+        logger.warning("Backend devolvió %s: %s", response.status_code, detail)
         return payload, detail, response.status_code
 
     return payload, None, response.status_code
@@ -119,7 +119,7 @@ def put_json(path, data, token=None):
         response = requests.put(_build_url(path), json=data, headers=headers, timeout=DEFAULT_TIMEOUT)
     except requests.RequestException as exc:
         error_msg = f"No se pudo conectar con backend: {exc}"
-        logger.warning(error_msg)
+        logger.warning("No se pudo conectar con backend: %s", exc)
         return None, error_msg, 0
 
     payload = None
@@ -134,7 +134,7 @@ def put_json(path, data, token=None):
             detail = payload.get("error") or payload.get("message") or str(payload)
         elif response.text:
             detail = response.text
-        logger.warning(f"Backend returned {response.status_code}: {detail}")
+        logger.warning("Backend devolvió %s: %s", response.status_code, detail)
         return payload, detail, response.status_code
 
     return payload, None, response.status_code
@@ -147,7 +147,7 @@ def delete_json(path, token=None):
         response = requests.delete(_build_url(path), headers=headers, timeout=DEFAULT_TIMEOUT)
     except requests.RequestException as exc:
         error_msg = f"No se pudo conectar con backend: {exc}"
-        logger.warning(error_msg)
+        logger.warning("No se pudo conectar con backend: %s", exc)
         return None, error_msg, 0
 
     payload = None
@@ -162,7 +162,7 @@ def delete_json(path, token=None):
             detail = payload.get("error") or payload.get("message") or str(payload)
         elif response.text:
             detail = response.text
-        logger.warning(f"Backend returned {response.status_code}: {detail}")
+        logger.warning("Backend returned %s: %s", response.status_code, detail)
         return payload, detail, response.status_code
 
     return payload, None, response.status_code

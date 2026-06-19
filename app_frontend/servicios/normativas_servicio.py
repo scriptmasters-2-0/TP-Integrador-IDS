@@ -1,14 +1,23 @@
 from servicios.api_client import get_json, post_json, put_json, delete_json
+from servicios.paginacion_servicio import extraer_data_paginada
 
 TIMEOUT = 5
 
 
-def obtener_normativas():
+def obtener_normativas(params=None):
     """Obtiene la lista de normativas desde el backend. Devuelve [] en caso de error."""
-    payload, error = get_json("/normativas")
+    payload, error = get_json("/normativas", params=params)
     if error:
         return []
-    return payload or []
+    return extraer_data_paginada(payload)
+
+
+def obtener_normativas_paginadas(params=None):
+    """Obtiene normativas preservando metadata y links HATEOAS."""
+    payload, error = get_json("/normativas", params=params)
+    if error:
+        return {"data": [], "pagination": {}, "links": {}}, error
+    return payload or {"data": [], "pagination": {}, "links": {}}, None
 
 
 def crear_normativa(data):

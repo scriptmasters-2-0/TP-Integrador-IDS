@@ -19,7 +19,6 @@ from routes.usuarios_routes import usuarios_bp
 
 app = Flask(__name__)
 
-init_database()
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(articulos_bp)

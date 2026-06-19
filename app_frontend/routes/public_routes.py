@@ -1,5 +1,7 @@
 """Rutas publicas del frontend."""
 
+import logging
+
 from flask import Blueprint, redirect, render_template, request, session, url_for
 
 from http_codes_and_messages import HTTP_UNAUTHORIZED
@@ -8,6 +10,7 @@ from servicios.api_client import get_json, post_json
 from servicios.articulos_servicio import obtener_articulos
 
 public_bp = Blueprint("public", __name__)
+logger = logging.getLogger(__name__)
 
 
 @public_bp.route("/")
@@ -88,7 +91,7 @@ def login_submit():
     )
 
     if error:
-        print(error)
+        logger.warning("Error de login: %s", error)
         return (
             render_template(
                 "public/login.html",

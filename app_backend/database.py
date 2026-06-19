@@ -4,11 +4,14 @@ Provee funciones para obtener conexiones a la base de datos MySQL
 y para ejecutar el script de inicialización del esquema.
 """
 
+import logging
 import os
 
 import mysql.connector
 
 import config
+
+logger = logging.getLogger(__name__)
 
 
 def obtener_conexion():
@@ -28,12 +31,12 @@ def obtener_conexion():
             user=config.DB_USER,
             password=config.DB_PASSWORD,
             database=config.DB_NAME,
-            port=config.DB_PORT
+            port=config.DB_PORT,
         )
         return connection
 
     except mysql.connector.Error as err:
-        print(f"Error al conectar a la base de datos: {err}")
+        logger.error("Error al conectar a la base de datos: %s", err)
         return None
 
 
@@ -51,7 +54,7 @@ def init_database():
     """
     sql_file = os.path.join(os.path.dirname(__file__), "db_scripts", "init_db.sql")
     if not os.path.exists(sql_file):
-        print(f"SQL initialization file not found: {sql_file}")
+        logger.warning("Archivo SQL de inicialización no encontrado: %s", sql_file)
         return
 
     conn = obtener_conexion()
@@ -67,18 +70,18 @@ def init_database():
             script = f.read()
 
         # Ejecutar múltiples sentencias separadas por ';' de forma segura
-        statements = [s.strip() for s in script.split(';') if s.strip()]
+        statements = [s.strip() for s in script.split(";") if s.strip()]
         for stmt in statements:
             cursor.execute(stmt)
         conn.commit()
 
-        print("Database initialization script executed successfully.")
+        logger.info("Script de inicialización de base de datos ejecutado correctamente")
 
     except mysql.connector.Error as err:
-        print(f"Error initializing database: {err}")
+        logger.error("Error inicializando la base de datos: %s", err)
 
     except Exception as err:
-        print(f"Unexpected error while initializing database: {err}")
+        logger.exception("Error inesperado inicializando la base de datos: %s", err)
 
     finally:
         try:

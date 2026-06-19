@@ -16,22 +16,24 @@ from http_codes_and_messages import (
     HTTP_BAD_REQUEST,
     HTTP_CONFLICT,
     HTTP_CREATED,
+    HTTP_FORBIDDEN,
     HTTP_INTERNAL_SERVER_ERROR,
     HTTP_NOT_FOUND,
     HTTP_OK,
     MSG_BAD_REQUEST,
     MSG_CONFLICT,
     MSG_DB_CONNECTION_FAILED,
+    MSG_FORBIDDEN,
     MSG_INTERNAL_SERVER_ERROR,
     MSG_NOT_FOUND,
 )
 from routes.auth_route import requiere_auth
 from validators import valid_id, valid_usuario, valid_usuario_update
 
-logging.basicConfig(level=logging.ERROR)
-
 usuarios_bp = Blueprint("usuarios", __name__)
+logger = logging.getLogger(__name__)
 ARGENTINA_TZ = ZoneInfo("America/Argentina/Buenos_Aires")
+DUPLICATE_ENTRY_ERRNO = 1062
 
 
 def _datetime_to_argentina_iso(value):
@@ -58,6 +60,7 @@ def format_usuario_reserva(row):
 
 
 @usuarios_bp.route("/api/usuarios", methods=["GET"])
+@requiere_auth(roles=["admin"])
 def get_all_usuarios():
     """Lista todos los usuarios registrados.
 
@@ -93,15 +96,15 @@ def get_all_usuarios():
         return jsonify(usuarios), HTTP_OK
 
     except mysql.connector.Error as query_err:
-        logging.error(f"Database query error in get_all_usuarios: {query_err}")
+        logger.error("Error en la consulta a la base de datos en get_all_usuarios: %s", query_err)
 
         return jsonify(
-            {"error": "Internal server error: Database query failed"}
+            {"error": "Error interno del servidor: fallo en la consulta a la base de datos"}
         ), HTTP_INTERNAL_SERVER_ERROR
 
-    except Exception as e:
-        print(repr(e))
-        return jsonify({str(e)}), 500
+    except Exception:
+        logger.exception("Error inesperado en get_all_usuarios")
+        return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
     finally:
         try:
             if cursor:
@@ -127,7 +130,7 @@ def get_usuario_by_id(usuario_id):
 
     """
     if valid_id(usuario_id) is None:
-        return jsonify({"error": "Invalid usuario ID format"}), HTTP_BAD_REQUEST
+        return jsonify({"error": "Formato de ID de usuario inválido"}), HTTP_BAD_REQUEST
 
     conn = obtener_conexion()
     if conn is None:
@@ -143,16 +146,16 @@ def get_usuario_by_id(usuario_id):
 
         if not usuario:
             return jsonify(
-                {"error": f"User with ID {usuario_id} not found"}
+                {"error": f"Usuario con ID {usuario_id} no encontrado"}
             ), HTTP_NOT_FOUND
 
         return jsonify(usuario), HTTP_OK
 
     except mysql.connector.Error as query_err:
-        logging.error(f"Database query error in get_usuario_by_id: {query_err}")
+        logger.error("Error de consulta a la base de datos en get_usuario_by_id: %s", query_err)
 
         return jsonify(
-            {"error": "Internal server error: Database query failed"}
+            {"error": "Error interno del servidor: fallo en la consulta a la base de datos"}
         ), HTTP_INTERNAL_SERVER_ERROR
 
     finally:
@@ -165,9 +168,6 @@ def get_usuario_by_id(usuario_id):
             conn.close()
         except Exception:
             pass
-
-
-DUPLICATE_ENTRY_ERRNO = 1062
 
 
 def desactivar_usuario_db(id_usuario):
@@ -208,6 +208,12 @@ def get_usuario_reservas(usuario_id):
             error interno).
 
     """
+    if (
+        request.usuario_rol not in ("admin", "bibliotecario")
+        and usuario_id != request.usuario_id
+    ):
+        return jsonify({"error": MSG_FORBIDDEN}), HTTP_FORBIDDEN
+
     conn = obtener_conexion()
     if conn is None:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
@@ -260,7 +266,7 @@ def get_usuario_reservas(usuario_id):
 
 
 @usuarios_bp.route("/api/usuarios", methods=["POST"])
-@requiere_auth(roles=["admin", "bibliotecario"])
+@requiere_auth(roles=["admin"])
 def create_usuario():
     """Crea un nuevo usuario en el sistema.
 

@@ -23,6 +23,7 @@ from routes.auth_route import requiere_auth
 from validators import valid_id, valid_reserva_create, valid_reserva_status_update
 
 reservas_bp = Blueprint("reservas", __name__)
+logger = logging.getLogger(__name__)
 
 
 def format_reserva(row):
@@ -41,7 +42,7 @@ def format_reserva(row):
     return {
         "id": row.get("id"),
         "id_usuario": row.get("id_usuario"),
-        "usuario_nombre": row.get("usuario_nombre"),  
+        "usuario_nombre": row.get("usuario_nombre"),
         "id_reservado": row.get("id_reservado"),
         "nombre_art": row.get("nombre_art"),
         "estado_reserva": row.get("estado_reserva"),
@@ -107,8 +108,8 @@ def listar_reservas():
         reservas = [format_reserva(row) for row in cursor.fetchall()]
         return jsonify(reservas), HTTP_OK
 
-    except Exception as e:
-        print("ERROR listar_reservas:", e)
+    except Exception:
+        logger.exception("Error al listar reservas")
         return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
     finally:
         try:
@@ -139,6 +140,8 @@ def obtener_detalle_reserva_db(reserva_id):
         """
         SELECT
             reserva.id,
+            reserva.id_usuario,
+            reserva.id_reservado,
             usuario.nombre,
             articulos.nombre_art,
             reserva.estado_reserva,
@@ -201,7 +204,7 @@ def patch_reserva_status(reserva_id):
     try:
         cursor = conn.cursor(dictionary=True)
 
-        if request.usuario_rol == "alumno":
+        if request.usuario_rol in ("alumno", "profesor"):
             cursor.execute(
                 """
                 SELECT id,
@@ -309,9 +312,9 @@ def listar_solicitudes():
         solicitudes = cursor.fetchall()
         return jsonify(solicitudes), HTTP_OK
 
-    except Exception as e:
-        print("ERROR:", str(e))
-        return jsonify({"error": str(e)}), HTTP_INTERNAL_SERVER_ERROR
+    except Exception:
+        logger.exception("Error al listar solicitudes de reserva")
+        return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
 
     finally:
         try:
@@ -335,16 +338,22 @@ def crear_reserva():
         data = None
 
     if not data:
-        return jsonify({"error": "Invalid reserva payload"}), HTTP_BAD_REQUEST
+        return jsonify({"error": "Datos de reserva inválidos"}), HTTP_BAD_REQUEST
 
     is_valid, error, parsed = valid_reserva_create(data)
     if not is_valid:
         return jsonify(
-            {"error": "Invalid reserva payload", "detail": error}
+            {"error": "Datos de reserva inválidos", "detail": error}
         ), HTTP_BAD_REQUEST
 
     usuario_id = parsed.get("usuario_id")
     articulo_id = parsed.get("articulo_id")
+
+    if (
+        request.usuario_rol not in ("admin", "bibliotecario")
+        and usuario_id != request.usuario_id
+    ):
+        return jsonify({"error": MSG_FORBIDDEN}), HTTP_FORBIDDEN
 
     conn = obtener_conexion()
     if conn is None:
@@ -357,7 +366,7 @@ def crear_reserva():
         cursor.execute("SELECT id FROM usuario WHERE id = %s", (usuario_id,))
         if not cursor.fetchone():
             return jsonify(
-                {"error": f"Cannot create reserva. User with ID {usuario_id} does not exist"}
+                {"error": f"No se puede crear la reserva. El usuario con ID {usuario_id} no existe"}
             ), HTTP_NOT_FOUND
 
         cursor.execute(
@@ -367,12 +376,12 @@ def crear_reserva():
         articulo = cursor.fetchone()
         if not articulo:
             return jsonify(
-                {"error": f"Cannot create reserva. Item with ID {articulo_id} does not exist"}
+                {"error": f"No se puede crear la reserva. El artículo con ID {articulo_id} no existe"}
             ), HTTP_NOT_FOUND
 
         if articulo["stock"] <= 0 or articulo["necesita_reparacion"]:
             return jsonify(
-                {"error": f"Item with ID {articulo_id} is not available"}
+                {"error": f"El artículo con ID {articulo_id} no está disponible"}
             ), HTTP_BAD_REQUEST
 
         insert_query = (
@@ -388,7 +397,7 @@ def crear_reserva():
 
         return jsonify(
             {
-                "message": "Loan created exitofully",
+                "message": "Reserva creada correctamente",
                 "reserva_id": new_reserva_id,
                 "usuario_id": usuario_id,
                 "articulo_id": articulo_id,
@@ -398,7 +407,7 @@ def crear_reserva():
     except mysql.connector.Error as query_err:
         return jsonify(
             {
-                "error": "Internal server error: Database query failed",
+                "error": "Error interno del servidor: fallo en la consulta a la base de datos",
                 "detail": str(query_err),
             }
         ), HTTP_INTERNAL_SERVER_ERROR
@@ -419,14 +428,15 @@ def crear_reserva():
 
 
 @reservas_bp.route("/api/reservas/<int:reserva_id>", methods=["GET"])
+@requiere_auth(roles=["admin", "profesor", "bibliotecario", "alumno"])
 def obtener_detalle_reserva(reserva_id):
-    """Obtiene el detalle completo de un préstamo.
+    """Obtiene el detalle completo de una reserva.
 
     Args:
-        reserva_id (int): Identificador único del préstamo a consultar.
+        reserva_id (int): Identificador único de la reserva a consultar.
 
     Returns:
-        tuple: JSON con el detalle del préstamo y el código HTTP correspondiente.
+        tuple: JSON con el detalle de la reserva y el código HTTP correspondiente.
 
     """
     if reserva_id <= 0:
@@ -435,111 +445,16 @@ def obtener_detalle_reserva(reserva_id):
     resultado = obtener_detalle_reserva_db(reserva_id)
 
     if resultado is not None:
+        if (
+            request.usuario_rol not in ("admin", "bibliotecario")
+            and resultado.get("id_usuario") != request.usuario_id
+        ):
+            return jsonify({"error": MSG_FORBIDDEN}), HTTP_FORBIDDEN
+
         return jsonify(resultado), HTTP_OK
 
     else:
-        return jsonify({"error": "Préstamo no encontrado"}), HTTP_NOT_FOUND
-
-
-@reservas_bp.route("/api/reservas", methods=["POST"])
-def create_reserva():
-    """Crea un nuevo préstamo para un usuario y un artículo.
-
-    Valida que el usuario y el artículo existan, verifica disponibilidad
-    del artículo y registra el préstamo junto con la actualización de estado.
-
-    Returns:
-        tuple: JSON con el préstamo creado y código HTTP 201,
-            o un error con su código correspondiente.
-
-    """
-    try:
-        data = request.get_json()
-    except Exception:
-        data = None
-
-    is_valid, error, parsed = valid_reserva_create(data)
-    if not is_valid:
-        return jsonify(
-            {"error": "Invalid reserva payload", "detail": error}
-        ), HTTP_BAD_REQUEST
-
-    usuario_id = parsed.get("usuario_id")
-    articulo_id = parsed.get("articulo_id")
-
-    conn = obtener_conexion()
-    if conn is None:
-        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
-
-    cursor = None
-
-    try:
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT id FROM usuario WHERE id = %s", (usuario_id,))
-        if not cursor.fetchone():
-            return jsonify(
-                {"error": f"Cannot create reserva. User with ID {usuario_id} does not exist"}
-            ), HTTP_NOT_FOUND
-
-        cursor.execute(
-            "SELECT id, stock, necesita_reparacion FROM articulos WHERE id = %s",
-            (articulo_id,),
-        )
-        articulo = cursor.fetchone()
-        if not articulo:
-            return jsonify(
-                {"error": f"Cannot create reserva. Item with ID {articulo_id} does not exist"}
-            ), HTTP_NOT_FOUND
-
-        if articulo["stock"] <= 0 or articulo["necesita_reparacion"]:
-            return jsonify(
-                {"error": f"Item with ID {articulo_id} is not available"}
-            ), HTTP_BAD_REQUEST
-
-        insert_query = (
-            "INSERT INTO reserva (id_usuario, id_reservado, estado_reserva, fecha_retiro, fecha_regreso) "
-            "VALUES (%s, %s, 'pendiente', NOW(), NOW())"
-        )
-        cursor.execute(insert_query, (usuario_id, articulo_id))
-
-        update_articulo_query = "UPDATE articulos SET stock = stock - 1 WHERE id = %s"
-        cursor.execute(update_articulo_query, (articulo_id,))
-
-        conn.commit()
-
-        new_reserva_id = cursor.lastrowid
-
-        return jsonify(
-            {
-                "message": "Loan created exitofully",
-                "reserva_id": new_reserva_id,
-                "usuario_id": usuario_id,
-                "articulo_id": articulo_id,
-            }
-        ), HTTP_CREATED
-
-    except mysql.connector.Error as query_err:
-        logging.error(f"Database query error in create_reserva: {query_err}")
-
-        try:
-            conn.rollback()
-        except Exception:
-            pass
-
-        return jsonify(
-            {"error": "Internal server error: Database transaction failed"}
-        ), HTTP_INTERNAL_SERVER_ERROR
-
-    finally:
-        try:
-            if cursor:
-                cursor.close()
-        except Exception:
-            pass
-        try:
-            conn.close()
-        except Exception:
-            pass
+        return jsonify({"error": "Reserva no encontrada"}), HTTP_NOT_FOUND
 
 
 @reservas_bp.route("/api/reservas/<int:reserva_id>/scan", methods=["PATCH"])
@@ -564,14 +479,14 @@ def escanear_qr(reserva_id):
         reserva = cursor.fetchone()
 
         if reserva is None:
-            return jsonify({"error": "reserva no encontrada"}), HTTP_NOT_FOUND
+            return jsonify({"error": "Reserva no encontrada"}), HTTP_NOT_FOUND
         
         if reserva["estado_reserva"] == "aprobado":
             nuevo_estado = "entregado"
         elif reserva["estado_reserva"]  == "entregado":
             nuevo_estado = "devuelto"
         else:
-            return jsonify({"error": "Escaneo invalido"}), HTTP_BAD_REQUEST
+            return jsonify({"error": "Escaneo inválido"}), HTTP_BAD_REQUEST
         
         cursor.execute("""
             UPDATE reserva

@@ -21,6 +21,7 @@ from routes.auth_route import requiere_auth
 from validators import valid_id, valid_articulo, valid_articulo_filters, valid_articulo_update
 
 articulos_bp = Blueprint("articulos", __name__)
+logger = logging.getLogger(__name__)
 
 
 def format_articulo(row):
@@ -462,7 +463,7 @@ def get_articulo_by_id(articulo_id):
 
     """
     if valid_id(articulo_id) is None:
-        return jsonify({"error": "Invalid articulo ID format"}), HTTP_BAD_REQUEST
+        return jsonify({"error": "Formato de ID de artículo inválido"}), HTTP_BAD_REQUEST
 
     conn = obtener_conexion()
     if conn is None:
@@ -481,16 +482,15 @@ def get_articulo_by_id(articulo_id):
 
         if not articulo:
             return jsonify(
-                {"error": f"Item with ID {articulo_id} not found"}
+                {"error": f"Artículo con ID {articulo_id} no encontrado"}
             ), HTTP_NOT_FOUND
 
         return jsonify(articulo), HTTP_OK
 
     except mysql.connector.Error as query_err:
-        logging.error(f"Database query error in get_articulo_by_id: {query_err}")
 
         return jsonify(
-            {"error": "Internal server error: Database query failed"}
+            {"error": "Error interno del servidor: fallo en la consulta a la base de datos"}
         ), HTTP_INTERNAL_SERVER_ERROR
 
     finally:

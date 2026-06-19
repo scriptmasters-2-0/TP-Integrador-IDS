@@ -41,8 +41,8 @@ def perfil():
         perfil_fresco = obtener_mi_perfil(token=token)
         if perfil_fresco and "usuario" in perfil_fresco:
             usuario = perfil_fresco["usuario"]
-    except Exception as e:
-        logger.error(f"Error fetching usuario profile: {e}")
+    except Exception:
+        logger.exception("Error al obtener el perfil del usuario")
 
     return render_template("alumno/perfil.html", usuario=usuario, mensaje=mensaje)
 
@@ -188,8 +188,8 @@ def comprobante(id):
             "titular_nombre": datos_api.get("nombre", "Alumno"),
             "titular_legajo": datos_api.get("id_usuario", "N/A"),
         }
-    except Exception as e:
-        logger.error(f"Error retrieving reserva detail for ID {id}: {e}")
+    except Exception:
+        logger.exception("Error al obtener el detalle de la reserva con ID %s", id)
         reserva = {
             "id": id,
             "estado_texto": "Error al cargar",

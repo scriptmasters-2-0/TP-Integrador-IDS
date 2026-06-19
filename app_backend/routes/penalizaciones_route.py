@@ -13,11 +13,13 @@ from database import obtener_conexion
 from http_codes_and_messages import (
     HTTP_BAD_REQUEST,
     HTTP_CREATED,
+    HTTP_FORBIDDEN,
     HTTP_INTERNAL_SERVER_ERROR,
     HTTP_NOT_FOUND,
     HTTP_OK,
     MSG_BAD_REQUEST,
     MSG_DB_CONNECTION_FAILED,
+    MSG_FORBIDDEN,
     MSG_INTERNAL_SERVER_ERROR,
     MSG_NOT_FOUND,
 )
@@ -25,6 +27,7 @@ from routes.auth_route import requiere_auth
 from validators import valid_id, valid_penalty_patch, valid_usuario_id_query
 
 penalizaciones_bp = Blueprint("penalizaciones", __name__)
+logger = logging.getLogger(__name__)
 
 
 def usuario_existe(id_usuario):
@@ -144,6 +147,7 @@ def obtener_penalizacion_por_id(id_penalizacion):
 
 
 @penalizaciones_bp.route("/api/penalizaciones/<int:penalty_id>", methods=["GET"])
+@requiere_auth(roles=["admin", "bibliotecario"])
 def get_penalty(penalty_id):
     """Obtiene una penalización por su identificador.
 
@@ -318,11 +322,12 @@ def patch_penalty(penalty_id):
 
 
 @penalizaciones_bp.route("/api/penalizaciones", methods=["GET"])
-# @requiere_auth(roles=["admin", "bibliotecario"])
+@requiere_auth(roles=["admin", "bibliotecario", "alumno", "profesor"])
 def listar_penalizaciones():
     """Obtiene penalizaciones asociadas a un usuario mediante query param.
     o Lista todas las penalizaciones del sistema si no se especifica usuario_id.
-    Requiere un JWT válido con rol admin o bibliotecario en el request.
+    Admin y bibliotecario pueden listar todas. Alumno y profesor solo
+    pueden consultar las penalizaciones propias.
 
     Query Params:
         usuario_id (str): Identificador del usuario a consultar.
@@ -338,8 +343,12 @@ def listar_penalizaciones():
         is_valid, error, usuario_id = valid_usuario_id_query(request.args)
         if not is_valid:
             return jsonify(
-                {"error": "Invalid query params", "detail": error}
+                {"error": "Parámetros de consulta inválidos", "detail": error}
             ), HTTP_BAD_REQUEST
+
+    if request.usuario_rol not in ("admin", "bibliotecario"):
+        if usuario_id is None or usuario_id != request.usuario_id:
+            return jsonify({"error": MSG_FORBIDDEN}), HTTP_FORBIDDEN
 
     conn = obtener_conexion()
     if conn is None:
@@ -365,7 +374,7 @@ def listar_penalizaciones():
 
             if not usuario_exists:
                 return jsonify(
-                    {"error": f"User with ID {usuario_id} not found"}
+                    {"error": f"Usuario con ID {usuario_id} no encontrado"}
                 ), HTTP_NOT_FOUND
             penalizaciones_query += " WHERE penalizacion.id_usuario = %(usuario_id)s"
             values = {"usuario_id": usuario_id}
@@ -377,17 +386,16 @@ def listar_penalizaciones():
                 penalizaciones_query += " WHERE usuario.nombre LIKE %(nombre_usuario)s"
             values["nombre_usuario"] = f"%{nombre_usuario}%"
 
-        print(penalizaciones_query)
         cursor.execute(penalizaciones_query, values)
         penalizaciones = cursor.fetchall()
 
         return jsonify(penalizaciones), HTTP_OK
 
     except mysql.connector.Error as query_err:
-        logging.error(f"Database query execution error: {query_err}")
+        logger.error("Error en la consulta a la base de datos: %s", query_err)
 
         return jsonify(
-            {"error": "Internal server error: Database query failed"}
+            {"error": "Error interno del servidor: fallo en la consulta a la base de datos"}
         ), HTTP_INTERNAL_SERVER_ERROR
 
     finally:
@@ -407,9 +415,9 @@ def listar_penalizaciones():
 def crear_penalizacion():
     """Crea una nueva penalización para un usuario.
 
-    Requiere un JWT válido con rol admin y un cuerpo JSON con los
-    campos 'usuario_id' y 'reason'. Opcionalmente 'severidad'
-    ('baja', 'media', 'alta'; por defecto 'media').
+    Requiere un JWT válido con rol admin, bibliotecario o profesor y un
+    cuerpo JSON con los campos 'usuario_id' y 'reason'. Opcionalmente
+    'severidad' ('baja', 'media', 'alta'; por defecto 'media').
 
     Returns:
         tuple: Respuesta JSON con la penalización creada y código

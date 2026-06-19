@@ -281,6 +281,7 @@ paths:
       tags:
         - Usuarios
       summary: Obtiene el historial personal de préstamos/pedidos
+      description: Admin y bibliotecario pueden consultar cualquier usuario; alumno y profesor solo pueden consultar su propio historial.
       parameters:
         - name: usuario_id
           in: path
@@ -301,6 +302,8 @@ paths:
                   $ref: '#/components/schemas/LoanCompact'
         '404':
           description: Alumno no encontrado.
+        '403':
+          description: Prohibido. El usuario autenticado no puede consultar reservas ajenas.
 
 
   # ==========================================
@@ -509,7 +512,9 @@ paths:
       tags:
         - Préstamos y Reservas
       summary: Crea una nueva solicitud de reserva
-      description: Endpoint de compatibilidad. Recibe usuario_id y articulo_id, valida disponibilidad y crea la reserva.
+      description: Endpoint de compatibilidad. Admin y bibliotecario pueden crear reservas para cualquier usuario; alumno y profesor solo pueden crear reservas propias.
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -527,6 +532,8 @@ paths:
           description: Validaciones fallidas.
         '404':
           description: Usuario o ítem no encontrado.
+        '403':
+          description: Prohibido. El usuario autenticado no puede crear reservas para otro usuario.
 
   /api/reservas/{reserva_id}:
     parameters:
@@ -551,13 +558,15 @@ paths:
                 $ref: '#/components/schemas/LoanDetail'
         '404':
           description: Préstamo no encontrado.
+        '403':
+          description: Prohibido. El usuario autenticado no puede consultar reservas ajenas.
 
   /api/reservas/{reserva_id}/status:
     patch:
       tags:
         - Préstamos y Reservas
       summary: Cambia el estado del préstamo
-      description: (Solo Admin).
+      description: Admin y bibliotecario pueden cambiar el estado; alumno y profesor solo pueden cancelar reservas propias pendientes.
       parameters:
         - name: reserva_id
           in: path
@@ -593,7 +602,9 @@ paths:
       tags:
         - Códigos QR
       summary: Genera o devuelve el código QR dinámico
-      description: Devuelve el código QR asociado al préstamo aprobado.
+      description: Admin y bibliotecario pueden consultar cualquier QR; alumno y profesor solo pueden consultar QR de reservas propias.
+      security:
+        - BearerAuth: []
       parameters:
         - name: id_reserva
           in: path
@@ -616,6 +627,8 @@ paths:
                     description: Contenido o representación base64 del QR.
         '404':
           description: Préstamo no encontrado.
+        '403':
+          description: Prohibido. El usuario autenticado no puede consultar QR de reservas ajenas.
 
   # ==========================================
   # 6. Penalizaciones (/api/penalties)
@@ -625,7 +638,9 @@ paths:
       tags:
         - Penalizaciones
       summary: Lista general de penalizaciones activas e históricas
-      description: Permite listar todas las penalizaciones o filtrar por usuario con query param usuario_id.
+      description: Admin y bibliotecario pueden listar todas las penalizaciones; alumno y profesor solo pueden consultar las propias con usuario_id.
+      security:
+        - BearerAuth: []
       parameters:
         - name: usuario_id
           in: query
@@ -645,12 +660,14 @@ paths:
                   $ref: '#/components/schemas/PenaltyDetail'
         '400':
           description: Parámetros de consulta inválidos.
+        '403':
+          description: Prohibido. El usuario autenticado no puede consultar penalizaciones ajenas.
 
     post:
       tags:
         - Penalizaciones
       summary: Genera una nueva penalización manual a un alumno
-      description: (Solo Admin).
+      description: Admin, bibliotecario o profesor pueden crear una penalización manual.
       security:
         - BearerAuth: []
       requestBody:
@@ -741,14 +758,50 @@ paths:
           description: Penalización no encontrada.
 
   # ==========================================
-  # 7. Reportes y Estadísticas (/api/reports)
+  # 7. Normativas (/api/normativas)
+  # ==========================================
+  /api/normativas/:
+    get:
+      tags:
+        - Normativas
+      summary: Lista normativas con paginación HATEOAS
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          description: Cantidad máxima de registros a devolver. Default 10, máximo 100.
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+        - name: offset
+          in: query
+          required: false
+          description: Posición inicial del listado. Default 0.
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+      responses:
+        '200':
+          description: Normativas obtenidas con metadata y links HATEOAS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NormativasResponse'
+        '400':
+          description: Parámetros de paginación inválidos.
+
+  # ==========================================
+  # 8. Reportes y Estadísticas (/api/reports)
   # ==========================================
   /api/reports:
     get:
       tags:
         - Reportes y Estadísticas
       summary: Endpoint unificado y centralizado para la generación de reportes
-      description: '(Solo Admin). Soporta tipos: pending, returned, overdue, all, careers mediante query params.'
+      description: '(Solo Admin). Soporta tipos: pendientes, devueltos, atrasados, todos, carreras, articulos mediante query params.'
       security:
         - BearerAuth: []
       parameters:
@@ -758,7 +811,7 @@ paths:
           description: Tipo de reporte a generar.
           schema:
             type: string
-            enum: [pending, returned, overdue, all, careers]
+            enum: [pendientes, devueltos, atrasados, todos, carreras, articulos]
         - name: format
           in: query
           required: false
@@ -767,9 +820,26 @@ paths:
             type: string
             enum: [json, pdf]
             default: json
+        - name: limit
+          in: query
+          required: false
+          description: Cantidad máxima de registros a devolver. Default 10, máximo 100.
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+        - name: offset
+          in: query
+          required: false
+          description: Posición inicial del listado. Default 0.
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
       responses:
         '200':
-          description: Reporte generado exitosamente.
+          description: Reporte generado exitosamente con metadata y links HATEOAS.
           content:
             application/json:
               schema:
@@ -809,6 +879,42 @@ components:
       bearerFormat: JWT
 
   schemas:
+    PaginationMetadata:
+      type: object
+      properties:
+        limit:
+          type: integer
+          example: 10
+        offset:
+          type: integer
+          example: 0
+        total:
+          type: integer
+          example: 35
+        count:
+          type: integer
+          example: 10
+
+    HateoasLinks:
+      type: object
+      properties:
+        first:
+          type: string
+          nullable: true
+          example: /api/articulos?limit=10&offset=0
+        prev:
+          type: string
+          nullable: true
+          example: null
+        next:
+          type: string
+          nullable: true
+          example: /api/articulos?limit=10&offset=10
+        last:
+          type: string
+          nullable: true
+          example: /api/articulos?limit=10&offset=30
+
     LoginRequest:
       type: object
       required:
@@ -1054,7 +1160,7 @@ components:
           format: int64
         estado_reserva:
           type: string
-          enum: [pendiente, aprobado, entregado, devuelto, rechazado]
+          enum: [pendiente, aprobado, entregado, devuelto, cancelado]
         fecha_retiro:
           type: string
           format: date-time
@@ -1138,7 +1244,7 @@ components:
       properties:
         estado_reserva:
           type: string
-          enum: [pendiente, aprobado, entregado, devuelto, rechazado]
+          enum: [pendiente, aprobado, entregado, devuelto, cancelado]
 
     PenaltyDetail:
       type: object
@@ -1230,6 +1336,31 @@ components:
         mostRequestedCategory:
           type: string
 
+    NormativaDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        titulo:
+          type: string
+        descripcion:
+          type: string
+        fecha:
+          type: string
+          format: date-time
+
+    NormativasResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/NormativaDetail'
+        pagination:
+          $ref: '#/components/schemas/PaginationMetadata'
+        links:
+          $ref: '#/components/schemas/HateoasLinks'
+
     ReportsResponse:
       type: object
       properties:
@@ -1238,7 +1369,11 @@ components:
         formato_solicitado:
           type: string
           nullable: true
-        datos:
+        data:
           type: array
           items:
             type: object
+        pagination:
+          $ref: '#/components/schemas/PaginationMetadata'
+        links:
+          $ref: '#/components/schemas/HateoasLinks'

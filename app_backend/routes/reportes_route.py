@@ -11,28 +11,16 @@ from http_codes_and_messages import (
     HTTP_BAD_REQUEST,
     HTTP_OK,
 )
+from paginacion import construir_respuesta_paginada, obtener_parametros_paginacion
+from routes.auth_route import requiere_auth
 
 reportes_bp = Blueprint("reportes", __name__)
 
 
-def obtener_reporte_db(tipo_reporte):
-    """Obtiene los datos del reporte solicitado desde la base de datos.
-
-    Args:
-        tipo_reporte (str): El tipo de reporte a obtener
-            ('pending', 'returned', 'overdue', 'all', 'careers').
-
-    Returns:
-        list[dict]: Lista de diccionarios con los datos obtenidos de la BD.
-
-    """
-    conexion = obtener_conexion()
-    cursor = conexion.cursor(dictionary=True)
-
-    resultado = []
-
-    if tipo_reporte == "overdue":
-        cursor.execute("""
+def obtener_sql_reporte(tipo_reporte):
+    """Devuelve la consulta base del reporte solicitado."""
+    consultas = {
+        "atrasados": """
             SELECT
                 usuario.nombre,
                 articulos.nombre_art,
@@ -46,10 +34,8 @@ def obtener_reporte_db(tipo_reporte):
             JOIN articulos
                 ON reserva.id_reservado = articulos.id
             WHERE estado_devuelto.dias_retraso > 0
-            """)
-
-    elif tipo_reporte == "pending":
-        cursor.execute("""
+        """,
+        "pendientes": """
             SELECT
                 reserva.id,
                 usuario.nombre,
@@ -61,10 +47,8 @@ def obtener_reporte_db(tipo_reporte):
             JOIN articulos
                 ON reserva.id_reservado = articulos.id
             WHERE reserva.estado_reserva = 'pendiente'
-            """)
-
-    elif tipo_reporte == "returned":
-        cursor.execute("""
+        """,
+        "devueltos": """
             SELECT
                 reserva.id,
                 usuario.nombre,
@@ -76,10 +60,8 @@ def obtener_reporte_db(tipo_reporte):
             JOIN articulos
                 ON reserva.id_reservado = articulos.id
             WHERE reserva.estado_reserva = 'devuelto'
-            """)
-
-    elif tipo_reporte == "all":
-        cursor.execute("""
+        """,
+        "todos": """
             SELECT
                 reserva.id,
                 usuario.nombre,
@@ -90,10 +72,8 @@ def obtener_reporte_db(tipo_reporte):
                 ON reserva.id_usuario = usuario.id
             JOIN articulos
                 ON reserva.id_reservado = articulos.id
-            """)
-
-    elif tipo_reporte == "careers":
-        cursor.execute("""
+        """,
+        "carreras": """
             SELECT
                 usuario.carrera,
                 COUNT(*) AS cantidad_reservas
@@ -102,10 +82,8 @@ def obtener_reporte_db(tipo_reporte):
                 ON reserva.id_usuario = usuario.id
             GROUP BY usuario.carrera
             ORDER BY cantidad_reservas DESC
-        """)
-
-    elif tipo_reporte == "articles":
-        cursor.execute("""
+        """,
+        "articulos": """
             SELECT
                 articulos.nombre_art,
                 COUNT(reserva.id) AS cantidad_reservas
@@ -114,18 +92,48 @@ def obtener_reporte_db(tipo_reporte):
                 ON reserva.id_reservado = articulos.id
             GROUP BY articulos.nombre_art
             ORDER BY cantidad_reservas DESC
-        """)
+        """,
+    }
+    return consultas.get(tipo_reporte)
 
-    for fila in cursor:
-        resultado.append(fila)
+
+def obtener_reporte_db(tipo_reporte, limit, offset):
+    """Obtiene los datos paginados del reporte solicitado desde la base de datos.
+
+    Args:
+        tipo_reporte (str): El tipo de reporte a obtener
+            ('pendientes', 'devueltos', 'atrasados', 'todos', 'carreras', 'articulos').
+        limit (int): Cantidad máxima de registros.
+        offset (int): Posición inicial de registros.
+
+    Returns:
+        tuple[list[dict], int]: Datos obtenidos y total de registros.
+
+    """
+    conexion = obtener_conexion()
+    cursor = conexion.cursor(dictionary=True)
+
+    sql_base = obtener_sql_reporte(tipo_reporte)
+    cursor.execute(f"SELECT COUNT(*) AS total FROM ({sql_base}) AS reporte")
+    total = cursor.fetchone()["total"]
+
+    cursor.execute(
+        f"""
+        {sql_base}
+        LIMIT %(limit)s OFFSET %(offset)s
+        """,
+        {"limit": limit, "offset": offset},
+    )
+    resultado = list(cursor)
 
     cursor.close()
     conexion.close()
 
-    return resultado
+    return resultado, total
 
 
 @reportes_bp.route("/api/reports", methods=["GET"])
+@requiere_auth(roles=["admin"])
 def obtener_reportes():
     """Obtiene el reporte solicitado según el tipo especificado.
 
@@ -136,17 +144,29 @@ def obtener_reportes():
     tipo = request.args.get("type")
     formato = request.args.get("format")
 
-    tipos_validos = ["pending", "returned", "overdue", "all", "careers", "articles"]
+    tipos_validos = ["pendientes", "devueltos", "atrasados", "todos", "carreras", "articulos"]
 
     if tipo not in tipos_validos:
         return jsonify({"error": "Tipo de reporte inválido"}), HTTP_BAD_REQUEST
 
-    reporte_datos = obtener_reporte_db(tipo)
+    pagination, error = obtener_parametros_paginacion(request.args)
+    if error:
+        return jsonify({"error": error}), HTTP_BAD_REQUEST
 
-    respuesta = {
-        "tipo_reporte": tipo,
-        "formato_solicitado": formato,
-        "datos": reporte_datos,
-    }
+    reporte_datos, total = obtener_reporte_db(
+        tipo,
+        pagination["limit"],
+        pagination["offset"],
+    )
+
+    respuesta = construir_respuesta_paginada(
+        reporte_datos,
+        total,
+        request,
+        pagination["limit"],
+        pagination["offset"],
+    )
+    respuesta["tipo_reporte"] = tipo
+    respuesta["formato_solicitado"] = formato
 
     return jsonify(respuesta), HTTP_OK

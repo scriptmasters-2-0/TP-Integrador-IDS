@@ -91,8 +91,6 @@ def listar_articulos():
     filtro_nombre = request.args.get("nombre", "").strip().lower()
     pagina = request.args.get("page", 1, type=int)
 
-    from servicios.paginacion_servicio import paginar_lista
-
     todos = articulos_servicio.obtener_articulos(token=token)
 
     tipos = sorted({(a.get("tipo") or "").strip() for a in todos if a.get("tipo")})
@@ -201,10 +199,10 @@ def reportes():
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
-    rta_carreras = obtener_reportes("careers")
+    rta_carreras = obtener_reportes("carreras")
     carreras = rta_carreras.get("datos", [])
 
-    rta_articulos = obtener_reportes("articles")
+    rta_articulos = obtener_reportes("articulos")
     articulos = rta_articulos.get("datos", [])
 
     return render_template("admin/reportes.html", carreras=carreras, articulos=articulos)
@@ -232,7 +230,13 @@ def normativas():
             crear_normativa(data)
         return redirect(url_for("admin.normativas"))
 
-    normativas = obtener_normativas()
+    normativas = [
+        {
+            **normativa,
+            "fecha": formatear_fecha_argentina(normativa.get("fecha")),
+        }
+        for normativa in obtener_normativas()
+    ]
     normativa_editada = None
     id_editar = request.args.get("editar")
 
@@ -279,7 +283,7 @@ def usuarios():
         data = {
             "nombre": request.form.get("nombre"),
             "email": request.form.get("email"),
-            "carera": request.form.get("carrera"),
+            "carrera": request.form.get("carrera"),
             "puntaje": request.form.get("puntaje"),
             "activo": request.form.get("activo"),
         }

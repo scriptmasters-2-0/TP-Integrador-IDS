@@ -5,15 +5,21 @@ las constantes de configuración para el servidor, la base de datos,
 JWT y generación de códigos QR.
 """
 
+import logging
 import os
 
 from dotenv import find_dotenv, load_dotenv
+
+logger = logging.getLogger(__name__)
 
 # Localiza y carga el archivo .env más cercano
 env_path = find_dotenv()
 if env_path:
     if not load_dotenv(env_path):
-        print("Archivo .env no encontrado, usando valores por defecto", env_path)
+        logger.warning(
+            "No se pudo cargar el archivo .env, usando valores por defecto: %s",
+            env_path,
+        )
 
 DEBUG = os.environ.get("FLASK_DEBUG", "1") == "1"
 
