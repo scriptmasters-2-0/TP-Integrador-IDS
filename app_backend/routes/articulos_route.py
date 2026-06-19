@@ -488,6 +488,7 @@ def get_articulo_by_id(articulo_id):
         return jsonify(articulo), HTTP_OK
 
     except mysql.connector.Error as query_err:
+        logger.error("Error en la consulta a la base de datos en get_articulo_by_id: %s", query_err)
 
         return jsonify(
             {"error": "Error interno del servidor: fallo en la consulta a la base de datos"}
