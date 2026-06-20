@@ -30,6 +30,7 @@ from http_codes_and_messages import (
 from paginacion import construir_respuesta_paginada, obtener_parametros_paginacion
 from routes.auth_route import hashear_contrasenia, requiere_auth
 from validators import valid_id, valid_usuario, valid_usuario_update
+from paginacion import construir_respuesta_paginada,obtener_parametros_paginacion
 
 usuarios_bp = Blueprint("usuarios", __name__)
 logger = logging.getLogger(__name__)
@@ -71,72 +72,60 @@ def get_all_usuarios():
             o un error con su código correspondiente.
 
     """
+    
     nombre_usuario = request.args.get("usuario")
     pagination, error = obtener_parametros_paginacion(request.args)
+        
     if error:
         return jsonify({"error": error}), HTTP_BAD_REQUEST
 
     conn = obtener_conexion()
+    
     if conn is None:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
 
-    cursor = None
+    cursor = conn.cursor(dictionary=True)
 
-    try:
-        cursor = conn.cursor(dictionary=True)
+    
+    if nombre_usuario:
+        cursor.execute("SELECT COUNT(*) AS total FROM usuario WHERE nombre LIKE %(nombre_usuario)s", {"nombre_usuario": f"%{nombre_usuario}%"})
+    else:
+        cursor.execute("SELECT COUNT(*) AS total FROM usuario")
 
-        consulta_total = "SELECT COUNT(*) AS total FROM usuario"
-        consulta_usuarios = """
-            SELECT id, nombre, email, rol, carrera, activo
-            FROM usuario
-        """
-        params = dict(pagination)
-        if nombre_usuario:
-            consulta_total += " WHERE nombre LIKE %(nombre_usuario)s"
-            consulta_usuarios += " WHERE nombre LIKE %(nombre_usuario)s"
-            params["nombre_usuario"] = f"%{nombre_usuario}%"
+    total = cursor.fetchone()["total"]
 
-        consulta_usuarios += " ORDER BY nombre LIMIT %(limit)s OFFSET %(offset)s"
+    if nombre_usuario:
+        query = "SELECT * FROM usuario WHERE nombre LIKE %(nombre_usuario)s ORDER BY nombre LIMIT %(limit)s OFFSET %(offset)s"
+    else:
 
-        cursor.execute(consulta_total, params)
-        total = cursor.fetchone()["total"]
+        query = "SELECT * FROM usuario ORDER BY nombre LIMIT %(limit)s OFFSET %(offset)s"
 
-        cursor.execute(consulta_usuarios, params)
-        usuarios = cursor.fetchall()
+    
 
-        return (
-            jsonify(
-                construir_respuesta_paginada(
-                    usuarios,
-                    total,
-                    request,
-                    pagination["limit"],
-                    pagination["offset"],
-                )
-            ),
-            HTTP_OK,
-        )
+    if nombre_usuario:
+        params = {**pagination,
+        "nombre_usuario": f"%{nombre_usuario}%"}
+    else:
+        params = pagination
+    cursor.execute(query, params)
 
-    except mysql.connector.Error as query_err:
-        logger.error("Error en la consulta a la base de datos en get_all_usuarios: %s", query_err)
+    data = cursor.fetchall()
 
-        return jsonify(
-            {"error": "Error interno del servidor: fallo en la consulta a la base de datos"}
-        ), HTTP_INTERNAL_SERVER_ERROR
+    cursor.close()
+    conn.close()
 
-    except Exception:
-        logger.exception("Error inesperado en get_all_usuarios")
-        return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
-    finally:
-        try:
-            if cursor:
-                cursor.close()
-        except Exception:
-            pass
-        try:
-            conn.close()
-        except Exception:
-            pass
+    return (
+        jsonify(
+            construir_respuesta_paginada(
+                data,
+                total,
+                request,
+                pagination["limit"],
+                pagination["offset"],
+            )
+        ),
+        HTTP_OK,
+    )
 
 
 @usuarios_bp.route("/api/usuario/<int:usuario_id>", methods=["GET"])

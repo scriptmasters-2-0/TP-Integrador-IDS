@@ -1,13 +1,19 @@
-"""Rutas del area de administracion."""
+"""Rutas del área de administración del frontend.
+
+Define las vistas y acciones disponibles para administradores y
+bibliotecarios: gestión de usuarios, penalizaciones, artículos,
+reservas, reportes y normativas.
+"""
 
 from flask import Blueprint, redirect, render_template, request, session, url_for
 
 from servicios.fechas_servicio import formatear_fecha_argentina
 from servicios.paginacion_servicio import (
-    DEFAULT_API_LIMIT,
-    adaptar_pagination_hateoas,
-    calcular_offset,
     paginar_lista,
+    calcular_offset,
+    extraer_data_paginada,
+    adaptar_pagination_hateoas,
+    DEFAULT_API_LIMIT
 )
 from servicios.normativas_servicio import (
     actualizar_normativa,
@@ -26,7 +32,20 @@ admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 @admin_bp.route("/reservas/<int:id>", methods=["GET", "POST"])
 def reserva_detalle(id):
-    """Renderiza y procesa la vista de detalle de préstamo para administradores."""
+    """Renderiza y procesa la vista de detalle de un préstamo.
+
+    En GET muestra los datos del préstamo obtenidos desde la API.
+    En POST redirige al mismo endpoint (acción futura).
+    Accesible solo para admin y bibliotecario.
+
+    Args:
+        id (int): Identificador del préstamo a visualizar.
+
+    Returns:
+        Response: Renderizado de admin/reserva_detalle_admin.html con
+            los datos del préstamo, o redirección al login si no hay sesión.
+
+    """
     token = session.get("token")
     rol = session.get("rol")
     if not token:
@@ -81,7 +100,23 @@ def reserva_detalle(id):
 
 @admin_bp.route("/articulos")
 def listar_articulos():
-    """Renderiza la vista de listado de artículos para administradores."""
+    """Renderiza la vista de listado de artículos para administradores.
+
+    Obtiene todos los artículos desde la API y aplica filtros opcionales
+    por tipo, sección y nombre en el frontend. La paginación se realiza
+    localmente sobre los resultados filtrados.
+
+    Query params:
+        tipo (str): Filtra artículos por tipo.
+        seccion (str): Filtra artículos por sección.
+        nombre (str): Filtra artículos por nombre (búsqueda parcial).
+        page (int): Número de página a mostrar. Por defecto 1.
+
+    Returns:
+        Response: Renderizado de admin/articulos.html con los artículos
+            paginados y los filtros activos.
+
+    """
     token = session.get("token")
     rol = session.get("rol")
     if not token:
@@ -124,7 +159,19 @@ def listar_articulos():
 
 @admin_bp.route("/articulos/nuevo")
 def crear_articulo():
-    """Renderiza la vista de creación de nuevo artículo para administradores."""
+    """Renderiza el formulario de creación de un nuevo artículo.
+
+    Accesible solo para admin y bibliotecario.
+
+    Query params:
+        error (str): Mensaje de error a mostrar si la creación falló.
+        exito (str): Mensaje de éxito a mostrar si la creación fue exitosa.
+
+    Returns:
+        Response: Renderizado de admin/articulos_form.html con el
+            formulario vacío y mensajes de estado opcionales.
+
+    """
     token = session.get("token")
     rol = session.get("rol")
     if not token:
@@ -142,7 +189,17 @@ def crear_articulo():
 
 @admin_bp.route("/articulos/guardar", methods=["POST"])
 def guardar_articulo():
-    """Crea un artículo consumiendo el endpoint backend /api/articulos."""
+    """Procesa el formulario de creación de un artículo.
+
+    Envía los datos del formulario a la API backend mediante POST
+    /api/articulos. Redirige al formulario con mensaje de éxito o error
+    según el resultado.
+
+    Returns:
+        Response: Redirección a admin.crear_articulo con query param
+            'exito' o 'error' según el resultado de la operación.
+
+    """
     token = session.get("token")
     rol = session.get("rol")
     if not token:
@@ -171,7 +228,18 @@ def guardar_articulo():
 
 @admin_bp.route("/articulos/<int:id>/eliminar", methods=["POST"])
 def eliminar_articulo_route(id):
-    """Elimina un articulo."""
+    """Elimina un artículo y redirige al listado.
+
+    Envía DELETE /api/articulos/{id} a través del servicio de artículos.
+    Accesible solo para usuarios con sesión activa.
+
+    Args:
+        id (int): Identificador del artículo a eliminar.
+
+    Returns:
+        Response: Redirección a admin.listar_articulos tras la operación.
+
+    """
     token = session.get("token")
     rol = session.get("rol")
     if not token:
@@ -193,7 +261,14 @@ def eliminar_articulo_route(id):
 
 @admin_bp.route("/dashboard")
 def dashboard():
-    """Renderiza la vista del dashboard para administradores."""
+    """Renderiza el dashboard principal del área de administración.
+
+    Accesible solo para admin y bibliotecario.
+
+    Returns:
+        Response: Renderizado de admin/dashboard.html.
+
+    """
     token = session.get("token")
     rol = session.get("rol")
     if not token:
@@ -206,7 +281,16 @@ def dashboard():
 
 @admin_bp.route("/reportes", methods=["GET"])
 def reportes():
-    """Renderiza la vista de reportes para administradores."""
+    """Renderiza la vista de reportes estadísticos para administradores.
+
+    Obtiene los reportes de reservas agrupadas por carrera y por artículo
+    desde la API backend.
+
+    Returns:
+        Response: Renderizado de admin/reportes.html con las listas
+            de datos por carrera y por artículo.
+
+    """
     token = session.get("token")
     rol = session.get("rol")
     if not token:
@@ -225,7 +309,27 @@ def reportes():
 
 @admin_bp.route("/normativas", methods=["GET", "POST"])
 def normativas():
-    """ABM de normativas solo visibles para admins y bibliotecarios."""
+    """ABM de normativas para administradores y bibliotecarios.
+
+    En GET muestra el listado de normativas y, si se indica el parámetro
+    'editar', preselecciona la normativa correspondiente en el formulario.
+    En POST crea una nueva normativa o actualiza una existente según
+    si se incluye el campo 'id' en el formulario.
+
+    Query params (GET):
+        editar (str): ID de la normativa a editar.
+
+    Form params (POST):
+        id (str): ID de la normativa a actualizar. Si está vacío, se crea una nueva.
+        titulo (str): Título de la normativa.
+        descripcion (str): Descripción de la normativa.
+
+    Returns:
+        Response: Renderizado de admin/normativas.html con el listado
+            y la normativa preseleccionada para edición, o redirección
+            tras el POST.
+
+    """
     token = session.get("token")
     rol = session.get("rol")
     if not token:
@@ -270,10 +374,13 @@ def normativas():
     id_editar = request.args.get("editar")
 
     if id_editar:
-        for normativa in normativas:
-            if str(normativa["id"]) == str(id_editar):
-                normativa_editada = normativa
-                break
+        i = 0
+        encontrado = False
+        while i < len(normativas) and not encontrado:
+            if str(normativas[i]["id"]) == str(id_editar):
+                normativa_editada = normativas[i]
+                encontrado = True
+            i += 1
 
     return render_template(
         "admin/normativas.html",
@@ -285,7 +392,18 @@ def normativas():
 
 @admin_bp.route("/normativas/eliminar", methods=["POST"])
 def eliminar_norm():
-    """Descripción: función eliminar_norm."""
+    """Elimina una normativa y redirige al listado.
+
+    Envía la solicitud de eliminación a la API backend mediante el
+    servicio de normativas. Accesible solo para admin y bibliotecario.
+
+    Form params:
+        id (str): Identificador de la normativa a eliminar.
+
+    Returns:
+        Response: Redirección a admin.normativas tras la operación.
+
+    """
     token = session.get("token")
     rol = session.get("rol")
     if not token:
@@ -307,7 +425,32 @@ def eliminar_norm():
 
 @admin_bp.route("/usuarios", methods=["GET", "POST"])
 def usuarios():
-    """ABM de usuarios para administradores."""
+    """ABM de usuarios para administradores y bibliotecarios.
+
+    En GET muestra el listado paginado de usuarios con paginación HATEOAS.
+    Si se indica el parámetro 'editar', preselecciona el usuario en el
+    formulario. En POST actualiza los datos del usuario indicado por 'id'.
+
+    Query params (GET):
+        page (int): Número de página. Por defecto 1.
+        usuario (str): Filtra usuarios por nombre (búsqueda parcial).
+        editar (str): ID del usuario a preseleccionar en el formulario.
+        creando_usuario (str): Si es '1', muestra el formulario de creación.
+
+    Form params (POST):
+        id (str): Identificador del usuario a actualizar.
+        nombre (str): Nuevo nombre del usuario.
+        email (str): Nuevo email del usuario.
+        carrera (str): Nueva carrera del usuario.
+        puntaje (str): Nuevo puntaje del usuario.
+        activo (str): Estado activo del usuario.
+
+    Returns:
+        Response: Renderizado de admin/usuarios.html con el listado
+            paginado y el usuario preseleccionado para edición,
+            o redirección tras el POST.
+
+    """
     token = session.get("token")
     rol = session.get("rol")
     if not token:
@@ -348,33 +491,33 @@ def usuarios():
 
         return redirect(url_for("admin.usuarios"))
 
-    pagina = request.args.get("page", 1, type=int)
+    page = request.args.get("page", 1, type=int)
+    offset = calcular_offset(page, DEFAULT_API_LIMIT)
     nombre_usuario = request.args.get("usuario")
-    offset = calcular_offset(pagina, DEFAULT_API_LIMIT)
-    filtros = {"limit": DEFAULT_API_LIMIT, "offset": offset}
-    if nombre_usuario:
-        filtros["usuario"] = nombre_usuario
 
-    payload_paginado, fetch_error = usuario_servicio.obtener_usuarios_paginados(
-        params=filtros,
-        token=token,
+    resultado = usuario_servicio.obtener_usuarios_paginados(
+        params={"limit": DEFAULT_API_LIMIT, "offset": offset, "usuario": nombre_usuario},
+        token=token
     )
-    usuarios_paginados = payload_paginado.get("data", [])
-    pagination = adaptar_pagination_hateoas(payload_paginado, pagina=pagina)
+    usuarios = resultado.get("datos", [])
+    pagination = adaptar_pagination_hateoas(resultado)
+
     usuario_editado = None
     id_editar = request.args.get("editar")
 
     if id_editar:
-        for usuario in usuarios_paginados:
-            if str(usuario.get("id")) == str(id_editar):
-                usuario_editado = usuario
-                break
+        i = 0
+        encontrado = False
+        while i < len(usuarios) and not encontrado:
+            if str(usuarios[i]["id"]) == str(id_editar):
+                usuario_editado = usuarios[i]
+                encontrado = True
+            i += 1
 
     return render_template(
         "admin/usuarios.html",
-        usuarios=usuarios_paginados,
+        usuarios=usuarios,
         pagination=pagination,
-        usuario=nombre_usuario or "",
         usuario_editado=usuario_editado,
         creando_usuario=request.args.get("creando_usuario") == "1",
         mensaje_error=request.args.get("mensaje_error") or fetch_error,
@@ -383,7 +526,18 @@ def usuarios():
 
 @admin_bp.route("/usuarios/eliminar", methods=["POST"])
 def eliminar_usuario():
-    """Elimina un usuario del sistema."""
+    """Da de baja lógica a un usuario y redirige al listado.
+
+    Envía DELETE /api/usuarios/{id} a través del servicio de usuarios.
+    Accesible solo para admin y bibliotecario.
+
+    Form params:
+        id (str): Identificador del usuario a dar de baja.
+
+    Returns:
+        Response: Redirección a admin.usuarios tras la operación.
+
+    """
     token = session.get("token")
     rol = session.get("rol")
     if not token:
@@ -406,7 +560,20 @@ def eliminar_usuario():
 
 @admin_bp.route("/reportes/morosidad")
 def reporte_morosidad():
-    """Reporte de morosidad."""
+    """Renderiza el reporte de morosidad con paginación HATEOAS.
+
+    Muestra las penalizaciones del sistema filtradas opcionalmente por
+    nombre de usuario. Accesible solo para admin y bibliotecario.
+
+    Query params:
+        page (int): Número de página. Por defecto 1.
+        usuario (str): Filtra penalizaciones por nombre de usuario.
+
+    Returns:
+        Response: Renderizado de admin/morosidad.html con el listado
+            paginado de penalizaciones y el filtro activo.
+
+    """
     token = session.get("token")
     rol = session.get("rol")
     if not token:
@@ -414,41 +581,48 @@ def reporte_morosidad():
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
-    usuario = request.args.get("usuario")
-    pagina = request.args.get("page", 1, type=int)
-    offset = calcular_offset(pagina, DEFAULT_API_LIMIT)
-    filtros = {"limit": DEFAULT_API_LIMIT, "offset": offset}
-    if usuario:
-        filtros["usuario"] = usuario
+    nombre_usuario = request.args.get("usuario")
+    page = request.args.get("page", 1, type=int)
+    offset = calcular_offset(page, DEFAULT_API_LIMIT)
 
-    payload_paginado, fetch_error = penalizaciones_servicio.obtener_penalizaciones_paginadas(
-        params=filtros,
-        token=token,
+    resultado = penalizaciones_servicio.obtener_penalizaciones_paginadas(
+        params={"limit": DEFAULT_API_LIMIT, "offset": offset, "usuario": nombre_usuario},
+        token=token
     )
-
-    penalizaciones_formateadas = []
-    penalizaciones_raw = payload_paginado.get("data", [])
-    if isinstance(penalizaciones_raw, list):
-        for p in penalizaciones_raw:
-            penalizaciones_formateadas.append({
-                **p,
-                "fecha_fin": formatear_fecha_argentina(p.get("fecha_fin")),
-            })
-
-    pagination = adaptar_pagination_hateoas(payload_paginado, pagina=pagina)
+    penalizaciones = resultado.get("datos", [])
+    pagination = adaptar_pagination_hateoas(resultado)
 
     return render_template(
         "admin/morosidad.html",
-        penalizaciones=penalizaciones_formateadas,
-        usuario=usuario or "",
-        fetch_error=fetch_error,
+        penalizaciones=penalizaciones,
         pagination=pagination,
+        usuario=nombre_usuario or ""
     )
 
 
 @admin_bp.route("/articulos/<int:id>/editar", methods=["GET", "POST"])
 def editar_articulo(id):
-    """Formulario de edición de artículo: muestra datos y permite actualizarlos."""
+    """Renderiza y procesa el formulario de edición de un artículo.
+
+    En GET muestra el formulario con los datos actuales del artículo.
+    En POST envía los datos actualizados a la API y redirige al listado
+    si fue exitoso, o vuelve al formulario con un mensaje de error.
+
+    Args:
+        id (int): Identificador del artículo a editar.
+
+    Form params (POST):
+        nombre (str): Nuevo nombre del artículo.
+        tipo (str): Nuevo tipo del artículo.
+        seccion (str): Nueva sección del artículo.
+        stock (str): Nuevo stock disponible.
+        necesita_reparacion (str): 'on' si necesita reparación.
+
+    Returns:
+        Response: Renderizado de admin/editar_articulo.html o redirección
+            a admin.listar_articulos si la actualización fue exitosa.
+
+    """
     token = session.get("token")
     rol = session.get("rol")
     if not token:
@@ -491,7 +665,23 @@ def editar_articulo(id):
 
 @admin_bp.route("/reservas", methods=["GET"])
 def lista_reservas():
-    """Lista todos los préstamos con filtros por estado, fecha o usuario."""
+    """Lista todos los préstamos con filtros y paginación local.
+
+    Obtiene los préstamos desde la API y aplica filtros opcionales por
+    estado, usuario y fecha. La paginación se realiza localmente sobre
+    los resultados filtrados.
+
+    Query params:
+        estado (str): Filtra préstamos por estado (pendiente, aprobado, etc.).
+        usuario (str): Filtra préstamos por nombre de usuario.
+        fecha (str): Filtra préstamos por fecha de retiro.
+        page (int): Número de página. Por defecto 1.
+
+    Returns:
+        Response: Renderizado de admin/reservas.html con el listado
+            paginado y los filtros activos.
+
+    """
     token = session.get("token")
     rol = session.get("rol")
     if not token:
@@ -536,7 +726,20 @@ def lista_reservas():
 
 @admin_bp.route("/penalizaciones", methods=["GET"])
 def listar_penalizaciones():
-    """Lista las penalizaciones activas."""
+    """Lista las penalizaciones con paginación HATEOAS.
+
+    Obtiene el listado paginado de penalizaciones desde la API backend.
+    Accesible solo para admin y bibliotecario.
+
+    Query params:
+        page (int): Número de página. Por defecto 1.
+        usuario (str): Filtra penalizaciones por nombre de usuario.
+
+    Returns:
+        Response: Renderizado de admin/penalizaciones.html con el listado
+            paginado y metadata de paginación.
+
+    """
     token = session.get("token")
     rol = session.get("rol")
     if not token:
@@ -544,34 +747,19 @@ def listar_penalizaciones():
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
-    pagina = request.args.get("page", 1, type=int)
-    offset = calcular_offset(pagina, DEFAULT_API_LIMIT)
-    filtros = {"limit": DEFAULT_API_LIMIT, "offset": offset}
-    payload_paginado, fetch_error = penalizaciones_servicio.obtener_penalizaciones_paginadas(
-        params=filtros,
-        token=token,
+    page = request.args.get("page", 1, type=int)
+    offset = calcular_offset(page, DEFAULT_API_LIMIT)
+    nombre_usuario = request.args.get("usuario")
+    resultado = penalizaciones_servicio.obtener_penalizaciones_paginadas(
+        params={"limit": DEFAULT_API_LIMIT, "offset": offset, "usuario": nombre_usuario},
+        token=token
     )
-
-    lista_penalizaciones = []
-    penalizaciones = payload_paginado.get("data", [])
-
-    if isinstance(penalizaciones, list):
-        for p in penalizaciones:
-            lista_penalizaciones.append(
-                {
-                    "id": p.get("id"),
-                    "usuario_nombre": p.get("nombre", "Desconocido"),
-                    "severidad": p.get("severidad", "Media"),
-                    "fecha_inicio": formatear_fecha_argentina(p.get("fecha_inicio")),
-                    "activa": p.get("activa", True),
-                }
-            )
-
-    pagination = adaptar_pagination_hateoas(payload_paginado, pagina=pagina)
+    penalizaciones = resultado.get("datos", [])
+    pagination = adaptar_pagination_hateoas(resultado)
 
     return render_template(
         "admin/penalizaciones.html",
-        penalizaciones=lista_penalizaciones,
+        penalizaciones=penalizaciones,
         pagination=pagination,
         mensaje_error=request.args.get("mensaje_error"),
         fetch_error=fetch_error,
@@ -580,7 +768,24 @@ def listar_penalizaciones():
 
 @admin_bp.route("/penalizaciones/nueva", methods=["GET", "POST"])
 def crear_penalizacion():
-    """Formulario de alta de penalización (solo bibliotecario)."""
+    """Renderiza y procesa el formulario de alta de penalización.
+
+    Accesible solo para bibliotecarios (no para admins).
+    En GET muestra el formulario con la lista de usuarios disponibles.
+    En POST valida los datos y crea la penalización mediante la API.
+    Redirige al listado si fue exitoso, o vuelve al formulario con error.
+
+    Form params (POST):
+        usuario_id (str): Identificador del usuario a penalizar. Requerido.
+        reason (str): Motivo de la penalización. Requerido.
+        severidad (str): Nivel de severidad ('baja', 'media', 'alta').
+            Opcional, por defecto 'media'.
+
+    Returns:
+        Response: Renderizado de admin/penalizaciones_form.html o
+            redirección a admin.listar_penalizaciones si fue exitoso.
+
+    """
     token = session.get("token")
     rol = session.get("rol")
     if not token:
@@ -596,7 +801,7 @@ def crear_penalizacion():
         motivo = request.form.get("reason")
 
         if not usuario_id or not motivo:
-            usuarios = usuario_servicio.obtener_usuarios(token=token)
+            usuarios = extraer_data_paginada(usuario_servicio.obtener_usuarios(token=token))
             return render_template(
                 "admin/penalizaciones_form.html",
                 usuarios=usuarios,
@@ -609,7 +814,7 @@ def crear_penalizacion():
         )
 
         if not resultado:
-            usuarios = usuario_servicio.obtener_usuarios(token=token)
+            usuarios = extraer_data_paginada(usuario_servicio.obtener_usuarios(token=token))
             return render_template(
                 "admin/penalizaciones_form.html",
                 usuarios=usuarios,
@@ -618,7 +823,7 @@ def crear_penalizacion():
 
         return redirect(url_for("admin.listar_penalizaciones"))
 
-    usuarios = usuario_servicio.obtener_usuarios(token=token)
+    usuarios = extraer_data_paginada(usuario_servicio.obtener_usuarios(token=token))
 
     return render_template(
         "admin/penalizaciones_form.html",
@@ -629,7 +834,18 @@ def crear_penalizacion():
 
 @admin_bp.route("/penalizaciones/<int:id>/levantar", methods=["POST"])
 def levantar_penalizacion(id):
-    """Acción para levantar una penalización manualmente."""
+    """Levanta (desactiva) una penalización manualmente.
+
+    Envía PATCH /api/penalizaciones/{id} con status 'Levantada'.
+    Accesible solo para bibliotecarios.
+
+    Args:
+        id (int): Identificador de la penalización a levantar.
+
+    Returns:
+        Response: Redirección a admin.listar_penalizaciones tras la operación.
+
+    """
     token = session.get("token")
     rol = session.get("rol")
     if not token:
@@ -655,7 +871,19 @@ def levantar_penalizacion(id):
 
 @admin_bp.route("/usuarios/<int:id>", methods=["GET"])
 def usuario_detalle(id):
-    """Renderiza el perfil completo de un usuario para administradores."""
+    """Renderiza el perfil completo de un usuario para administradores.
+
+    Obtiene los datos del usuario desde la API y los muestra en la
+    vista de perfil. Accesible solo para admin y bibliotecario.
+
+    Args:
+        id (int): Identificador del usuario a visualizar.
+
+    Returns:
+        Response: Renderizado de admin/perfil_usuario.html con los
+            datos del usuario.
+
+    """
     token = session.get("token")
     rol = session.get("rol")
     if not token:
@@ -673,7 +901,23 @@ def usuario_detalle(id):
 
 @admin_bp.route("/usuarios/<int:id>/editar", methods=["POST"])
 def editar_usuario(id):
-    """Actualiza el rol de un usuario y redirige a su perfil."""
+    """Actualiza los datos de un usuario y redirige a su perfil.
+
+    Envía PUT /api/usuarios/{id} con los campos del formulario.
+    Accesible solo para bibliotecarios.
+
+    Args:
+        id (int): Identificador del usuario a actualizar.
+
+    Form params:
+        rol (str): Nuevo rol del usuario.
+        email (str): Nuevo email del usuario.
+        carrera (str): Nueva carrera del usuario.
+
+    Returns:
+        Response: Redirección a admin.usuario_detalle tras la operación.
+
+    """
     token = session.get("token")
     rol = session.get("rol")
     if not token:

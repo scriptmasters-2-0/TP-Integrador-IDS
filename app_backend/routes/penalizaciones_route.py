@@ -26,6 +26,7 @@ from http_codes_and_messages import (
 from paginacion import construir_respuesta_paginada, obtener_parametros_paginacion
 from routes.auth_route import requiere_auth
 from validators import valid_id, valid_penalty_patch, valid_usuario_id_query
+from paginacion import construir_respuesta_paginada,obtener_parametros_paginacion
 
 penalizaciones_bp = Blueprint("penalizaciones", __name__)
 logger = logging.getLogger(__name__)
@@ -410,18 +411,24 @@ def patch_penalty(penalty_id):
 @penalizaciones_bp.route("/api/penalizaciones", methods=["GET"])
 @requiere_auth(roles=["admin", "bibliotecario", "alumno", "profesor"])
 def listar_penalizaciones():
-    """Obtiene penalizaciones asociadas a un usuario mediante query param.
-    o Lista todas las penalizaciones del sistema si no se especifica usuario_id.
-    Admin y bibliotecario pueden listar todas. Alumno y profesor solo
-    pueden consultar las penalizaciones propias.
-
-    Query Params:
-        usuario_id (str): Identificador del usuario a consultar.
-
+    """Lista penalizaciones con paginación HATEOAS y filtros opcionales.
+ 
+    Admins y bibliotecarios pueden ver todas las penalizaciones.
+    Alumnos y profesores solo pueden consultar las propias, filtrando
+    obligatoriamente por su propio usuario_id.
+ 
+    Query params:
+        limit (int): Cantidad de registros por página. Por defecto 10, máximo 100.
+        offset (int): Posición inicial de la página. Por defecto 0.
+        usuario_id (int): Filtra penalizaciones de un usuario específico.
+        usuario (str): Filtra por nombre de usuario (búsqueda parcial).
+ 
     Returns:
-        tuple: Respuesta JSON con la lista de todas las penalizaciones
-            y código HTTP 200. Retorna 403 si el usuario no es admin.
-
+        tupla: Respuesta JSON con envelope HATEOAS (data, pagination, links)
+            y código HTTP 200. Retorna 400 si los parámetros son inválidos,
+            403 si el usuario no tiene permiso, 404 si el usuario_id no existe,
+            500 si hay error de base de datos.
+ 
     """
     pagination, error = obtener_parametros_paginacion(request.args)
     if error:
@@ -444,91 +451,62 @@ def listar_penalizaciones():
     if conn is None:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
 
-    cursor = None
+    cursor = conn.cursor(dictionary=True)
 
-    try:
-        cursor = conn.cursor(dictionary=True)
-        consulta_penalizaciones = """SELECT penalizacion.id, nombre, nombre_art, severidad, motivo, activa, fecha_inicio,
-            DATE_FORMAT(fecha_fin, '%d/%m/%y') as fecha_fin, DATEDIFF(CURDATE(), fecha_fin) as retraso
-            FROM penalizacion
-            INNER JOIN usuario ON penalizacion.id_usuario = usuario.id
-            LEFT JOIN reserva ON penalizacion.id_reserva = reserva.id
-            LEFT JOIN articulos ON reserva.id_reservado = articulos.id
-            """
-        consulta_total_penalizaciones = """SELECT COUNT(*) AS total
-            FROM penalizacion
-            INNER JOIN usuario ON penalizacion.id_usuario = usuario.id
-            LEFT JOIN reserva ON penalizacion.id_reserva = reserva.id
-            LEFT JOIN articulos ON reserva.id_reservado = articulos.id
-            """
-        condiciones_where = []
-        valores = {}
+    penalizaciones_query = """SELECT penalizacion.id, nombre, nombre_art, severidad, motivo, activa, fecha_inicio,
+    DATE_FORMAT(fecha_fin, '%d/%m/%y') as fecha_fin, DATEDIFF(CURDATE(), fecha_fin) as retrazo
+    FROM penalizacion
+    INNER JOIN usuario ON penalizacion.id_usuario = usuario.id
+    LEFT JOIN reserva ON penalizacion.id_reserva = reserva.id
+    LEFT JOIN articulos ON reserva.id_reservado = articulos.id
+    """
+    count_query = """SELECT COUNT(*) AS total FROM penalizacion
+    INNER JOIN usuario ON penalizacion.id_usuario = usuario.id
+    LEFT JOIN reserva ON penalizacion.id_reserva = reserva.id
+    LEFT JOIN articulos ON reserva.id_reservado = articulos.id
+    """
+    values = {}
 
-        if usuario_id:
-            consulta_usuario = "SELECT id FROM usuario WHERE id = %s"
-            cursor.execute(consulta_usuario, (usuario_id,))
-            usuario_existe_db = cursor.fetchone()
+    if usuario_id:
+        usuario_check_query = "SELECT id FROM usuario WHERE id = %s"
+        cursor.execute(usuario_check_query, (usuario_id,))
+        usuario_exists = cursor.fetchone()
+        if not usuario_exists:
+            return jsonify(
+                {"error": f"Usuario con ID {usuario_id} no encontrado"}
+            ), HTTP_NOT_FOUND
+        penalizaciones_query += " WHERE penalizacion.id_usuario = %(usuario_id)s"
+        count_query += " WHERE penalizacion.id_usuario = %(usuario_id)s"
+        values["usuario_id"] = usuario_id
 
-            if not usuario_existe_db:
-                return jsonify(
-                    {"error": f"Usuario con ID {usuario_id} no encontrado"}
-                ), HTTP_NOT_FOUND
-            condiciones_where.append("penalizacion.id_usuario = %(usuario_id)s")
-            valores["usuario_id"] = usuario_id
+    if nombre_usuario:
+        penalizaciones_query += " AND usuario.nombre LIKE %(nombre_usuario)s" if usuario_id else " WHERE usuario.nombre LIKE %(nombre_usuario)s"
+        count_query += " AND usuario.nombre LIKE %(nombre_usuario)s" if usuario_id else " WHERE usuario.nombre LIKE %(nombre_usuario)s"
+        values["nombre_usuario"] = f"%{nombre_usuario}%"
 
-        if nombre_usuario:
-            condiciones_where.append("usuario.nombre LIKE %(nombre_usuario)s")
-            valores["nombre_usuario"] = f"%{nombre_usuario}%"
+    cursor.execute(count_query, values)
+    total = cursor.fetchone()["total"]
 
-        clausula_where = (
-            " WHERE " + " AND ".join(condiciones_where)
-            if condiciones_where
-            else ""
-        )
-        cursor.execute(consulta_total_penalizaciones + clausula_where, valores)
-        total = cursor.fetchone()["total"]
+    penalizaciones_query += " LIMIT %(limit)s OFFSET %(offset)s"
+    values = {**values, **pagination}
 
-        consulta_paginada = (
-            consulta_penalizaciones
-            + clausula_where
-            + """
-            ORDER BY penalizacion.fecha_inicio DESC, penalizacion.id DESC
-            LIMIT %(limit)s OFFSET %(offset)s
-            """
-        )
-        cursor.execute(consulta_paginada, {**valores, **pagination})
-        penalizaciones = cursor.fetchall()
+    cursor.execute(penalizaciones_query, values)
+    penalizaciones = cursor.fetchall()
 
-        return (
-            jsonify(
-                construir_respuesta_paginada(
-                    penalizaciones,
-                    total,
-                    request,
-                    pagination["limit"],
-                    pagination["offset"],
-                )
-            ),
-            HTTP_OK,
-        )
+    return (
+        jsonify(
+            construir_respuesta_paginada(
+                penalizaciones,
+                total,
+                request,
+                pagination["limit"],
+                pagination["offset"],
+            )
+        ),
+        HTTP_OK,
+    )
 
-    except mysql.connector.Error as query_err:
-        logger.error("Error en la consulta a la base de datos: %s", query_err)
 
-        return jsonify(
-            {"error": "Error interno del servidor: fallo en la consulta a la base de datos"}
-        ), HTTP_INTERNAL_SERVER_ERROR
-
-    finally:
-        try:
-            if cursor:
-                cursor.close()
-        except Exception:
-            pass
-        try:
-            conn.close()
-        except Exception:
-            pass
 
 
 @penalizaciones_bp.route("/api/penalizaciones", methods=["POST"])
@@ -589,4 +567,5 @@ def crear_penalizacion():
     if error:
         return jsonify({"error": error}), HTTP_INTERNAL_SERVER_ERROR
 
-    return jsonify(penalizacion), HTTP_CREATED
+    return jsonify(format_penalty(penalizacion)), HTTP_CREATED
+
