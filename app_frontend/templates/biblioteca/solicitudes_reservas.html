@@ -68,6 +68,11 @@
         </a>
       {% endif %}
     </div>
+
+    {% if mensaje_error %}
+      <p class="text-danger fw-bold mb-4">{{ mensaje_error }}</p>
+    {% endif %}
+
     <div class="history-table-wrapper">
         <table class="history-table">
             <thead>
@@ -101,7 +106,7 @@
                         <form action="{{ url_for('biblioteca.modificar_estado', id_reserva=reserva.id) }}"
                               method="POST"
                               onsubmit="return confirm('¿Desea rechazar la reserva?');">
-                          <input type="hidden" name="estado_reserva" value="cancelado">
+                          <input type="hidden" name="estado_reserva" value="rechazado">
                           <button type="submit" class="btn-delete-abm">
                               Rechazar
                           </button>

@@ -115,7 +115,7 @@
                 <td><span class="badge status-{{ p.estado_reserva }}">{{ p.estado_reserva }}</span></td>
                 <td>{{ p.fecha }}</td>
                 <td class="text-center">
-                  
+                  <a
                     href="{{ url_for('admin.reserva_detalle', id=p.id) }}"
                     class="btn-icon"
                     title="Ver Detalle">

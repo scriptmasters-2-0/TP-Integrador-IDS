@@ -9,7 +9,9 @@ from flask import Blueprint, jsonify, request
 from database import obtener_conexion
 from http_codes_and_messages import (
     HTTP_BAD_REQUEST,
+    HTTP_INTERNAL_SERVER_ERROR,
     HTTP_OK,
+    MSG_DB_CONNECTION_FAILED,
 )
 from paginacion import construir_respuesta_paginada, obtener_parametros_paginacion
 from routes.auth_route import requiere_auth
@@ -107,33 +109,45 @@ def obtener_reporte_db(tipo_reporte, limit, offset):
         offset (int): Posición inicial de registros.
 
     Returns:
-        tuple[list[dict], int]: Datos obtenidos y total de registros.
+        tuple: Datos, total y error de conexión si corresponde.
 
     """
-    conexion = obtener_conexion()
-    cursor = conexion.cursor(dictionary=True)
+    conn = obtener_conexion()
+    if conn is None:
+        return None, None, MSG_DB_CONNECTION_FAILED
 
-    sql_base = obtener_sql_reporte(tipo_reporte)
-    cursor.execute(f"SELECT COUNT(*) AS total FROM ({sql_base}) AS reporte")
-    total = cursor.fetchone()["total"]
+    cursor = None
+    try:
+        cursor = conn.cursor(dictionary=True)
 
-    cursor.execute(
-        f"""
-        {sql_base}
-        LIMIT %(limit)s OFFSET %(offset)s
-        """,
-        {"limit": limit, "offset": offset},
-    )
-    resultado = list(cursor)
+        sql_base = obtener_sql_reporte(tipo_reporte)
+        cursor.execute(f"SELECT COUNT(*) AS total FROM ({sql_base}) AS reporte")
+        total = cursor.fetchone()["total"]
 
-    cursor.close()
-    conexion.close()
+        cursor.execute(
+            f"""
+            {sql_base}
+            LIMIT %(limit)s OFFSET %(offset)s
+            """,
+            {"limit": limit, "offset": offset},
+        )
+        resultado = list(cursor)
 
-    return resultado, total
+        return resultado, total, None
+    finally:
+        try:
+            if cursor:
+                cursor.close()
+        except Exception:
+            pass
+        try:
+            conn.close()
+        except Exception:
+            pass
 
 
 @reportes_bp.route("/api/reports", methods=["GET"])
-@requiere_auth(roles=["admin"])
+@requiere_auth(roles=["admin", "bibliotecario"])
 def obtener_reportes():
     """Obtiene el reporte solicitado según el tipo especificado.
 
@@ -153,11 +167,13 @@ def obtener_reportes():
     if error:
         return jsonify({"error": error}), HTTP_BAD_REQUEST
 
-    reporte_datos, total = obtener_reporte_db(
+    reporte_datos, total, error = obtener_reporte_db(
         tipo,
         pagination["limit"],
         pagination["offset"],
     )
+    if error:
+        return jsonify({"error": error}), HTTP_INTERNAL_SERVER_ERROR
 
     respuesta = construir_respuesta_paginada(
         reporte_datos,

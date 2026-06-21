@@ -3,8 +3,6 @@
 from servicios.api_client import get_json
 from servicios.paginacion_servicio import extraer_data_paginada
 
-TIMEOUT = 5
-
 
 def obtener_reportes(tipo="carreras", token=None, params=None):
     """GET /reports.

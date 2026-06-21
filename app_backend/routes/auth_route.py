@@ -5,6 +5,7 @@ decodificación de tokens JWT, y un decorador para proteger rutas que
 requieren autenticación.
 """
 
+from datetime import datetime, timedelta, timezone
 from functools import wraps
 import logging
 
@@ -14,12 +15,13 @@ import mysql.connector
 from flask import Blueprint, jsonify, request
 from mysql.connector import errorcode
 
-from config import JWT_ALGORITMO, JWT_SECRETO
+from config import JWT_ALGORITMO, JWT_HORAS_DE_EXPIRACION, JWT_SECRETO
 from database import obtener_conexion
 from http_codes_and_messages import (
     HTTP_BAD_REQUEST,
     HTTP_CONFLICT,
     HTTP_CREATED,
+    HTTP_FORBIDDEN,
     HTTP_INTERNAL_SERVER_ERROR,
     HTTP_NOT_FOUND,
     HTTP_OK,
@@ -27,6 +29,7 @@ from http_codes_and_messages import (
     MSG_BAD_REQUEST,
     MSG_CONFLICT,
     MSG_DB_CONNECTION_FAILED,
+    MSG_FORBIDDEN,
     MSG_INTERNAL_SERVER_ERROR,
     MSG_NOT_FOUND,
     MSG_UNAUTHORIZED,
@@ -85,6 +88,7 @@ def generar_token(usuario_id, rol):
     payload = {
         "usuario_id": usuario_id,
         "rol": rol,
+        "exp": datetime.now(timezone.utc) + timedelta(hours=JWT_HORAS_DE_EXPIRACION),
     }
 
     return jwt.encode(payload, JWT_SECRETO, algorithm=JWT_ALGORITMO)
@@ -213,7 +217,7 @@ def login():
         cursor = conn.cursor(dictionary=True)
 
         sql_query = """
-            SELECT id, nombre, email, puntaje, rol, carrera, contrasenia_hash, activo
+            SELECT id, nombre, email, rol, carrera, contrasenia_hash, activo
             FROM usuario
             WHERE email = %(value)s
             LIMIT 1
@@ -229,19 +233,24 @@ def login():
                 HTTP_UNAUTHORIZED,
             )
 
-        contrasenia_hash = usuario.get("contrasenia_hash", "")
+        contrasenia_hash = usuario.get("contrasenia_hash") or ""
 
-        if not validar_contrasenia(contrasenia, contrasenia_hash) and contrasenia_hash != "":
+        if not contrasenia_hash or not validar_contrasenia(contrasenia, contrasenia_hash):
             return (
                 jsonify({"error": MSG_UNAUTHORIZED, "detail": "invalid_credentials"}),
                 HTTP_UNAUTHORIZED,
+            )
+
+        if usuario.get("activo") in (False, 0, "0"):
+            return (
+                jsonify({"error": MSG_FORBIDDEN, "detail": "inactive_user"}),
+                HTTP_FORBIDDEN,
             )
 
         usuario_profile = {
             "id": usuario.get("id"),
             "nombre": usuario.get("nombre"),
             "email": usuario.get("email"),
-            "puntaje": usuario.get("puntaje"),
             "rol": usuario.get("rol"),
             "carrera": usuario.get("carrera"),
             "activo": bool(usuario.get("activo", True)),
@@ -269,7 +278,7 @@ def login():
 
 
 @auth_bp.route("/api/auth/logout", methods=["POST"])
-@requiere_auth(roles=["admin"])
+@requiere_auth(roles=["admin", "alumno", "profesor", "bibliotecario"])
 def logout():
     """Cierra la sesión del usuario autenticado.
 
@@ -311,10 +320,8 @@ def obtener_perfil():
                 u.id,
                 u.nombre,
                 u.email,
-                u.puntaje,
                 u.rol,
                 u.carrera,
-                u.contrasenia_hash,
                 COUNT(p.id) AS penalizaciones
             FROM usuario u
             LEFT JOIN penalizacion p ON u.id = p.id_usuario
@@ -337,7 +344,6 @@ def obtener_perfil():
             "id": usuario.get("id"),
             "nombre": usuario.get("nombre"),
             "email": usuario.get("email"),
-            "puntaje": usuario.get("puntaje"),
             "rol": usuario.get("rol"),
             "carrera": usuario.get("carrera"),
             "penalizaciones": usuario.get("penalizaciones", 0),
@@ -396,13 +402,12 @@ def logup():
     try:
         cursor = conn.cursor()
         sql = """
-            INSERT INTO usuario (nombre, email, puntaje, rol, carrera, contrasenia_hash)
-            VALUES (%(nombre)s, %(email)s, %(puntaje)s, %(rol)s, %(carrera)s, %(contrasenia_hash)s)
+            INSERT INTO usuario (nombre, email, rol, carrera, contrasenia_hash)
+            VALUES (%(nombre)s, %(email)s, %(rol)s, %(carrera)s, %(contrasenia_hash)s)
         """
         values = {
             "nombre": data.get("nombre"),
             "email": data.get("email"),
-            "puntaje": 0,
             "rol": "alumno",
             "carrera": data.get("carrera"),
             "contrasenia_hash": contrasenia_hash,
@@ -415,7 +420,6 @@ def logup():
             "id": usuario_id,
             "nombre": data.get("nombre"),
             "email": data.get("email"),
-            "puntaje": 0,
             "rol": "alumno",
             "carrera": data.get("carrera"),
         }

@@ -48,8 +48,8 @@
     <div class="profile-card">
       <h3>Código QR</h3>
       <div class="qr-code-box">
-        {% if reserva.qr_url %}
-          <img src="{{ reserva.qr_url }}" alt="QR del préstamo" />
+        {% if reserva.qrData %}
+          <img src="data:image/png;base64,{{ reserva.qrData }}" alt="QR del préstamo" />
         {% else %}
           <div class="empty-state">
             <i class="fa-solid fa-qrcode empty-icon"></i>

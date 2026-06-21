@@ -36,6 +36,8 @@ paths:
                 $ref: '#/components/schemas/LoginResponse'
         '401':
           description: Credenciales inválidas.
+        '403':
+          description: Cuenta inactiva. No se emite token.
         '400':
           description: Datos de entrada incorrectos.
 
@@ -105,7 +107,7 @@ paths:
       tags:
         - Usuarios
       summary: Lista los usuarios registrados
-      description: Devuelve una lista completa de usuarios. (Solo Admin).
+      description: Devuelve una lista completa de usuarios. Admin y bibliotecario.
       security:
         - BearerAuth: []
       responses:
@@ -124,7 +126,7 @@ paths:
       tags:
         - Usuarios
       summary: Alta (ABM) de un nuevo usuario
-      description: Permite registrar un nuevo usuario en el sistema. (Solo Admin).
+      description: Permite registrar un nuevo usuario en el sistema. Admin y bibliotecario.
       security:
         - BearerAuth: []
       requestBody:
@@ -174,7 +176,9 @@ paths:
       tags:
         - Usuarios
       summary: Obtiene un usuario por ID (endpoint de compatibilidad)
-      description: Endpoint agregado por compatibilidad. Consulta usuarios en la tabla usuario.
+      description: Endpoint agregado por compatibilidad. Admin y bibliotecario.
+      security:
+        - BearerAuth: []
       responses:
         '200':
           description: Usuario encontrado.
@@ -184,6 +188,8 @@ paths:
                 $ref: '#/components/schemas/UserDetail'
         '400':
           description: ID inválido.
+        '401':
+          description: No autorizado.
         '404':
           description: Usuario no encontrado.
 
@@ -200,6 +206,7 @@ paths:
       tags:
         - Usuarios
       summary: Obtiene los detalles de un usuario específico
+      description: Admin y bibliotecario.
       security:
         - BearerAuth: []
       responses:
@@ -216,7 +223,9 @@ paths:
       tags:
         - Usuarios
       summary: Modifica los datos de un usuario existente
-      description: Reemplazo completo de la información general del usuario.
+      description: >
+        Admin y bibliotecario pueden actualizar datos generales, incluido activo.
+        Alumno y profesor solo pueden actualizar su propia contraseña.
       security:
         - BearerAuth: []
       requestBody:
@@ -224,7 +233,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserUpdate'
+              oneOf:
+                - $ref: '#/components/schemas/UserUpdate'
+                - $ref: '#/components/schemas/UserPasswordUpdate'
       responses:
         '200':
           description: Usuario modificado exitosamente.
@@ -246,33 +257,6 @@ paths:
       responses:
         '200':
           description: Usuario dado de baja con éxito.
-        '404':
-          description: Usuario no encontrado.
-
-  /api/usuarios/{usuario_id}/status:
-    patch:
-      tags:
-        - Usuarios
-      summary: Activa o desactiva a un usuario (Opción 2)
-      description: Actualización parcial para cambiar únicamente el estado de actividad del usuario.
-      parameters:
-        - name: usuario_id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserStatusUpdate'
-      responses:
-        '200':
-          description: Estado del usuario actualizado.
         '404':
           description: Usuario no encontrado.
 
@@ -801,7 +785,7 @@ paths:
       tags:
         - Reportes y Estadísticas
       summary: Endpoint unificado y centralizado para la generación de reportes
-      description: '(Solo Admin). Soporta tipos: pendientes, devueltos, atrasados, todos, carreras, articulos mediante query params.'
+      description: '(Admin y bibliotecario). Soporta tipos: pendientes, devueltos, atrasados, todos, carreras, articulos mediante query params.'
       security:
         - BearerAuth: []
       parameters:
@@ -980,8 +964,6 @@ components:
         email:
           type: string
           format: email
-        puntaje:
-          type: integer
         rol:
           type: string
           enum: [alumno, profesor, bibliotecario, admin]
@@ -1000,14 +982,14 @@ components:
         email:
           type: string
           format: email
-        puntaje:
-          type: integer
         rol:
           type: string
           enum: [alumno, profesor, bibliotecario, admin]
         carrera:
           type: string
           nullable: true
+        activo:
+          type: boolean
 
     UserLegacyDetail:
       type: object
@@ -1028,7 +1010,8 @@ components:
       required:
         - nombre
         - email
-        - rol
+        - carrera
+        - contrasenia
       properties:
         nombre:
           type: string
@@ -1038,13 +1021,16 @@ components:
         rol:
           type: string
           enum: [alumno, profesor, bibliotecario, admin]
+          default: alumno
         carrera:
           type: string
-        puntaje:
-          type: integer
+        contrasenia:
+          type: string
+          format: password
 
     UserUpdate:
       type: object
+      description: Campos editables por admin o bibliotecario.
       properties:
         nombre:
           type: string
@@ -1056,16 +1042,17 @@ components:
           enum: [alumno, profesor, bibliotecario, admin]
         carrera:
           type: string
-        puntaje:
-          type: integer
+        activo:
+          type: boolean
 
-    UserStatusUpdate:
+    UserPasswordUpdate:
       type: object
       required:
-        - activa
+        - contrasenia
       properties:
-        activa:
-          type: boolean
+        contrasenia:
+          type: string
+          format: password
 
     ItemDetail:
       type: object
@@ -1285,7 +1272,7 @@ components:
         usuario_id:
           type: integer
           format: int64
-        loanId:
+        id_reserva:
           type: integer
           format: int64
         reason:

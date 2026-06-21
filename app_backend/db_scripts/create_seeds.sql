@@ -35,7 +35,6 @@ INSERT INTO
   usuario (
     nombre,
     email,
-    puntaje,
     rol,
     carrera,
     contrasenia_hash,
@@ -46,7 +45,6 @@ VALUES
   (
     'Admin Sistema',
     'admin@instituto.edu.ar',
-    100,
     'admin',
     NULL,
     @dummy_hash,
@@ -55,7 +53,6 @@ VALUES
   (
     'Biblio Principal',
     'biblioteca@instituto.edu.ar',
-    100,
     'bibliotecario',
     NULL,
     @dummy_hash,
@@ -64,7 +61,6 @@ VALUES
   (
     'Profesor Laboratorio',
     'proflab@instituto.edu.ar',
-    100,
     'profesor',
     'Ingenieria Electronica',
     @dummy_hash,
@@ -73,7 +69,6 @@ VALUES
   (
     'Profesor Taller',
     'proftaller@instituto.edu.ar',
-    100,
     'profesor',
     'Ingenieria Mecanica',
     @dummy_hash,
@@ -82,7 +77,6 @@ VALUES
   (
     'Profesor Sistemas',
     'profsis@instituto.edu.ar',
-    100,
     'profesor',
     'Ingenieria en Sistemas',
     @dummy_hash,
@@ -92,7 +86,6 @@ VALUES
   (
     'Ana Martinez',
     'amartinez@instituto.edu.ar',
-    85,
     'alumno',
     'Ingenieria en Sistemas',
     @dummy_hash,
@@ -101,7 +94,6 @@ VALUES
   (
     'Carlos Ruiz',
     'cruiz@instituto.edu.ar',
-    92,
     'alumno',
     'Ingenieria Electronica',
     @dummy_hash,
@@ -110,7 +102,6 @@ VALUES
   (
     'Laura Gomez',
     'lgomez@instituto.edu.ar',
-    45,
     'alumno',
     'Arquitectura',
     @dummy_hash,
@@ -119,7 +110,6 @@ VALUES
   (
     'Diego Fernandez',
     'dfernandez@instituto.edu.ar',
-    100,
     'alumno',
     'Derecho',
     @dummy_hash,
@@ -128,7 +118,6 @@ VALUES
   (
     'Sofia Silva',
     'ssilva@instituto.edu.ar',
-    78,
     'alumno',
     'Medicina',
     @dummy_hash,
@@ -137,7 +126,6 @@ VALUES
   (
     'Martin Castro',
     'mcastro@instituto.edu.ar',
-    30,
     'alumno',
     'Ingenieria Civil',
     @dummy_hash,
@@ -146,7 +134,6 @@ VALUES
   (
     'Lucia Torres',
     'ltorres@instituto.edu.ar',
-    88,
     'alumno',
     'Quimica',
     @dummy_hash,
@@ -155,7 +142,6 @@ VALUES
   (
     'Javier Lopez',
     'jlopez@instituto.edu.ar',
-    55,
     'alumno',
     'Fisica',
     @dummy_hash,
@@ -164,7 +150,6 @@ VALUES
   (
     'Camila Diaz',
     'cdiaz@instituto.edu.ar',
-    95,
     'alumno',
     'Biologia',
     @dummy_hash,
@@ -173,7 +158,6 @@ VALUES
   (
     'Facundo Morales',
     'fmorales@instituto.edu.ar',
-    20,
     'alumno',
     'Matematica',
     @dummy_hash,
@@ -182,7 +166,6 @@ VALUES
   (
     'Valentina Herrera',
     'vherrera@instituto.edu.ar',
-    70,
     'alumno',
     'Ingenieria en Sistemas',
     @dummy_hash,
@@ -191,7 +174,6 @@ VALUES
   (
     'Matias Romero',
     'mromero@instituto.edu.ar',
-    82,
     'alumno',
     'Ingenieria Electronica',
     @dummy_hash,
@@ -200,7 +182,6 @@ VALUES
   (
     'Florencia Suarez',
     'fsuarez@instituto.edu.ar',
-    40,
     'alumno',
     'Arquitectura',
     @dummy_hash,
@@ -209,7 +190,6 @@ VALUES
   (
     'Ezequiel Dominguez',
     'edominguez@instituto.edu.ar',
-    65,
     'alumno',
     'Derecho',
     @dummy_hash,
@@ -218,7 +198,6 @@ VALUES
   (
     'Julieta Gimenez',
     'jgimenez@instituto.edu.ar',
-    91,
     'alumno',
     'Psicologia',
     @dummy_hash,
@@ -227,7 +206,6 @@ VALUES
   (
     'Tomas Alonso',
     'talonso@instituto.edu.ar',
-    10,
     'alumno',
     'Ingenieria en Sistemas',
     @dummy_hash,
@@ -236,7 +214,6 @@ VALUES
   (
     'Rocio Blanco',
     'rblanco@instituto.edu.ar',
-    89,
     'alumno',
     'Quimica',
     @dummy_hash,
@@ -245,7 +222,6 @@ VALUES
   (
     'Nicolas Medina',
     'nmedina@instituto.edu.ar',
-    76,
     'alumno',
     'Fisica',
     @dummy_hash,
@@ -254,7 +230,6 @@ VALUES
   (
     'Micaela Vega',
     'mvega@instituto.edu.ar',
-    99,
     'alumno',
     'Biologia',
     @dummy_hash,
@@ -263,7 +238,6 @@ VALUES
   (
     'Gaston Navarro',
     'gnavarro@instituto.edu.ar',
-    34,
     'alumno',
     'Matematica',
     @dummy_hash,
@@ -272,7 +246,6 @@ VALUES
   (
     'Paula Iglesias',
     'piglesias@instituto.edu.ar',
-    50,
     'alumno',
     'Ingenieria Industrial',
     @dummy_hash,
@@ -281,7 +254,6 @@ VALUES
   (
     'Agustin Cabrera',
     'acabrera@instituto.edu.ar',
-    66,
     'alumno',
     'Arquitectura',
     @dummy_hash,
@@ -290,7 +262,6 @@ VALUES
   (
     'Carolina Vidal',
     'cvidal@instituto.edu.ar',
-    87,
     'alumno',
     'Medicina',
     @dummy_hash,
@@ -299,7 +270,6 @@ VALUES
   (
     'Julian Mendoza',
     'jmendoza@instituto.edu.ar',
-    15,
     'alumno',
     'Derecho',
     @dummy_hash,
@@ -308,7 +278,6 @@ VALUES
   (
     'Emilia Ortiz',
     'eortiz@instituto.edu.ar',
-    74,
     'alumno',
     'Economia',
     @dummy_hash,
@@ -317,7 +286,6 @@ VALUES
   (
     'Lucas Rios',
     'lrios@instituto.edu.ar',
-    93,
     'alumno',
     'Psicologia',
     @dummy_hash,
@@ -326,7 +294,6 @@ VALUES
   (
     'Agostina Castillo',
     'acastillo@instituto.edu.ar',
-    60,
     'alumno',
     'Quimica',
     @dummy_hash,
@@ -335,7 +302,6 @@ VALUES
   (
     'Franco Acosta',
     'facosta@instituto.edu.ar',
-    81,
     'alumno',
     'Fisica',
     @dummy_hash,
@@ -344,7 +310,6 @@ VALUES
   (
     'Daniela Peralta',
     'dperalta@instituto.edu.ar',
-    22,
     'alumno',
     'Biologia',
     @dummy_hash,
@@ -353,7 +318,6 @@ VALUES
   (
     'Ignacio Paz',
     'ipaz@instituto.edu.ar',
-    79,
     'alumno',
     'Matematica',
     @dummy_hash,
@@ -362,7 +326,6 @@ VALUES
   (
     'Martina Nuñez',
     'mnunez@instituto.edu.ar',
-    90,
     'alumno',
     'Ingenieria en Sistemas',
     @dummy_hash,
@@ -371,7 +334,6 @@ VALUES
   (
     'Pablo Aguilar',
     'paguilar@instituto.edu.ar',
-    48,
     'alumno',
     'Arquitectura',
     @dummy_hash,
@@ -380,7 +342,6 @@ VALUES
   (
     'Victoria Mendez',
     'vmendez@instituto.edu.ar',
-    84,
     'alumno',
     'Medicina',
     @dummy_hash,
@@ -389,7 +350,6 @@ VALUES
   (
     'Rodrigo Cruz',
     'rcruz@instituto.edu.ar',
-    33,
     'alumno',
     'Derecho',
     @dummy_hash,
@@ -398,7 +358,6 @@ VALUES
   (
     'Belen Arias',
     'barias@instituto.edu.ar',
-    97,
     'alumno',
     'Economia',
     @dummy_hash,
@@ -407,7 +366,6 @@ VALUES
   (
     'Joaquin Cabrera',
     'jcabrera@instituto.edu.ar',
-    56,
     'alumno',
     'Psicologia',
     @dummy_hash,
@@ -416,7 +374,6 @@ VALUES
   (
     'Candela Molina',
     'cmolina@instituto.edu.ar',
-    71,
     'alumno',
     'Quimica',
     @dummy_hash,
@@ -425,7 +382,6 @@ VALUES
   (
     'Alejandro Rojas',
     'arojas@instituto.edu.ar',
-    83,
     'alumno',
     'Fisica',
     @dummy_hash,
@@ -434,7 +390,6 @@ VALUES
   (
     'Renata Luna',
     'rluna@instituto.edu.ar',
-    12,
     'alumno',
     'Biologia',
     @dummy_hash,
@@ -443,7 +398,6 @@ VALUES
   (
     'Esteban Miranda',
     'emiranda@instituto.edu.ar',
-    68,
     'alumno',
     'Matematica',
     @dummy_hash,
@@ -452,7 +406,6 @@ VALUES
   (
     'Josefina Soto',
     'jsoto@instituto.edu.ar',
-    96,
     'alumno',
     'Ingenieria en Sistemas',
     @dummy_hash,
@@ -461,7 +414,6 @@ VALUES
   (
     'Marcos Bravo',
     'mbravo@instituto.edu.ar',
-    41,
     'alumno',
     'Arquitectura',
     @dummy_hash,
@@ -470,7 +422,6 @@ VALUES
   (
     'Antonella Gallardo',
     'agallardo@instituto.edu.ar',
-    75,
     'alumno',
     'Medicina',
     @dummy_hash,
@@ -479,7 +430,6 @@ VALUES
   (
     'Leandro Marquez',
     'lmarquez@instituto.edu.ar',
-    86,
     'alumno',
     'Derecho',
     @dummy_hash,
@@ -488,7 +438,6 @@ VALUES
   (
     'Solange Paredes',
     'sparedes@instituto.edu.ar',
-    25,
     'alumno',
     'Economia',
     @dummy_hash,
@@ -497,7 +446,6 @@ VALUES
   (
     'Emanuel Rivas',
     'erivas@instituto.edu.ar',
-    94,
     'alumno',
     'Psicologia',
     @dummy_hash,
@@ -506,7 +454,6 @@ VALUES
   (
     'Abril Ferreyra',
     'aferreyra@instituto.edu.ar',
-    53,
     'alumno',
     'Quimica',
     @dummy_hash,
@@ -515,7 +462,6 @@ VALUES
   (
     'Guillermo Ponce',
     'gponce@instituto.edu.ar',
-    80,
     'alumno',
     'Fisica',
     @dummy_hash,
@@ -524,7 +470,6 @@ VALUES
   (
     'Melina Correa',
     'mcorrea@instituto.edu.ar',
-    62,
     'alumno',
     'Biologia',
     @dummy_hash,
@@ -533,7 +478,6 @@ VALUES
   (
     'Hernan Varela',
     'hvarela@instituto.edu.ar',
-    100,
     'alumno',
     'Matematica',
     @dummy_hash,
@@ -1745,7 +1689,7 @@ VALUES
   ),
   (
     'Política de Retrasos y Sanciones',
-    'Especifica el sistema de pérdida de puntos (puntaje) y los tiempos de inhabilitación por entregas fuera de término.',
+    'Especifica el sistema de penalizaciones y los tiempos de inhabilitación por entregas fuera de término.',
     DATE_SUB(NOW(), INTERVAL 390 DAY)
   ),
   (

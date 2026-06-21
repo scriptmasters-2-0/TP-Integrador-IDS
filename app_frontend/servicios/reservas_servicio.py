@@ -1,64 +1,63 @@
 # reservas_servicio.py
 # Funciones de servicio para consumir endpoints /reservas
-from flask import session
-
 from servicios.api_client import get_json, post_json, patch_json
 
-TIMEOUT = 5
 
-
-def obtener_reservas(params=None):
+def obtener_reservas(params=None, token=None):
     """GET /reservas
     Devuelve una lista en caso de éxito, [] en caso de fallo.
     """
-    payload, error = get_json("/reservas", params=params)
+    payload, error = get_json("/reservas", token=token, params=params)
     if error:
         return []
     return payload or []
 
 
-def crear_reserva(reserva_data):
+def crear_reserva(reserva_data, token=None):
     """POST /reservas
-    Devuelve el JSON del préstamo creado en caso de éxito, {} en caso de fallo.
+    Devuelve (payload, error, status) para que la ruta decida el flujo.
     """
-    payload, error, status = post_json("/reservas", reserva_data)
-    if error:
-        return {}
-    return payload or {}
+    return post_json("/reservas", reserva_data, token=token)
 
 
-def obtener_reserva(reserva_id):
+def obtener_reserva(reserva_id, token=None):
     """GET /reservas/{id}
-    Devuelve el JSON del préstamo en caso de éxito, {} en caso de fallo.
+    Devuelve (payload, error) con {} como fallback.
     """
-    payload, error = get_json(f"/reservas/{reserva_id}")
+    payload, error = get_json(f"/reservas/{reserva_id}", token=token)
+    return payload or {}, error
+
+
+def obtener_detalle_reserva(reserva_id, token=None):
+    """Obtiene una reserva o levanta excepción si el backend devuelve error."""
+    payload, error = get_json(f"/reservas/{reserva_id}", token=token)
     if error:
-        return {}
-    return payload or {}
+        raise Exception(error)
+    return payload
 
 
 def establecer_estado_reserva(reserva_id, status_data, token=None):
     """PATCH /reservas/{id}/status
     status_data: dict (ej., {"status": "returned"})
-    Devuelve True en caso de éxito, {} en caso de fallo.
+    Devuelve (ok, error, status) para que la ruta decida el flujo.
     """
     
     payload, error, status = patch_json(f"/reservas/{reserva_id}/status", status_data, token=token)
     if error:
-        return False
-    return True
+        return False, error, status
+    return True, None, status
 
 
-def obtener_qr_reserva(id_reserva):
+def obtener_qr_reserva(id_reserva, token=None):
     """Descripción: función obtener_qr_reserva."""
-    return get_json(f"/qr/reservas/{id_reserva}")
+    return get_json(f"/qr/reservas/{id_reserva}", token=token)
 
 
-def obtener_solicitudes():
+def obtener_solicitudes(token=None):
     """GET /reservas/solicitudes
     Devuelve una lista de reservas pendientes
     """
-    payload, error = get_json("/reservas/solicitudes")
+    payload, error = get_json("/reservas/solicitudes", token=token)
 
     if error:
         return []

@@ -68,7 +68,11 @@
 
       <div class="qr-section mt-4">
         <p class="fw-bold mb-2">Código QR para retiro</p>
-        <img src="{{ reserva.qr_url }}" alt="QR de reserva" class="qr-image" />
+        {% if reserva.qrData %}
+          <img src="data:image/png;base64,{{ reserva.qrData }}" alt="QR de reserva" class="qr-image" />
+        {% else %}
+          <p class="text-muted">QR no disponible.</p>
+        {% endif %}
       </div>
 
       <div class="form-actions mt-4">

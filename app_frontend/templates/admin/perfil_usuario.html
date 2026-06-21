@@ -51,6 +51,10 @@
 {% block dashboard_content %}
   <h2 class="reveal">Perfil de Usuario</h2>
 
+  {% if mensaje_error %}
+    <p class="text-danger fw-bold mb-4">{{ mensaje_error }}</p>
+  {% endif %}
+
   <div class="admin-detail-layout reveal delay-1">
     <!-- COLUMNA IZQUIERDA: DATOS DEL USUARIO -->
     <div class="profile-card">
@@ -64,15 +68,11 @@
       <div class="data-grid mt-data-grid">
         <div class="data-group">
           <label>Email</label>
-          <div class="data-value">{{ usuario.mail }}</div>
+          <div class="data-value">{{ usuario.email }}</div>
         </div>
         <div class="data-group">
           <label>Carrera</label>
           <div class="data-value">{{ usuario.carrera }}</div>
-        </div>
-        <div class="data-group">
-          <label>Score</label>
-          <div class="data-value highlight-value">{{ usuario.puntaje }}</div>
         </div>
         <div class="data-group">
           <label>Rol actual</label>

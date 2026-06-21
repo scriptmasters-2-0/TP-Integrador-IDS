@@ -8,6 +8,7 @@ from flask import Blueprint, jsonify, request
 from database import obtener_conexion
 from http_codes_and_messages import (
     HTTP_BAD_REQUEST,
+    HTTP_CONFLICT,
     HTTP_CREATED,
     HTTP_INTERNAL_SERVER_ERROR,
     HTTP_NOT_FOUND,
@@ -22,6 +23,7 @@ from validators import valid_id, valid_articulo, valid_articulo_filters, valid_a
 
 articulos_bp = Blueprint("articulos", __name__)
 logger = logging.getLogger(__name__)
+FOREIGN_KEY_CONSTRAINT_ERRNO = 1451
 
 
 def format_articulo(row):
@@ -404,12 +406,12 @@ def actualizar_condicion(articulo_id):
 
 
 @articulos_bp.route("/api/articulos/<int:articulo_id>", methods=["DELETE"])
-@requiere_auth(roles=["admin", "bibliotecario", "profesor"])
+@requiere_auth(roles=["admin", "bibliotecario"])
 def eliminar_articulo(articulo_id):
-    """Realiza la baja lógica de un artículo en el inventario.
+    """Elimina un artículo del inventario.
 
     Args:
-        articulo_id (int): Identificador único del artículo a dar de baja.
+        articulo_id (int): Identificador único del artículo a eliminar.
 
     Returns:
         tuple: JSON con mensaje de éxito o error y el código HTTP correspondiente.
@@ -427,11 +429,7 @@ def eliminar_articulo(articulo_id):
     try:
         cursor = conn.cursor()
 
-        sql = """
-            UPDATE articulos
-            SET activo = 0
-            WHERE id = %s
-        """
+        sql = "DELETE FROM articulos WHERE id = %s"
 
         cursor.execute(sql, (articulo_id,))
         conn.commit()
@@ -439,7 +437,14 @@ def eliminar_articulo(articulo_id):
         if cursor.rowcount == 0:
             return jsonify({"message": MSG_NOT_FOUND}), HTTP_NOT_FOUND
 
-        return jsonify({"mensaje": "Artículo dado de baja con éxito"}), HTTP_OK
+        return jsonify({"mensaje": "Artículo eliminado con éxito"}), HTTP_OK
+
+    except mysql.connector.Error as err:
+        if err.errno == FOREIGN_KEY_CONSTRAINT_ERRNO:
+            return jsonify(
+                {"error": "No se puede eliminar el artículo porque tiene reservas asociadas"}
+            ), HTTP_CONFLICT
+        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
 
     except Exception:
         return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
@@ -475,7 +480,7 @@ def get_articulo_by_id(articulo_id):
         cursor = conn.cursor(dictionary=True)
         query = (
             "SELECT id, nombre_art, tipo, seccion, prestacion_maxima, stock, necesita_reparacion "
-            "FROM articulos WHERE id = %s"
+            "FROM articulos WHERE id = %s AND activo = 1"
         )
         cursor.execute(query, (articulo_id,))
         articulo = cursor.fetchone()

@@ -162,33 +162,7 @@ def delete_json(path, token=None):
             detail = payload.get("error") or payload.get("message") or str(payload)
         elif response.text:
             detail = response.text
-        logger.warning("Backend returned %s: %s", response.status_code, detail)
+        logger.warning("Backend devolvió %s: %s", response.status_code, detail)
         return payload, detail, response.status_code
 
     return payload, None, response.status_code
-
-
-def obtener_perfil_usuario():
-    """Obtiene el perfil del usuario autenticado."""
-    payload, error = get_json("/auth/me")
-    if error:
-        raise Exception(error)
-    if isinstance(payload, dict):
-        return payload.get("usuario", payload)
-    raise Exception("Respuesta inválida del backend")
-
-
-def obtener_reservas():
-    """Obtiene la lista de préstamos disponibles para el usuario autenticado."""
-    payload, error = get_json("/reservas")
-    if error:
-        raise Exception(error)
-    return payload
-
-
-def obtener_detalle_reserva(reserva_id):
-    """Obtiene el detalle de un préstamo específico."""
-    payload, error = get_json(f"/reservas/{reserva_id}")
-    if error:
-        raise Exception(error)
-    return payload

@@ -6,7 +6,6 @@ from flask import Flask, send_from_directory
 from flask_swagger_ui import get_swaggerui_blueprint
 
 import config
-from database import init_database
 from routes.auth_route import auth_bp
 from routes.articulos_route import articulos_bp
 from routes.reservas_route import reservas_bp

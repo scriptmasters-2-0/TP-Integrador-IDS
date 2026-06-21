@@ -27,3 +27,4 @@ MSG_INTERNAL_SERVER_ERROR = "Error interno del servidor"
 
 
 MSG_DB_CONNECTION_FAILED = "No se pudo conectar a la base de datos"
+MSG_DB_QUERY_FAILED = "No se pudo completar la operación en la base de datos"

@@ -25,7 +25,7 @@ DEBUG = os.environ.get("FLASK_DEBUG", "1") == "1"
 
 # Ajustes de enlace del servidor
 HOST = os.environ.get("BACKEND_HOST", "127.0.0.1")
-PORT = int(os.environ.get("BACKEND_PORT", "5001"))
+PORT = int(os.environ.get("BACKEND_PORT", "5000"))
 
 # Base de datos
 DB_HOST = os.environ.get("DB_HOST", "127.0.0.1")

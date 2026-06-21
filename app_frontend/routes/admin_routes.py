@@ -2,9 +2,13 @@
 
 from flask import Blueprint, redirect, render_template, request, session, url_for
 
-from servicios.api_client import obtener_detalle_reserva
 from servicios.fechas_servicio import formatear_fecha_argentina
-from servicios.paginacion_servicio import paginar_lista, DEFAULT_PER_PAGE
+from servicios.paginacion_servicio import (
+    DEFAULT_API_LIMIT,
+    adaptar_pagination_hateoas,
+    calcular_offset,
+    paginar_lista,
+)
 from servicios.normativas_servicio import (
     actualizar_normativa,
     crear_normativa,
@@ -12,7 +16,6 @@ from servicios.normativas_servicio import (
     obtener_normativas,
 )
 from servicios.reports_servicio import obtener_reportes
-from servicios.articulos_servicio import eliminar_articulo
 from servicios import articulos_servicio
 from servicios import usuario_servicio
 from servicios import penalizaciones_servicio
@@ -43,7 +46,7 @@ def reserva_detalle(id):
     }
 
     try:
-        datos_api = obtener_detalle_reserva(id)
+        datos_api = reservas_servicio.obtener_detalle_reserva(id, token=token)
         estado = datos_api.get("estado_reserva", "pendiente")
         reserva = {
             "id": datos_api.get("id", id),
@@ -115,6 +118,7 @@ def listar_articulos():
         filtro_tipo=filtro_tipo,
         filtro_seccion=filtro_seccion,
         filtro_nombre=filtro_nombre,
+        mensaje_error=request.args.get("mensaje_error"),
     )
 
 
@@ -169,10 +173,21 @@ def guardar_articulo():
 def eliminar_articulo_route(id):
     """Elimina un articulo."""
     token = session.get("token")
+    rol = session.get("rol")
     if not token:
         return redirect(url_for("public.login"))
+    if rol not in ["admin", "bibliotecario"]:
+        return redirect(url_for("public.home"))
 
-    eliminar_articulo(id, token=token)
+    eliminado, error, status = articulos_servicio.eliminar_articulo(id, token=token)
+    if error or not eliminado:
+        return redirect(
+            url_for(
+                "admin.listar_articulos",
+                mensaje_error=error or "No se pudo eliminar el artículo.",
+            )
+        )
+
     return redirect(url_for("admin.listar_articulos"))
 
 
@@ -199,10 +214,10 @@ def reportes():
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
-    rta_carreras = obtener_reportes("carreras")
+    rta_carreras = obtener_reportes("carreras", token=token)
     carreras = rta_carreras.get("datos", [])
 
-    rta_articulos = obtener_reportes("articulos")
+    rta_articulos = obtener_reportes("articulos", token=token)
     articulos = rta_articulos.get("datos", [])
 
     return render_template("admin/reportes.html", carreras=carreras, articulos=articulos)
@@ -225,9 +240,23 @@ def normativas():
             "descripcion": request.form.get("descripcion"),
         }
         if id_normativa:
-            actualizar_normativa(id_normativa, data)
+            payload, error, status = actualizar_normativa(id_normativa, data, token=token)
+            if error:
+                return redirect(
+                    url_for(
+                        "admin.normativas",
+                        mensaje_error="No se pudo actualizar la normativa.",
+                    )
+                )
         else:
-            crear_normativa(data)
+            payload, error, status = crear_normativa(data, token=token)
+            if error:
+                return redirect(
+                    url_for(
+                        "admin.normativas",
+                        mensaje_error="No se pudo crear la normativa.",
+                    )
+                )
         return redirect(url_for("admin.normativas"))
 
     normativas = [
@@ -250,6 +279,7 @@ def normativas():
         "admin/normativas.html",
         normativas=normativas,
         normativa_editada=normativa_editada,
+        mensaje_error=request.args.get("mensaje_error"),
     )
 
 
@@ -264,7 +294,14 @@ def eliminar_norm():
         return redirect(url_for("public.home"))
 
     id_norm = request.form.get("id")
-    eliminar_normativa(id_norm)
+    eliminada, error, status = eliminar_normativa(id_norm, token=token)
+    if error or not eliminada:
+        return redirect(
+            url_for(
+                "admin.normativas",
+                mensaje_error="No se pudo eliminar la normativa.",
+            )
+        )
     return redirect(url_for("admin.normativas"))
 
 
@@ -284,32 +321,63 @@ def usuarios():
             "nombre": request.form.get("nombre"),
             "email": request.form.get("email"),
             "carrera": request.form.get("carrera"),
-            "puntaje": request.form.get("puntaje"),
-            "activo": request.form.get("activo"),
         }
         if id_usuario:
-            usuario_servicio.actualizar_usuario(id_usuario, data, token=token)
+            data["activo"] = request.form.get("activo") == "1"
+            payload, error, status = usuario_servicio.actualizar_usuario(
+                id_usuario, data, token=token
+            )
+            if error:
+                return redirect(
+                    url_for(
+                        "admin.usuarios",
+                        mensaje_error="No se pudo actualizar el usuario.",
+                    )
+                )
+        else:
+            data["contrasenia"] = request.form.get("contrasenia")
+            payload, error, status = usuario_servicio.crear_usuario(data, token=token)
+            if error:
+                return redirect(
+                    url_for(
+                        "admin.usuarios",
+                        creando_usuario=1,
+                        mensaje_error="No se pudo crear el usuario.",
+                    )
+                )
 
         return redirect(url_for("admin.usuarios"))
 
-    page = request.args.get("page", 1, type=int)
+    pagina = request.args.get("page", 1, type=int)
     nombre_usuario = request.args.get("usuario")
-    usuarios = usuario_servicio.obtener_usuarios(params={"page": page, "usuario": nombre_usuario}, token=token)
+    offset = calcular_offset(pagina, DEFAULT_API_LIMIT)
+    filtros = {"limit": DEFAULT_API_LIMIT, "offset": offset}
+    if nombre_usuario:
+        filtros["usuario"] = nombre_usuario
+
+    payload_paginado, fetch_error = usuario_servicio.obtener_usuarios_paginados(
+        params=filtros,
+        token=token,
+    )
+    usuarios_paginados = payload_paginado.get("data", [])
+    pagination = adaptar_pagination_hateoas(payload_paginado, pagina=pagina)
     usuario_editado = None
     id_editar = request.args.get("editar")
 
     if id_editar:
-        for usuario in usuarios:
-            if str(usuario["id"]) == str(id_editar):
+        for usuario in usuarios_paginados:
+            if str(usuario.get("id")) == str(id_editar):
                 usuario_editado = usuario
                 break
 
     return render_template(
         "admin/usuarios.html",
-        usuarios=usuarios,
-        page=page,
+        usuarios=usuarios_paginados,
+        pagination=pagination,
+        usuario=nombre_usuario or "",
         usuario_editado=usuario_editado,
         creando_usuario=request.args.get("creando_usuario") == "1",
+        mensaje_error=request.args.get("mensaje_error") or fetch_error,
     )
 
 
@@ -323,8 +391,15 @@ def eliminar_usuario():
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
-    id = request.form.get("id")
-    usuario_servicio.eliminar_usuario(id, token=token)
+    id_usuario = request.form.get("id") or request.args.get("id")
+    eliminado, error, status = usuario_servicio.eliminar_usuario(id_usuario, token=token)
+    if error or not eliminado:
+        return redirect(
+            url_for(
+                "admin.usuarios",
+                mensaje_error="No se pudo eliminar el usuario.",
+            )
+        )
 
     return redirect(url_for("admin.usuarios"))
 
@@ -340,14 +415,19 @@ def reporte_morosidad():
         return redirect(url_for("public.home"))
 
     usuario = request.args.get("usuario")
-    page = request.args.get("page", 1, type=int)
-    params = {"usuario": usuario} if usuario else {}
+    pagina = request.args.get("page", 1, type=int)
+    offset = calcular_offset(pagina, DEFAULT_API_LIMIT)
+    filtros = {"limit": DEFAULT_API_LIMIT, "offset": offset}
+    if usuario:
+        filtros["usuario"] = usuario
 
-    penalizaciones_raw = penalizaciones_servicio.obtener_penalizaciones(
-        params=params or None, token=token
+    payload_paginado, fetch_error = penalizaciones_servicio.obtener_penalizaciones_paginadas(
+        params=filtros,
+        token=token,
     )
 
     penalizaciones_formateadas = []
+    penalizaciones_raw = payload_paginado.get("data", [])
     if isinstance(penalizaciones_raw, list):
         for p in penalizaciones_raw:
             penalizaciones_formateadas.append({
@@ -355,13 +435,13 @@ def reporte_morosidad():
                 "fecha_fin": formatear_fecha_argentina(p.get("fecha_fin")),
             })
 
-    penalizaciones, pagination = paginar_lista(penalizaciones_formateadas, pagina=page)
+    pagination = adaptar_pagination_hateoas(payload_paginado, pagina=pagina)
 
     return render_template(
         "admin/morosidad.html",
-        penalizaciones=penalizaciones,
+        penalizaciones=penalizaciones_formateadas,
         usuario=usuario or "",
-        fetch_error=None,
+        fetch_error=fetch_error,
         pagination=pagination,
     )
 
@@ -391,21 +471,21 @@ def editar_articulo(id):
         resultado = articulos_servicio.actualizar_articulo(id, datos_actualizados, token=token)
 
         if not resultado:
-            articulo = articulos_servicio.obtener_articulo(id, token=token)
+            articulo, fetch_error = articulos_servicio.obtener_articulo(id, token=token)
             return render_template(
                 "admin/editar_articulo.html",
                 articulo=articulo,
-                fetch_error="No se pudo actualizar el artículo. Intentá de nuevo.",
+                fetch_error=fetch_error or "No se pudo actualizar el artículo. Intentá de nuevo.",
             )
 
         return redirect(url_for("admin.listar_articulos"))
 
-    articulo = articulos_servicio.obtener_articulo(id, token=token)
+    articulo, fetch_error = articulos_servicio.obtener_articulo(id, token=token)
 
     return render_template(
         "admin/editar_articulo.html",
         articulo=articulo,
-        fetch_error=None,
+        fetch_error=fetch_error,
     )
 
 
@@ -432,7 +512,7 @@ def lista_reservas():
     if fecha:
         params["fecha"] = fecha
 
-    raw = reservas_servicio.obtener_reservas(params=params or None)
+    raw = reservas_servicio.obtener_reservas(params=params or None, token=token)
 
     reservas = [
         {
@@ -464,9 +544,16 @@ def listar_penalizaciones():
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
-    penalizaciones = penalizaciones_servicio.obtener_penalizaciones(token=token)
+    pagina = request.args.get("page", 1, type=int)
+    offset = calcular_offset(pagina, DEFAULT_API_LIMIT)
+    filtros = {"limit": DEFAULT_API_LIMIT, "offset": offset}
+    payload_paginado, fetch_error = penalizaciones_servicio.obtener_penalizaciones_paginadas(
+        params=filtros,
+        token=token,
+    )
 
     lista_penalizaciones = []
+    penalizaciones = payload_paginado.get("data", [])
 
     if isinstance(penalizaciones, list):
         for p in penalizaciones:
@@ -480,13 +567,14 @@ def listar_penalizaciones():
                 }
             )
 
-    page = request.args.get("page", 1, type=int)
-    lista_penalizaciones, pagination = paginar_lista(lista_penalizaciones, pagina=page)
+    pagination = adaptar_pagination_hateoas(payload_paginado, pagina=pagina)
 
     return render_template(
         "admin/penalizaciones.html",
         penalizaciones=lista_penalizaciones,
         pagination=pagination,
+        mensaje_error=request.args.get("mensaje_error"),
+        fetch_error=fetch_error,
     )
 
 
@@ -552,7 +640,16 @@ def levantar_penalizacion(id):
     if rol != "bibliotecario":
         return redirect(url_for("admin.listar_penalizaciones"))
 
-    penalizaciones_servicio.actualizar_parcial_penalizacion(id, {"status": "Levantada"}, token=token)
+    actualizada, error, status = penalizaciones_servicio.actualizar_parcial_penalizacion(
+        id, {"status": "Levantada"}, token=token
+    )
+    if error or not actualizada:
+        return redirect(
+            url_for(
+                "admin.listar_penalizaciones",
+                mensaje_error="No se pudo levantar la penalización.",
+            )
+        )
     return redirect(url_for("admin.listar_penalizaciones"))
 
 
@@ -567,7 +664,11 @@ def usuario_detalle(id):
         return redirect(url_for("public.home"))
 
     usuario = usuario_servicio.obtener_usuario(id, token=token)
-    return render_template("admin/perfil_usuario.html", usuario=usuario)
+    return render_template(
+        "admin/perfil_usuario.html",
+        usuario=usuario,
+        mensaje_error=request.args.get("mensaje_error"),
+    )
 
 
 @admin_bp.route("/usuarios/<int:id>/editar", methods=["POST"])
@@ -579,8 +680,6 @@ def editar_usuario(id):
         return redirect(url_for("public.login"))
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
-    if rol != "bibliotecario":
-        return redirect(url_for("admin.usuario_detalle", id=id))
 
     payload = {
         "rol": request.form.get("rol"),
@@ -588,6 +687,16 @@ def editar_usuario(id):
         "carrera": request.form.get("carrera"),
     }
     payload = {k: v for k, v in payload.items() if v is not None and v != ""}
-    usuario_servicio.actualizar_usuario(id, payload, token=token)
+    usuario_actualizado, error, status = usuario_servicio.actualizar_usuario(
+        id, payload, token=token
+    )
+    if error:
+        return redirect(
+            url_for(
+                "admin.usuario_detalle",
+                id=id,
+                mensaje_error="No se pudo actualizar el usuario.",
+            )
+        )
 
     return redirect(url_for("admin.usuario_detalle", id=id))
