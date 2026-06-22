@@ -1,6 +1,7 @@
 # reservas_servicio.py
 # Funciones de servicio para consumir endpoints /reservas
 from servicios.api_client import get_json, post_json, patch_json
+from servicios.paginacion_servicio import extraer_data_paginada
 
 BADGE_CLASSES = {
     "pendiente": "badge-warning",
@@ -27,7 +28,6 @@ def badge_class(estado):
 
 def status_class(estado):
     return STATUS_CLASSES.get(estado, "status-active")
-
 
 def obtener_reservas(params=None, token=None):
     """GET /reservas
@@ -84,11 +84,9 @@ def obtener_solicitudes(token=None):
     Devuelve una lista de reservas pendientes
     """
     payload, error = get_json("/reservas/solicitudes", token=token)
-
     if error:
         return []
-    
-    return payload or []
+    return extraer_data_paginada(payload)
 
 
 def escanear_qr_reserva(id_reserva, token=None):

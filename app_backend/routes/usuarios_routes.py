@@ -63,7 +63,7 @@ def format_usuario_reserva(row):
 
 @usuarios_bp.route("/api/usuarios", methods=["GET"])
 @requiere_auth(roles=["admin", "bibliotecario"])
-def get_all_usuarios():
+def obtener_todos_los_usuarios():
     """Lista todos los usuarios registrados.
 
     Returns:
@@ -141,7 +141,7 @@ def get_all_usuarios():
 
 @usuarios_bp.route("/api/usuario/<int:usuario_id>", methods=["GET"])
 @requiere_auth(roles=["admin", "bibliotecario"])
-def get_usuario_by_id(usuario_id):
+def obtener_id_usuario(usuario_id):
     """Obtiene un usuario por su identificador.
 
     Args:
@@ -262,7 +262,7 @@ def eliminar_usuario_db(id_usuario):
 
 @usuarios_bp.route("/api/usuarios/<int:usuario_id>/reservas", methods=["GET"])
 @requiere_auth(roles=["admin", "profesor", "bibliotecario", "alumno"])
-def get_usuario_reservas(usuario_id):
+def obtener_reservas_usuario(usuario_id):
     """Obtiene los préstamos (reservas) de un usuario específico.
 
     Args:
@@ -276,6 +276,11 @@ def get_usuario_reservas(usuario_id):
             error interno).
 
     """
+    pagination, error = obtener_parametros_paginacion(request.args)
+        
+    if error:
+        return jsonify({"error": error}), HTTP_BAD_REQUEST
+        
     if (
         request.usuario_rol not in ("admin", "bibliotecario")
         and usuario_id != request.usuario_id
@@ -301,24 +306,42 @@ def get_usuario_reservas(usuario_id):
                 HTTP_NOT_FOUND,
             )
 
-        sql_query = """
-            SELECT r.id,
-                   r.id_reservado,
-                   a.nombre_art AS nombre_articulo,
-                   r.estado_reserva,
-                   r.fecha_retiro,
-                   r.fecha_regreso
-            FROM reserva r
-            LEFT JOIN articulos a ON r.id_reservado = a.id
-            WHERE r.id_usuario = %(usuario_id)s
-            ORDER BY r.fecha_retiro DESC
+        cursor.execute(
+            "SELECT COUNT(*) AS total FROM reserva WHERE id_usuario = %(usuario_id)s",
+            {"usuario_id": usuario_id},
+        )
+
+        total = cursor.fetchone()["total"]
+
+        consulta_sql = """
+        SELECT reservacion.id,
+            reservacion.id_reservado,
+            a.nombre_art AS nombre_articulo,
+            reservacion.estado_reserva,
+            reservacion.fecha_retiro,
+            reservacion.fecha_regreso
+            FROM reserva reservacion
+            LEFT JOIN articulos a ON reservacion.id_reservado = a.id
+            WHERE reservacion.id_usuario = %(usuario_id)s
+            ORDER BY reservacion.fecha_retiro LIMIT %(limit)s OFFSET %(offset)s
         """
-        values = {"usuario_id": usuario_id}
+        values = {**pagination, "usuario_id": usuario_id}
 
-        cursor.execute(sql_query, values)
-        reservas = [format_usuario_reserva(row) for row in cursor.fetchall()]
+        cursor.execute(consulta_sql, values)
+        reservas = [format_usuario_reserva(fila) for fila in cursor.fetchall()]
 
-        return jsonify(reservas), HTTP_OK
+        return (
+        jsonify(
+            construir_respuesta_paginada(
+                reservas,
+                total,
+                request,
+                pagination["limit"],
+                pagination["offset"],
+            )
+        ),
+            HTTP_OK,
+        )
 
     except Exception:
         return (
@@ -437,7 +460,7 @@ def create_usuario():
 
 @usuarios_bp.route("/api/usuarios/<int:usuario_id>", methods=["GET"])
 @requiere_auth(roles=["admin", "bibliotecario"])
-def get_usuario(usuario_id):
+def obtener_usuario(usuario_id):
     """Descripción: función get_usuario."""
     conn = obtener_conexion()
     if conn is None:
