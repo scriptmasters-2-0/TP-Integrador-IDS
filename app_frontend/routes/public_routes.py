@@ -4,8 +4,11 @@ import logging
 
 from flask import Blueprint, redirect, render_template, request, session, url_for
 
-from http_codes_and_messages import HTTP_FORBIDDEN, HTTP_UNAUTHORIZED
-from servicios import articulos_servicio, auth_servicio, normativas_servicio
+from http_codes_and_messages import HTTP_UNAUTHORIZED
+from servicios import auth_servicio, normativas_servicio
+from servicios.api_client import get_json, post_json
+from servicios.articulos_servicio import obtener_articulos_paginados
+from servicios.paginacion_servicio import adaptar_pagination_hateoas, calcular_offset, DEFAULT_API_LIMIT
 
 public_bp = Blueprint("public", __name__)
 logger = logging.getLogger(__name__)
@@ -171,20 +174,26 @@ def normas():
 
 @public_bp.route("/catalogo", methods=["GET"])
 def mostrar_catalogo():
-    """Muestra el catálogo completo de artículos con filtros opcionales."""
+    """Muestra el catálogo completo de artículos paginado con filtros opcionales."""
     tipo_actual = request.args.get("tipo", "")
     seccion_actual = request.args.get("seccion", "")
-    filtros = {}
-    if tipo_actual:
-        filtros["tipo"] = tipo_actual
-    if seccion_actual:
-        filtros["seccion"] = seccion_actual
+    pagina = request.args.get("page", 1, type=int)
+    offset = calcular_offset(pagina, DEFAULT_API_LIMIT)
 
-    articulos = articulos_servicio.obtener_articulos(filtros)
+    params = {"limit": DEFAULT_API_LIMIT, "offset": offset}
+    if tipo_actual:
+        params["tipo"] = tipo_actual
+    if seccion_actual:
+        params["seccion"] = seccion_actual
+    
+    resultado = obtener_articulos_paginados(params=params)
+    articulos = resultado.get("datos", [])
+    pagination = adaptar_pagination_hateoas(resultado)
 
     return render_template(
         "public/catalogo.html",
         articulos=articulos,
+        pagination=pagination,
         tipo_actual=tipo_actual,
         seccion_actual=seccion_actual,
     )
