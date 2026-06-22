@@ -431,7 +431,7 @@ def valid_articulo_update(data):
 def valid_articulo_filters(filters):
     """Valida y parsea los filtros de consulta de ítems.
 
-    Procesa los filtros de tipo, sección, disponibilidad y
+    Procesa los filtros de tipo, sección, nombre, disponibilidad y
     necesidad de reparación proporcionados como query parameters.
 
     Args:
@@ -445,11 +445,12 @@ def valid_articulo_filters(filters):
     parsed_filters = {
         "tipo": None,
         "seccion": None,
+        "nombre": None,
         "disponible": None,
         "necesita_reparacion": None,
     }
 
-    for field in ("tipo", "seccion"):
+    for field in ("tipo", "seccion", "nombre"):
         value = filters.get(field)
         if value is not None:
             if value.strip() == "":

@@ -1,6 +1,7 @@
 # articulos_servicio.py
 # Funciones de servicio para consumir endpoints /articulos
 from servicios.api_client import get_json, post_json, put_json, delete_json, patch_json
+from servicios.paginacion_servicio import extraer_data_paginada
 
 
 def obtener_articulos(params=None, token=None):
@@ -10,7 +11,25 @@ def obtener_articulos(params=None, token=None):
     payload, error = get_json("/articulos", token=token, params=params)
     if error:
         return []
-    return payload or []
+    return extraer_data_paginada(payload)
+
+
+def obtener_articulos_paginados(params=None, token=None):
+    """GET /articulos
+    Obtiene el listado paginado de articulos.
+    """
+    payload, error = get_json("/articulos", token=token, params=params)
+
+    if error:
+        return {}
+    if not isinstance(payload, dict):
+        return {}
+
+    return {
+        "datos": extraer_data_paginada(payload),
+        "pagination": payload.get("pagination") or {},
+        "links": payload.get("links") or {},
+    }
 
 
 def crear_articulo(articulo_data, token=None):

@@ -101,6 +101,22 @@
           <div class="no-results">No se encontraron artículos que cumplan con los filtros.</div>
         {% endfor %}
       </div>
+
+      <div class="pagination">
+        {% if pagination.has_prev %}
+          <a href="{{ url_for('public.mostrar_catalogo', page=pagination.prev_page, tipo=tipo_actual, seccion=seccion_actual) }}">
+            Anterior
+          </a>
+        {% endif %}
+        
+        <span>Página {{ pagination.page }}</span>
+
+        {% if pagination.has_next %}
+          <a href="{{ url_for('public.mostrar_catalogo', page=pagination.next_page, tipo=tipo_actual, seccion=seccion_actual) }}">
+            Siguiente
+          </a>
+        {% endif %}
+      </div>
     </div>
   </main>
 {% endblock %}

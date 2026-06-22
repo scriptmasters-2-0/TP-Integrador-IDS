@@ -199,63 +199,20 @@
       </table>
     </div>
 
-    {# ── Paginación ── #}
-    {% if pagination and pagination.total_pages > 1 %}
-      <div class="pagination-container">
-        <ul class="pagination">
+    <div class="pagination">
+      {% if pagination.has_prev %}
+        <a href="{{ url_for('admin.listar_articulos', page=pagination.prev_page, tipo=filtro_tipo, seccion=filtro_seccion, nombre=filtro_nombre) }}">
+          Anterior
+        </a>
+      {% endif %}
+      
+      <span>Página {{ pagination.page }}</span>
 
-          {# Anterior #}
-          <li>
-            {% if pagination.has_prev %}
-              <a class="page-link"
-                href="{{ url_for('admin.listar_articulos', page=pagination.prev_page, tipo=filtro_tipo, seccion=filtro_seccion, nombre=filtro_nombre) }}"
-                title="Página anterior">
-                <i class="fa-solid fa-chevron-left"></i>
-              </a>
-            {% else %}
-              <span class="page-link disabled">
-                <i class="fa-solid fa-chevron-left"></i>
-              </span>
-            {% endif %}
-          </li>
-
-          {# Números #}
-          {% for p in pagination.pages %}
-            {% if p is none %}
-              <li><span class="page-dots">…</span></li>
-            {% elif p == pagination.page %}
-              <li><span class="page-link active">{{ p }}</span></li>
-            {% else %}
-              <li>
-                <a class="page-link"
-                  href="{{ url_for('admin.listar_articulos', page=p, tipo=filtro_tipo, seccion=filtro_seccion, nombre=filtro_nombre) }}">
-                  {{ p }}
-                </a>
-              </li>
-            {% endif %}
-          {% endfor %}
-
-          {# Siguiente #}
-          <li>
-            {% if pagination.has_next %}
-              <a class="page-link"
-                href="{{ url_for('admin.listar_articulos', page=pagination.next_page, tipo=filtro_tipo, seccion=filtro_seccion, nombre=filtro_nombre) }}"
-                title="Página siguiente">
-                <i class="fa-solid fa-chevron-right"></i>
-              </a>
-            {% else %}
-              <span class="page-link disabled">
-                <i class="fa-solid fa-chevron-right"></i>
-              </span>
-            {% endif %}
-          </li>
-        </ul>
-      </div>
-
-      <p class="text-center text-muted text-sm mt-3">
-        Mostrando {{ pagination.first_item }}–{{ pagination.last_item }} de {{ pagination.total_items }}
-      </p>
-    {% endif %}
-
+      {% if pagination.has_next %}
+        <a href="{{ url_for('admin.listar_articulos', page=pagination.next_page, tipo=filtro_tipo, seccion=filtro_seccion, nombre=filtro_nombre) }}">
+          Siguiente
+        </a>
+      {% endif %}
+    </div>
   </div>
 {% endblock %}

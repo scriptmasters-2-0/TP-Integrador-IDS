@@ -20,6 +20,7 @@ from http_codes_and_messages import (
 )
 from routes.auth_route import requiere_auth
 from validators import valid_id, valid_articulo, valid_articulo_filters, valid_articulo_update
+from paginacion import construir_respuesta_paginada, obtener_parametros_paginacion
 
 articulos_bp = Blueprint("articulos", __name__)
 logger = logging.getLogger(__name__)
@@ -50,9 +51,9 @@ def format_articulo(row):
 
 @articulos_bp.route("/api/articulos", methods=["GET"])
 def get_articulos():
-    """Retorna artículos del inventario, opcionalmente filtrados por query.
+    """Retorna artículos del inventario paginados, opcionalmente filtrados por query.
 
-    Los filtros disponibles son: tipo, sección, disponibilidad y
+    Los filtros disponibles son: tipo, sección, nombre, disponibilidad y
     necesidad de reparación. Se envían como query parameters.
 
     Returns:
@@ -62,6 +63,7 @@ def get_articulos():
     filters = {
         "tipo": request.args.get("tipo"),
         "seccion": request.args.get("seccion"),
+        "nombre": request.args.get("nombre"),
         "disponible": request.args.get("disponible"),
         "necesita_reparacion": request.args.get("necesita_reparacion"),
     }
@@ -70,6 +72,10 @@ def get_articulos():
     if not is_valid:
         return jsonify({"error": MSG_BAD_REQUEST, "detail": error}), HTTP_BAD_REQUEST
 
+    pagination, pag_error = obtener_parametros_paginacion(request.args)
+    if pag_error:
+        return jsonify({"error": pag_error}), HTTP_BAD_REQUEST
+    
     conn = obtener_conexion()
     if conn is None:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
@@ -85,6 +91,10 @@ def get_articulos():
         where_conditions.append("seccion = %(seccion)s")
         values["seccion"] = parsed_filters.get("seccion")
 
+    if parsed_filters.get("nombre") is not None:
+        where_conditions.append("nombre_art LIKE %(nombre)s")
+        values["nombre"] = f"%parsed_filters.get('nombre')%"
+
     if parsed_filters.get("disponible") is not None:
         if parsed_filters.get("disponible"):
             where_conditions.append("stock > 0")
@@ -96,7 +106,14 @@ def get_articulos():
         where_conditions.append("necesita_reparacion = %(necesita_reparacion)s")
         values["necesita_reparacion"] = parsed_filters.get("necesita_reparacion")
 
-    sql = """
+    where_clause = ""
+    if where_conditions:
+        where_clause = " WHERE " + " AND ".join(where_conditions)
+    
+    
+    sql_count = f"SELECT COUNT(*) AS total FROM articulos{where_clause}"
+
+    sql = f"""
         SELECT id,
                nombre_art,
                tipo,
@@ -105,21 +122,34 @@ def get_articulos():
                stock,
                necesita_reparacion
         FROM articulos
+        {where_clause}
+        ORDER BY id
+        LIMIT %(limit)s OFFSET %(offset)s
     """
-
-    if where_conditions:
-        sql += " WHERE " + " AND ".join(where_conditions)
-
-    sql += " ORDER BY id"
 
     cursor = None
 
     try:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute(sql, values)
+        cursor.execute(sql_count, values)
+        total = cursor.fetchone()["total"]
+        
+        values_page = dict(values)
+        values_page["limit"] = pagination["limit"]
+        values_page["offset"] = pagination["offset"]
+        cursor.execute(sql, values_page)
+
         articulos = [format_articulo(row) for row in cursor.fetchall()]
 
-        return jsonify(articulos), HTTP_OK
+        respuesta = construir_respuesta_paginada(
+            articulos, 
+            total, 
+            request, 
+            pagination["limit"], 
+            pagination["offset"]
+        )
+
+        return jsonify(respuesta), HTTP_OK
 
     except mysql.connector.Error:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR

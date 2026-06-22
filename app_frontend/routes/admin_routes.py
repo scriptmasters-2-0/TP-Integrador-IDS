@@ -8,6 +8,7 @@ from servicios.paginacion_servicio import (
     adaptar_pagination_hateoas,
     calcular_offset,
     paginar_lista,
+    extraer_data_paginada,
 )
 from servicios.normativas_servicio import (
     actualizar_normativa,
@@ -129,29 +130,32 @@ def listar_articulos():
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
-    filtro_tipo = request.args.get("tipo", "").strip().lower()
-    filtro_seccion = request.args.get("seccion", "").strip().lower()
-    filtro_nombre = request.args.get("nombre", "").strip().lower()
+    filtro_tipo = request.args.get("tipo", "").strip()
+    filtro_seccion = request.args.get("seccion", "").strip()
+    filtro_nombre = request.args.get("nombre", "").strip()
     pagina = request.args.get("page", 1, type=int)
+    offset = calcular_offset(pagina, DEFAULT_API_LIMIT)
 
-    todos = articulos_servicio.obtener_articulos(token=token)
-
+    todos = articulos_servicio.obtener_articulos(params={"limit": 100, "offset": 0}, token=token)
+    todos = extraer_data_paginada(todos)
     tipos = sorted({(a.get("tipo") or "").strip() for a in todos if a.get("tipo")})
     secciones = sorted({(a.get("seccion") or "").strip() for a in todos if a.get("seccion")})
 
-    filtrados = todos
+    params = {"limit": DEFAULT_API_LIMIT, "offset": offset}
     if filtro_tipo:
-        filtrados = [a for a in filtrados if filtro_tipo in (a.get("tipo") or "").lower()]
+        params["tipo"] = filtro_tipo
     if filtro_seccion:
-        filtrados = [a for a in filtrados if filtro_seccion in (a.get("seccion") or "").lower()]
+        params["seccion"] = filtro_seccion
     if filtro_nombre:
-        filtrados = [a for a in filtrados if filtro_nombre in (a.get("nombre_art") or "").lower()]
+        params["nombre"] = filtro_nombre
 
-    articulos_pagina, pagination = paginar_lista(filtrados, pagina=pagina, por_pagina=10)
+    resultado = articulos_servicio.obtener_articulos_paginados(params=params, token=token)
+    articulos_paginado = resultado.get("datos", [])
+    pagination = adaptar_pagination_hateoas(resultado)
 
     return render_template(
         "admin/articulos.html",
-        articulos=articulos_pagina,
+        articulos=articulos_paginado,
         pagination=pagination,
         tipos=tipos,
         secciones=secciones,
