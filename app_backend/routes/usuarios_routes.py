@@ -63,7 +63,7 @@ def format_usuario_reserva(row):
 
 @usuarios_bp.route("/api/usuarios", methods=["GET"])
 @requiere_auth(roles=["admin", "bibliotecario"])
-def get_all_usuarios():
+def obtener_todos_los_usuarios():
     """Lista todos los usuarios registrados.
 
     Returns:
@@ -141,7 +141,7 @@ def get_all_usuarios():
 
 @usuarios_bp.route("/api/usuario/<int:usuario_id>", methods=["GET"])
 @requiere_auth(roles=["admin", "bibliotecario"])
-def get_usuario_by_id(usuario_id):
+def obtener_id_usuario(usuario_id):
     """Obtiene un usuario por su identificador.
 
     Args:
@@ -262,7 +262,7 @@ def eliminar_usuario_db(id_usuario):
 
 @usuarios_bp.route("/api/usuarios/<int:usuario_id>/reservas", methods=["GET"])
 @requiere_auth(roles=["admin", "profesor", "bibliotecario", "alumno"])
-def get_usuario_reservas(usuario_id):
+def obtener_reservas_usuario(usuario_id):
     """Obtiene los préstamos (reservas) de un usuario específico.
 
     Args:
@@ -297,7 +297,15 @@ def get_usuario_reservas(usuario_id):
         cursor = conn.cursor(dictionary=True)
 
         cursor.execute(
-            "SELECT id FROM usuario WHERE id = %(usuario_id)s",
+            "SELECT id, nombre, email, rol, carrera, activo FROM usuario WHERE id = %s",
+            (usuario_id,),
+        )
+        usuario = cursor.fetchone()
+        if not usuario:
+            return jsonify({"message": MSG_NOT_FOUND}), HTTP_NOT_FOUND
+
+        cursor.execute(
+            "SELECT COUNT(*) AS total FROM reserva WHERE id_usuario = %(usuario_id)s",
             {"usuario_id": usuario_id},
         )
         if not cursor.fetchone():
@@ -460,7 +468,7 @@ def create_usuario():
 
 @usuarios_bp.route("/api/usuarios/<int:usuario_id>", methods=["GET"])
 @requiere_auth(roles=["admin", "bibliotecario"])
-def get_usuario(usuario_id):
+def obtener_usuario(usuario_id):
     """Descripción: función get_usuario."""
     conn = obtener_conexion()
     if conn is None:
