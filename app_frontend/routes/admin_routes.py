@@ -1,4 +1,4 @@
-"""Rutas del area de administracion."""
+"""Rutas del área de administración."""
 
 from flask import Blueprint, redirect, render_template, request, session, url_for
 
