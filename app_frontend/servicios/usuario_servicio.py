@@ -1,8 +1,7 @@
 # usuario_servicio.py
 # Funciones de servicio para consumir endpoints /usuarios
-from servicios.api_client import get_json, post_json, put_json, delete_json, patch_json
-
-TIMEOUT = 5
+from servicios.api_client import get_json, post_json, put_json, delete_json
+from servicios.paginacion_servicio import extraer_data_paginada
 
 def obtener_usuarios(params=None, token=None):
     """GET /usuarios
@@ -10,21 +9,26 @@ def obtener_usuarios(params=None, token=None):
     Devuelve una lista en caso de éxito, [] en caso de fallo.
     """
     payload, error = get_json("/usuarios", token=token, params=params)
-    print("DEBUG payload:", payload)
-    print("DEBUG error:", error)
     if error:
         return []
-    return payload or []
+    return extraer_data_paginada(payload)
+
+
+def obtener_usuarios_paginados(params=None, token=None):
+    """Obtiene usuarios preservando metadata y links HATEOAS."""
+    payload, error = get_json("/usuarios", token=token, params=params)
+    if error:
+        return {"data": [], "pagination": {}, "links": {}}, error
+    if isinstance(payload, dict):
+        return payload, None
+    return {"data": extraer_data_paginada(payload), "pagination": {}, "links": {}}, None
 
 def crear_usuario(usuario_data, token=None):
     """POST /usuarios
     usuario_data: dict
-    Devuelve el JSON parseado en caso de éxito, {} en caso de fallo.
+    Devuelve (payload, error, status) para que la ruta decida el flujo.
     """
-    payload, error, status = post_json("/usuarios", usuario_data, token=token)
-    if error:
-        return {}
-    return payload or {}
+    return post_json("/usuarios", usuario_data, token=token)
 
 def obtener_usuario(usuario_id, token=None):
     """GET /usuarios/{id}
@@ -37,50 +41,27 @@ def obtener_usuario(usuario_id, token=None):
 
 def actualizar_usuario(usuario_id, usuario_data, token=None):
     """PUT /usuarios/{id}
-    Devuelve el JSON actualizado en caso de éxito, {} en caso de fallo.
+    Devuelve (payload, error, status) para que la ruta decida el flujo.
     """
-    payload, error, status = put_json(f"/usuarios/{usuario_id}", usuario_data, token=token)
-    if error:
-        return {}
-    return payload or {}
+    return put_json(f"/usuarios/{usuario_id}", usuario_data, token=token)
 
 
 def eliminar_usuario(usuario_id, token=None):
     """DELETE /usuarios/{id}
-    Devuelve True en caso de éxito, {} en caso de fallo.
+    Devuelve (ok, error, status) para que la ruta decida el flujo.
     """
     payload, error, status = delete_json(f"/usuarios/{usuario_id}", token=token)
     if error:
-        return {}
-    return True
-
-
-def establecer_estado_usuario(usuario_id, status_data, token=None):
-    """PATCH /usuarios/{id}/status
-    status_data: dict (ej., {"active": True})
-    Devuelve True en caso de éxito, {} en caso de fallo.
-    """
-    payload, error, status = patch_json(f"/usuarios/{usuario_id}/status", status_data, token=token)
-    if error:
-        return {}
-    return True
+        return False, error, status
+    return True, None, status
 
 
 def obtener_reservas_usuario(usuario_id, params=None, token=None):
     """GET /usuarios/{id}/reservas
-    Devuelve una lista de préstamos del usuario en caso de éxito, [] en caso de fallo.
+    Devuelve (payload, error) con [] como fallback.
     """
     payload, error = get_json(f"/usuarios/{usuario_id}/reservas", token=token, params=params)
-    if error:
-        return []
-    return payload or []
-
-def obtener_reservas_usuario_con_error(usuario_id, params=None, token=None):
-    """GET /usuarios/{id}/reservas preservando el error para vistas."""
-    payload, error = get_json(f"/usuarios/{usuario_id}/reservas", token=token, params=params)
-    if error:
-        return [], error
-    return payload or [], None
+    return payload or [], error
 
 def obtener_penalizaciones_usuario(usuario_id, params=None, token=None):
     """GET /usuarios/{id}/penalizaciones

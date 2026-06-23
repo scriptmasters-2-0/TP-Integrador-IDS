@@ -8,6 +8,7 @@ from flask import Blueprint, jsonify, request
 from database import obtener_conexion
 from http_codes_and_messages import (
     HTTP_BAD_REQUEST,
+    HTTP_CONFLICT,
     HTTP_CREATED,
     HTTP_INTERNAL_SERVER_ERROR,
     HTTP_NOT_FOUND,
@@ -21,6 +22,8 @@ from routes.auth_route import requiere_auth
 from validators import valid_id, valid_articulo, valid_articulo_filters, valid_articulo_update
 
 articulos_bp = Blueprint("articulos", __name__)
+logger = logging.getLogger(__name__)
+FOREIGN_KEY_CONSTRAINT_ERRNO = 1451
 
 
 def format_articulo(row):
@@ -298,7 +301,7 @@ def update_articulo(articulo_id):
         articulo = cursor.fetchone()
 
         if not articulo:
-            return jsonify({"message": MSG_NOT_FOUND}), HTTP_NOT_FOUND
+            return jsonify({"error": MSG_NOT_FOUND}), HTTP_NOT_FOUND
 
         return jsonify(format_articulo(articulo)), HTTP_OK
 
@@ -379,7 +382,7 @@ def actualizar_condicion(articulo_id):
         conn.commit()
 
         if cursor.rowcount == 0:
-            return jsonify({"message": MSG_NOT_FOUND}), HTTP_NOT_FOUND
+            return jsonify({"error": MSG_NOT_FOUND}), HTTP_NOT_FOUND
 
         cursor.execute(
             """
@@ -403,12 +406,12 @@ def actualizar_condicion(articulo_id):
 
 
 @articulos_bp.route("/api/articulos/<int:articulo_id>", methods=["DELETE"])
-@requiere_auth(roles=["admin", "bibliotecario", "profesor"])
+@requiere_auth(roles=["admin", "bibliotecario"])
 def eliminar_articulo(articulo_id):
-    """Realiza la baja lógica de un artículo en el inventario.
+    """Elimina un artículo del inventario.
 
     Args:
-        articulo_id (int): Identificador único del artículo a dar de baja.
+        articulo_id (int): Identificador único del artículo a eliminar.
 
     Returns:
         tuple: JSON con mensaje de éxito o error y el código HTTP correspondiente.
@@ -426,19 +429,22 @@ def eliminar_articulo(articulo_id):
     try:
         cursor = conn.cursor()
 
-        sql = """
-            UPDATE articulos
-            SET activo = 0
-            WHERE id = %s
-        """
+        sql = "DELETE FROM articulos WHERE id = %s"
 
         cursor.execute(sql, (articulo_id,))
         conn.commit()
 
         if cursor.rowcount == 0:
-            return jsonify({"message": MSG_NOT_FOUND}), HTTP_NOT_FOUND
+            return jsonify({"error": MSG_NOT_FOUND}), HTTP_NOT_FOUND
 
-        return jsonify({"mensaje": "Artículo dado de baja con éxito"}), HTTP_OK
+        return jsonify({"mensaje": "Artículo eliminado con éxito"}), HTTP_OK
+
+    except mysql.connector.Error as err:
+        if err.errno == FOREIGN_KEY_CONSTRAINT_ERRNO:
+            return jsonify(
+                {"error": "No se puede eliminar el artículo porque tiene reservas asociadas"}
+            ), HTTP_CONFLICT
+        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
 
     except Exception:
         return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
@@ -462,7 +468,7 @@ def get_articulo_by_id(articulo_id):
 
     """
     if valid_id(articulo_id) is None:
-        return jsonify({"error": "Invalid articulo ID format"}), HTTP_BAD_REQUEST
+        return jsonify({"error": "Formato de ID de artículo inválido"}), HTTP_BAD_REQUEST
 
     conn = obtener_conexion()
     if conn is None:
@@ -474,23 +480,23 @@ def get_articulo_by_id(articulo_id):
         cursor = conn.cursor(dictionary=True)
         query = (
             "SELECT id, nombre_art, tipo, seccion, prestacion_maxima, stock, necesita_reparacion "
-            "FROM articulos WHERE id = %s"
+            "FROM articulos WHERE id = %s AND activo = 1"
         )
         cursor.execute(query, (articulo_id,))
         articulo = cursor.fetchone()
 
         if not articulo:
             return jsonify(
-                {"error": f"Item with ID {articulo_id} not found"}
+                {"error": f"Artículo con ID {articulo_id} no encontrado"}
             ), HTTP_NOT_FOUND
 
         return jsonify(articulo), HTTP_OK
 
     except mysql.connector.Error as query_err:
-        logging.error(f"Database query error in get_articulo_by_id: {query_err}")
+        logger.error("Error en la consulta a la base de datos en get_articulo_by_id: %s", query_err)
 
         return jsonify(
-            {"error": "Internal server error: Database query failed"}
+            {"error": "Error interno del servidor: fallo en la consulta a la base de datos"}
         ), HTTP_INTERNAL_SERVER_ERROR
 
     finally:

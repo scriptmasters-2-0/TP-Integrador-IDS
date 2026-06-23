@@ -5,6 +5,7 @@ actualización y filtrado de usuarios, ítems, préstamos y penalidades.
 """
 
 MIN_USERNAME_LENGTH = 3
+MIN_PASSWORD_LENGTH = 8
 
 
 def valid_id(value):
@@ -38,7 +39,7 @@ def valid_usuario(data):
     """Valida el payload de creación de usuario.
 
     Verifica que los campos requeridos (nombre, email, carrera) estén
-    presentes y que los campos opcionales (rol, puntaje) tengan valores válidos.
+    presentes y que los campos opcionales tengan valores válidos.
 
     Args:
         data (dict): Diccionario con los datos del usuario a crear.
@@ -50,6 +51,11 @@ def valid_usuario(data):
     """
     if not isinstance(data, dict):
         return False, "payload_must_be_object"
+
+    allowed_fields = ["nombre", "email", "rol", "carrera", "contrasenia"]
+    for f in data:
+        if f not in allowed_fields:
+            return False, f"invalid_field:{f}"
 
     required = ["nombre", "email", "carrera"]
     for f in required:
@@ -68,18 +74,23 @@ def valid_usuario(data):
     if rol not in allowed and rol is not None:
         return False, "invalid:rol"
 
-    puntaje = data.get("puntaje")
-    if puntaje is not None:
-        try:
-            s = int(puntaje)
-            if s < 0:
-                return False, "invalid:puntaje"
-        except (ValueError, TypeError):
-            return False, "invalid:puntaje"
-
     carrera = data.get("carrera")
     if carrera is not None and not isinstance(carrera, str):
         return False, "invalid:carrera"
+
+    return True, None
+
+
+def valid_contrasenia(value):
+    """Valida una contraseña para creación o cambio de usuario."""
+    if value is None:
+        return False, "missing:contrasenia"
+    if not isinstance(value, str):
+        return False, "invalid_type:contrasenia"
+    if value.strip() == "":
+        return False, "empty:contrasenia"
+    if len(value) < MIN_PASSWORD_LENGTH:
+        return False, "invalid_length:contrasenia"
 
     return True, None
 
@@ -101,7 +112,11 @@ def valid_usuario_update(data):
     if not isinstance(data, dict):
         return False, "payload_must_be_object"
 
-    allowed = ["nombre", "email", "rol", "carrera", "puntaje"]
+    allowed = ["nombre", "email", "rol", "carrera", "activo"]
+    for key in data:
+        if key not in allowed:
+            return False, f"invalid_field:{key}"
+
     if not any(k in data for k in allowed):
         return False, "no_updatable_fields"
 
@@ -134,15 +149,11 @@ def valid_usuario_update(data):
         if data["rol"] not in allowed_roles:
             return False, "invalid_value:rol"
 
-    if "puntaje" in data:
-        if data["puntaje"] is None:
-            return False, "null:puntaje"
-        try:
-            s = int(data["puntaje"])
-        except (ValueError, TypeError):
-            return False, "invalid_type:puntaje"
-        if s < 0:
-            return False, "invalid_value:puntaje"
+    if "activo" in data:
+        if data["activo"] is None:
+            return False, "null:activo"
+        if data["activo"] not in (True, False, 0, 1, "0", "1"):
+            return False, "invalid_value:activo"
 
     if "carrera" in data:
         if data.get("carrera") is None:
@@ -529,9 +540,27 @@ def valid_reserva_status_update(data):
     if not isinstance(data.get("estado_reserva"), str):
         return False, "invalid_type:estado_reserva"
 
-    allowed_statuses = ("pendiente", "aprobado", "entregado", "devuelto", "cancelado")
+    allowed_statuses = (
+        "pendiente",
+        "aprobado",
+        "entregado",
+        "devuelto",
+        "cancelado",
+        "rechazado",
+    )
     if data.get("estado_reserva") not in allowed_statuses:
         return False, "invalid_value:estado_reserva"
+
+    if "estado_devuelto" in data and data.get("estado_devuelto") is not None:
+        if not isinstance(data.get("estado_devuelto"), str):
+            return False, "invalid_type:estado_devuelto"
+
+        allowed_return_conditions = ("bueno", "danado", "perdido")
+        if data.get("estado_reserva") == "devuelto":
+            if data.get("estado_devuelto") not in allowed_return_conditions:
+                return False, "invalid_value:estado_devuelto"
+        elif data.get("estado_devuelto") not in (*allowed_return_conditions, "no_aplica"):
+            return False, "invalid_value:estado_devuelto"
 
     return True, None
 
@@ -566,7 +595,29 @@ def valid_reserva_create(data):
     if articulo_id is None:
         return False, "invalid_value:articulo_id", None
 
-    return True, None, {"usuario_id": usuario_id, "articulo_id": articulo_id}
+    parsed = {"usuario_id": usuario_id, "articulo_id": articulo_id}
+
+    has_fecha_retiro = "fecha_retiro" in data
+    has_hora_regreso = "hora_regreso" in data
+    if has_fecha_retiro and not has_hora_regreso:
+        return False, "missing:hora_regreso", None
+    if has_hora_regreso and not has_fecha_retiro:
+        return False, "missing:fecha_retiro", None
+
+    for field in ("fecha_retiro", "hora_regreso"):
+        if field not in data:
+            continue
+        value = data.get(field)
+        if value is None:
+            return False, f"null:{field}", None
+        if not isinstance(value, str):
+            return False, f"invalid_type:{field}", None
+        value = value.strip()
+        if value == "":
+            return False, f"empty:{field}", None
+        parsed[field] = value
+
+    return True, None, parsed
 
 
 def valid_usuario_id_query(filters):

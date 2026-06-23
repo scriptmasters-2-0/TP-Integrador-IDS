@@ -6,6 +6,19 @@ const btnIniciar = document.getElementById('btn-iniciar');
 const btnDetener = document.getElementById('btn-detener');
 const txtResultado = document.getElementById('resultado');
 
+function obtenerIdReservaEscaneada(decodedText) {
+    try {
+        const datosQr = JSON.parse(decodedText);
+        const idReserva = Number(datosQr.id_reserva);
+        if (!Number.isInteger(idReserva) || idReserva <= 0) {
+            return null;
+        }
+        return idReserva;
+    } catch (error) {
+        return null;
+    }
+}
+
 btnIniciar.addEventListener('click', () => {
     procesando = false;
     html5QrCode = new Html5Qrcode("preview");
@@ -24,11 +37,16 @@ btnIniciar.addEventListener('click', () => {
                     procesando = true;
                     try {
                         console.log("QR leido:", decodedText);
-                        const Id = parseInt(decodedText.replace("FIUBA-RES-", ""));
-                        console.log("id:", Id);
-                        txtResultado.innerText = "Procesando #" + Id;
+                        const idReserva = obtenerIdReservaEscaneada(decodedText);
+                        if (idReserva === null) {
+                            txtResultado.innerText = "QR inválido. Escanee un comprobante de reserva.";
+                            return;
+                        }
+
+                        console.log("id:", idReserva);
+                        txtResultado.innerText = "Procesando #" + idReserva;
                         await apagarCamara();
-                        const response = await fetch(`/biblioteca/reservas/${Id}/scan`, { method: "PATCH" });
+                        const response = await fetch(`/biblioteca/reservas/${idReserva}/scan`, { method: "PATCH" });
                         const resultado = await response.json();
                         console.log(resultado);
                         txtResultado.innerText = "Estado nuevo:" + resultado.estado_reserva;
@@ -36,6 +54,9 @@ btnIniciar.addEventListener('click', () => {
                         apagarCamara(); 
                     } catch (error) {
                         console.error(error);
+                        txtResultado.innerText = "No se pudo procesar el QR. Intente nuevamente.";
+                    } finally {
+                        procesando = false;
                     }
                 },
                 (errorMessage) => {

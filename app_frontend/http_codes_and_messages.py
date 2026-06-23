@@ -16,14 +16,14 @@ HTTP_INTERNAL_SERVER_ERROR = 500
 
 
 MSG_OK = "OK"
-MSG_CREATED = "Created"
-MSG_NO_CONTENT = "No Content"
-MSG_BAD_REQUEST = "Bad Request"
-MSG_UNAUTHORIZED = "Unauthorized"
-MSG_FORBIDDEN = "Forbidden"
-MSG_NOT_FOUND = "Página no encontrada"
-MSG_CONFLICT = "Conflict"
-MSG_INTERNAL_SERVER_ERROR = "Error Interno del Servidor"
+MSG_CREATED = "Creado"
+MSG_NO_CONTENT = "Sin contenido"
+MSG_BAD_REQUEST = "Solicitud incorrecta"
+MSG_UNAUTHORIZED = "No autorizado"
+MSG_FORBIDDEN = "Prohibido"
+MSG_NOT_FOUND = "No encontrado"
+MSG_CONFLICT = "Conflicto"
+MSG_INTERNAL_SERVER_ERROR = "Error interno del servidor"
 
 
 MSG_DB_CONNECTION_FAILED = "No se pudo conectar a la base de datos"

@@ -32,8 +32,8 @@
   <h2 class="reveal mt-0 mb-1">Mis reservas</h2>
   <p class="text-muted reveal">Consultá tus préstamos activos e historial completo.</p>
 
-  {% if fetch_error %}
-    <p class="text-danger fw-bold mb-4">{{ fetch_error }}</p>
+  {% if fetch_error or mensaje_error %}
+    <p class="text-danger fw-bold mb-4">{{ fetch_error or mensaje_error }}</p>
   {% endif %}
 
   <div class="tabs-container reveal delay-2">
@@ -64,7 +64,7 @@
                 <tr>
                   <td><strong>{{ reserva.nombre_articulo }}</strong></td>
                   <td>
-                    <span class="badge {% if reserva.estado_reserva == 'pendiente' %}badge-warning{% else %}badge-success{% endif %}">
+                    <span class="badge {{ reserva.estado_clase }}">
                       {{ reserva.estado_reserva }}
                     </span>
                   </td>
@@ -115,10 +115,7 @@
                 <tr>
                   <td><strong>{{ reserva.nombre_articulo }}</strong></td>
                   <td>
-                    <span class="badge
-                      {% if reserva.estado_reserva == 'devuelto' %}badge-success
-                      {% elif reserva.estado_reserva == 'cancelado' %}badge-danger
-                      {% else %}badge-success{% endif %}">
+                    <span class="badge {{ reserva.estado_clase }}">
                       {{ reserva.estado_reserva }}
                     </span>
                   </td>

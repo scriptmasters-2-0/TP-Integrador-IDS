@@ -1,7 +1,7 @@
 """Rutas de la API para la gestión de usuarios.
 
 Define los endpoints para crear, actualizar, consultar préstamos
-y eliminar (baja lógica) usuarios del sistema.
+y eliminar usuarios del sistema.
 """
 
 import logging
@@ -16,22 +16,26 @@ from http_codes_and_messages import (
     HTTP_BAD_REQUEST,
     HTTP_CONFLICT,
     HTTP_CREATED,
+    HTTP_FORBIDDEN,
     HTTP_INTERNAL_SERVER_ERROR,
     HTTP_NOT_FOUND,
     HTTP_OK,
     MSG_BAD_REQUEST,
     MSG_CONFLICT,
     MSG_DB_CONNECTION_FAILED,
+    MSG_FORBIDDEN,
     MSG_INTERNAL_SERVER_ERROR,
     MSG_NOT_FOUND,
 )
-from routes.auth_route import requiere_auth
-from validators import valid_id, valid_usuario, valid_usuario_update
-
-logging.basicConfig(level=logging.ERROR)
+from paginacion import construir_respuesta_paginada, obtener_parametros_paginacion
+from routes.auth_route import hashear_contrasenia, requiere_auth
+from validators import valid_contrasenia, valid_id, valid_usuario, valid_usuario_update
 
 usuarios_bp = Blueprint("usuarios", __name__)
+logger = logging.getLogger(__name__)
 ARGENTINA_TZ = ZoneInfo("America/Argentina/Buenos_Aires")
+DUPLICATE_ENTRY_ERRNO = 1062
+FOREIGN_KEY_CONSTRAINT_ERRNO = 1451
 
 
 def _datetime_to_argentina_iso(value):
@@ -58,6 +62,7 @@ def format_usuario_reserva(row):
 
 
 @usuarios_bp.route("/api/usuarios", methods=["GET"])
+@requiere_auth(roles=["admin", "bibliotecario"])
 def get_all_usuarios():
     """Lista todos los usuarios registrados.
 
@@ -67,6 +72,10 @@ def get_all_usuarios():
 
     """
     nombre_usuario = request.args.get("usuario")
+    pagination, error = obtener_parametros_paginacion(request.args)
+    if error:
+        return jsonify({"error": error}), HTTP_BAD_REQUEST
+
     conn = obtener_conexion()
     if conn is None:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
@@ -76,32 +85,48 @@ def get_all_usuarios():
     try:
         cursor = conn.cursor(dictionary=True)
 
-        page = int(request.args.get("page", 1))
-        limit = 20
-        offset = (page - 1) * limit
-
-        query = "SELECT * FROM usuario"
-
+        consulta_total = "SELECT COUNT(*) AS total FROM usuario"
+        consulta_usuarios = """
+            SELECT id, nombre, email, rol, carrera, activo
+            FROM usuario
+        """
+        params = dict(pagination)
         if nombre_usuario:
-            query += " WHERE nombre LIKE %(nombre_usuario)s"
+            consulta_total += " WHERE nombre LIKE %(nombre_usuario)s"
+            consulta_usuarios += " WHERE nombre LIKE %(nombre_usuario)s"
+            params["nombre_usuario"] = f"%{nombre_usuario}%"
 
-        query += " LIMIT %(limit)s OFFSET %(offset)s"
+        consulta_usuarios += " ORDER BY nombre LIMIT %(limit)s OFFSET %(offset)s"
 
-        cursor.execute(query, { "nombre_usuario": f"%{nombre_usuario}%", "limit": limit, "offset": offset })
+        cursor.execute(consulta_total, params)
+        total = cursor.fetchone()["total"]
+
+        cursor.execute(consulta_usuarios, params)
         usuarios = cursor.fetchall()
 
-        return jsonify(usuarios), HTTP_OK
+        return (
+            jsonify(
+                construir_respuesta_paginada(
+                    usuarios,
+                    total,
+                    request,
+                    pagination["limit"],
+                    pagination["offset"],
+                )
+            ),
+            HTTP_OK,
+        )
 
     except mysql.connector.Error as query_err:
-        logging.error(f"Database query error in get_all_usuarios: {query_err}")
+        logger.error("Error en la consulta a la base de datos en get_all_usuarios: %s", query_err)
 
         return jsonify(
-            {"error": "Internal server error: Database query failed"}
+            {"error": "Error interno del servidor: fallo en la consulta a la base de datos"}
         ), HTTP_INTERNAL_SERVER_ERROR
 
-    except Exception as e:
-        print(repr(e))
-        return jsonify({str(e)}), 500
+    except Exception:
+        logger.exception("Error inesperado en get_all_usuarios")
+        return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
     finally:
         try:
             if cursor:
@@ -115,6 +140,7 @@ def get_all_usuarios():
 
 
 @usuarios_bp.route("/api/usuario/<int:usuario_id>", methods=["GET"])
+@requiere_auth(roles=["admin", "bibliotecario"])
 def get_usuario_by_id(usuario_id):
     """Obtiene un usuario por su identificador.
 
@@ -127,7 +153,7 @@ def get_usuario_by_id(usuario_id):
 
     """
     if valid_id(usuario_id) is None:
-        return jsonify({"error": "Invalid usuario ID format"}), HTTP_BAD_REQUEST
+        return jsonify({"error": "Formato de ID de usuario inválido"}), HTTP_BAD_REQUEST
 
     conn = obtener_conexion()
     if conn is None:
@@ -143,16 +169,16 @@ def get_usuario_by_id(usuario_id):
 
         if not usuario:
             return jsonify(
-                {"error": f"User with ID {usuario_id} not found"}
+                {"error": f"Usuario con ID {usuario_id} no encontrado"}
             ), HTTP_NOT_FOUND
 
         return jsonify(usuario), HTTP_OK
 
     except mysql.connector.Error as query_err:
-        logging.error(f"Database query error in get_usuario_by_id: {query_err}")
+        logger.error("Error de consulta a la base de datos en get_usuario_by_id: %s", query_err)
 
         return jsonify(
-            {"error": "Internal server error: Database query failed"}
+            {"error": "Error interno del servidor: fallo en la consulta a la base de datos"}
         ), HTTP_INTERNAL_SERVER_ERROR
 
     finally:
@@ -165,9 +191,6 @@ def get_usuario_by_id(usuario_id):
             conn.close()
         except Exception:
             pass
-
-
-DUPLICATE_ENTRY_ERRNO = 1062
 
 
 def desactivar_usuario_db(id_usuario):
@@ -192,6 +215,51 @@ def desactivar_usuario_db(id_usuario):
     return actualizado
 
 
+def eliminar_usuario_db(id_usuario):
+    """Elimina un usuario de la base de datos.
+
+    Args:
+        id_usuario (int): Identificador del usuario a eliminar.
+            Debe ser un entero positivo.
+
+    Returns:
+        tuple: (eliminado, error, status), con error y status en None
+            cuando la eliminación fue procesada sin fallos.
+
+    """
+    conexion = obtener_conexion()
+    if conexion is None:
+        return False, MSG_DB_CONNECTION_FAILED, HTTP_INTERNAL_SERVER_ERROR
+
+    cursor = None
+    try:
+        cursor = conexion.cursor()
+        cursor.execute("DELETE FROM usuario WHERE id = %s", (id_usuario,))
+        conexion.commit()
+        return cursor.rowcount > 0, None, None
+    except mysql.connector.Error as err:
+        if err.errno == FOREIGN_KEY_CONSTRAINT_ERRNO:
+            return (
+                False,
+                "No se pudo eliminar el usuario por una restricción de base de datos",
+                HTTP_CONFLICT,
+            )
+        return False, MSG_INTERNAL_SERVER_ERROR, HTTP_INTERNAL_SERVER_ERROR
+    except Exception:
+        return False, MSG_INTERNAL_SERVER_ERROR, HTTP_INTERNAL_SERVER_ERROR
+    finally:
+        try:
+            if cursor:
+                cursor.close()
+        except Exception:
+            pass
+        try:
+            if conexion:
+                conexion.close()
+        except Exception:
+            pass
+
+
 @usuarios_bp.route("/api/usuarios/<int:usuario_id>/reservas", methods=["GET"])
 @requiere_auth(roles=["admin", "profesor", "bibliotecario", "alumno"])
 def get_usuario_reservas(usuario_id):
@@ -204,10 +272,16 @@ def get_usuario_reservas(usuario_id):
     Returns:
         tuple: Respuesta JSON con la lista de préstamos del usuario
             y código HTTP 200, o un mensaje de error con el código
-            correspondiente (404 si no tiene préstamos, 500 si hay
+            correspondiente (404 si el usuario no existe, 500 si hay
             error interno).
 
     """
+    if (
+        request.usuario_rol not in ("admin", "bibliotecario")
+        and usuario_id != request.usuario_id
+    ):
+        return jsonify({"error": MSG_FORBIDDEN}), HTTP_FORBIDDEN
+
     conn = obtener_conexion()
     if conn is None:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
@@ -216,6 +290,16 @@ def get_usuario_reservas(usuario_id):
 
     try:
         cursor = conn.cursor(dictionary=True)
+
+        cursor.execute(
+            "SELECT id FROM usuario WHERE id = %(usuario_id)s",
+            {"usuario_id": usuario_id},
+        )
+        if not cursor.fetchone():
+            return (
+                jsonify({"error": MSG_NOT_FOUND}),
+                HTTP_NOT_FOUND,
+            )
 
         sql_query = """
             SELECT r.id,
@@ -233,12 +317,6 @@ def get_usuario_reservas(usuario_id):
 
         cursor.execute(sql_query, values)
         reservas = [format_usuario_reserva(row) for row in cursor.fetchall()]
-
-        if len(reservas) == 0:
-            return (
-                jsonify({"message": MSG_NOT_FOUND}),
-                HTTP_NOT_FOUND,
-            )
 
         return jsonify(reservas), HTTP_OK
 
@@ -265,7 +343,7 @@ def create_usuario():
     """Crea un nuevo usuario en el sistema.
 
     Espera un cuerpo JSON con los datos del usuario: nombre, email,
-    puntaje (opcional, por defecto 0), rol y carrera.
+    rol y carrera.
 
     Returns:
         tuple: Respuesta JSON con los datos del usuario creado y código
@@ -277,10 +355,6 @@ def create_usuario():
             incluyendo entradas duplicadas (errno 1062).
 
     """
-    conn = obtener_conexion()
-    if conn is None:
-        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
-
     try:
         data = request.get_json()
     except Exception:
@@ -293,20 +367,32 @@ def create_usuario():
     if not is_valid:
         return jsonify({"error": MSG_BAD_REQUEST, "detail": error}), HTTP_BAD_REQUEST
 
+    contrasenia = data.get("contrasenia")
+    is_valid, error = valid_contrasenia(contrasenia)
+    if not is_valid:
+        return jsonify({"error": MSG_BAD_REQUEST, "detail": error}), HTTP_BAD_REQUEST
+
+    contrasenia_hash = hashear_contrasenia(contrasenia)
+    rol = data.get("rol") or "alumno"
+
+    conn = obtener_conexion()
+    if conn is None:
+        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
+
     cursor = None
 
     try:
         cursor = conn.cursor()
         sql = """
-            INSERT INTO usuario (nombre, email, puntaje, rol, carrera)
-            VALUES (%(nombre)s, %(email)s, %(puntaje)s, %(rol)s, %(carrera)s)
+            INSERT INTO usuario (nombre, email, rol, carrera, contrasenia_hash)
+            VALUES (%(nombre)s, %(email)s, %(rol)s, %(carrera)s, %(contrasenia_hash)s)
         """
         values = {
             "nombre": data.get("nombre"),
             "email": data.get("email"),
-            "puntaje": data.get("puntaje") if data.get("puntaje") is not None else 0,
-            "rol": data.get("rol"),
+            "rol": rol,
             "carrera": data.get("carrera"),
+            "contrasenia_hash": contrasenia_hash,
         }
         cursor.execute(sql, values)
         conn.commit()
@@ -316,8 +402,7 @@ def create_usuario():
             "id": usuario_id,
             "nombre": data.get("nombre"),
             "email": data.get("email"),
-            "puntaje": data.get("puntaje") if data.get("puntaje") is not None else 0,
-            "rol": data.get("rol"),
+            "rol": rol,
             "carrera": data.get("carrera"),
         }
 
@@ -351,7 +436,7 @@ def create_usuario():
 
 
 @usuarios_bp.route("/api/usuarios/<int:usuario_id>", methods=["GET"])
-@requiere_auth(roles=["admin"])
+@requiere_auth(roles=["admin", "bibliotecario"])
 def get_usuario(usuario_id):
     """Descripción: función get_usuario."""
     conn = obtener_conexion()
@@ -361,12 +446,12 @@ def get_usuario(usuario_id):
     try:
         cursor = conn.cursor(dictionary=True)
         cursor.execute(
-            "SELECT id, nombre, email, puntaje, rol, carrera FROM usuario WHERE id = %s",
+            "SELECT id, nombre, email, rol, carrera, activo FROM usuario WHERE id = %s",
             (usuario_id,),
         )
         usuario = cursor.fetchone()
         if not usuario:
-            return jsonify({"message": MSG_NOT_FOUND}), HTTP_NOT_FOUND
+            return jsonify({"error": MSG_NOT_FOUND}), HTTP_NOT_FOUND
         return jsonify(usuario), HTTP_OK
     except Exception:
         return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
@@ -382,7 +467,7 @@ def get_usuario(usuario_id):
 
 
 @usuarios_bp.route("/api/usuarios/<int:usuario_id>", methods=["PUT"])
-@requiere_auth(roles=["admin", "bibliotecario"])
+@requiere_auth(roles=["admin", "bibliotecario", "alumno", "profesor"])
 def update_usuario(usuario_id):
     """Actualiza los datos de un usuario existente.
 
@@ -403,10 +488,6 @@ def update_usuario(usuario_id):
             incluyendo entradas duplicadas (errno 1062).
 
     """
-    conn = obtener_conexion()
-    if conn is None:
-        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
-
     if valid_id(usuario_id) is None:
         return jsonify({"error": MSG_BAD_REQUEST}), HTTP_BAD_REQUEST
 
@@ -416,14 +497,40 @@ def update_usuario(usuario_id):
     except Exception:
         data = None
 
-    is_valid, error = valid_usuario_update(data)
-    if not is_valid:
-        return jsonify({"error": MSG_BAD_REQUEST, "detail": error}), HTTP_BAD_REQUEST
+    if request.usuario_rol in ("alumno", "profesor"):
+        if usuario_id != request.usuario_id:
+            return jsonify({"error": MSG_FORBIDDEN}), HTTP_FORBIDDEN
 
-    keysToUpdate = data.keys()
+        if not isinstance(data, dict) or set(data.keys()) != {"contrasenia"}:
+            return jsonify({"error": MSG_FORBIDDEN}), HTTP_FORBIDDEN
 
-    set_clause = ", ".join([f"{f} = %({f})s" for f in keysToUpdate])
-    data.update({"usuario_id": usuario_id})
+        contrasenia = data.get("contrasenia")
+        is_valid, error = valid_contrasenia(contrasenia)
+        if not is_valid:
+            return jsonify({"error": MSG_BAD_REQUEST, "detail": error}), HTTP_BAD_REQUEST
+
+        set_clause = "contrasenia_hash = %(contrasenia_hash)s"
+        data = {
+            "contrasenia_hash": hashear_contrasenia(contrasenia),
+            "usuario_id": usuario_id,
+        }
+
+    else:
+        is_valid, error = valid_usuario_update(data)
+        if not is_valid:
+            return jsonify({"error": MSG_BAD_REQUEST, "detail": error}), HTTP_BAD_REQUEST
+
+        if "activo" in data:
+            data["activo"] = 1 if data.get("activo") in (True, 1, "1") else 0
+
+        keysToUpdate = data.keys()
+
+        set_clause = ", ".join([f"{f} = %({f})s" for f in keysToUpdate])
+        data.update({"usuario_id": usuario_id})
+
+    conn = obtener_conexion()
+    if conn is None:
+        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
 
     cursor = None
 
@@ -434,11 +541,11 @@ def update_usuario(usuario_id):
         conn.commit()
 
         if cursor.rowcount == 0:
-            return jsonify({"message": MSG_NOT_FOUND}), HTTP_NOT_FOUND
+            return jsonify({"error": MSG_NOT_FOUND}), HTTP_NOT_FOUND
 
         cursor.execute(
             """
-            SELECT id, nombre, email, puntaje, rol, carrera
+            SELECT id, nombre, email, rol, carrera, activo
             FROM usuario
             WHERE id = %(usuario_id)s
             """,
@@ -477,14 +584,14 @@ def update_usuario(usuario_id):
 
 
 @usuarios_bp.route("/api/usuarios/<int:id_usuario>", methods=["DELETE"])
-@requiere_auth(roles=["admin"])
+@requiere_auth(roles=["admin", "bibliotecario"])
 def eliminar_usuario(id_usuario):
-    """Da de baja lógica a un usuario por su id.
+    """Elimina un usuario por su id.
 
     El request debe incluir un JWT válido con rol admin en el header Authorization.
 
     Args:
-        id_usuario (int): Entero positivo con el id del usuario a dar de baja.
+        id_usuario (int): Entero positivo con el id del usuario a eliminar.
 
     Returns:
         tuple: JSON con mensaje de éxito y código 200,
@@ -494,6 +601,9 @@ def eliminar_usuario(id_usuario):
     if id_usuario <= 0:
         return jsonify({"error": "ID inválido"}), HTTP_BAD_REQUEST
 
-    if desactivar_usuario_db(id_usuario):
-        return jsonify({"mensaje": "Usuario dado de baja con éxito"}), HTTP_OK
+    eliminado, error, status = eliminar_usuario_db(id_usuario)
+    if error:
+        return jsonify({"error": error}), status
+    if eliminado:
+        return jsonify({"mensaje": "Usuario eliminado con éxito"}), HTTP_OK
     return jsonify({"error": "Usuario no encontrado"}), HTTP_NOT_FOUND

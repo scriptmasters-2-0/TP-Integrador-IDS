@@ -9,11 +9,19 @@ import io
 import json
 
 import qrcode
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 
 from config import QR_BORDE, QR_TAMANIO
 from database import obtener_conexion
-from http_codes_and_messages import HTTP_NOT_FOUND, HTTP_OK
+from http_codes_and_messages import (
+    HTTP_FORBIDDEN,
+    HTTP_INTERNAL_SERVER_ERROR,
+    HTTP_NOT_FOUND,
+    HTTP_OK,
+    MSG_DB_CONNECTION_FAILED,
+    MSG_FORBIDDEN,
+)
+from routes.auth_route import requiere_auth
 
 qr_bp = Blueprint("qr", __name__)
 
@@ -77,30 +85,43 @@ def obtener_reserva_por_id(id_reserva):
         id_reserva (int): Identificador de la reserva a buscar.
 
     Returns:
-        dict | None: Diccionario con los datos de la reserva si existe,
-            None si no se encuentra.
+        tuple: Reserva encontrada y error de conexión si corresponde.
 
     """
     conexion = obtener_conexion()
-    cursor = conexion.cursor(dictionary=True)
-    cursor.execute(
-        """
-        SELECT id,
-               id_reservado,
-               fecha_retiro,
-               fecha_regreso
-        FROM reserva
-        WHERE id = %s
-        """,
-        (id_reserva,),
-    )
-    reserva = cursor.fetchone()
-    cursor.close()
-    conexion.close()
-    return reserva
+    if conexion is None:
+        return None, MSG_DB_CONNECTION_FAILED
+
+    cursor = None
+    try:
+        cursor = conexion.cursor(dictionary=True)
+        cursor.execute(
+            """
+            SELECT id,
+                   id_usuario,
+                   id_reservado,
+                   fecha_retiro,
+                   fecha_regreso
+            FROM reserva
+            WHERE id = %s
+            """,
+            (id_reserva,),
+        )
+        return cursor.fetchone(), None
+    finally:
+        try:
+            if cursor:
+                cursor.close()
+        except Exception:
+            pass
+        try:
+            conexion.close()
+        except Exception:
+            pass
 
 
 @qr_bp.route("/api/qr/reservas/<int:id_reserva>", methods=["GET"])
+@requiere_auth(roles=["admin", "profesor", "bibliotecario", "alumno"])
 def obtener_qr_reserva(id_reserva):
     """Genera y devuelve el QR correspondiente a una reserva.
 
@@ -114,10 +135,18 @@ def obtener_qr_reserva(id_reserva):
                o error 404 si no existe la reserva.
 
     """
-    reserva = obtener_reserva_por_id(id_reserva)
+    reserva, error = obtener_reserva_por_id(id_reserva)
+    if error:
+        return jsonify({"error": error}), HTTP_INTERNAL_SERVER_ERROR
 
     if reserva is None:
         return jsonify({"error": "Reserva no encontrada"}), HTTP_NOT_FOUND
+
+    if (
+        request.usuario_rol not in ("admin", "bibliotecario")
+        and reserva.get("id_usuario") != request.usuario_id
+    ):
+        return jsonify({"error": MSG_FORBIDDEN}), HTTP_FORBIDDEN
 
     contenido_qr = construir_contenido_qr(reserva)
     imagen_qr = generar_qr(contenido_qr)

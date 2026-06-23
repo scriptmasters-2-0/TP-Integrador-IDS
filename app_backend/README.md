@@ -1,5 +1,12 @@
 ### Autenticación y Accesos (`/api/auth`)
 
+### Inicialización de Base de Datos
+
+El esquema y los datos iniciales se cargan en el flujo normal con Docker Compose:
+`docker-compose.yaml` monta `db_scripts/init_db.sql` y `db_scripts/create_seeds.sql`
+en `/docker-entrypoint-initdb.d/` del contenedor MySQL. El backend no ejecuta
+`init_database()` automáticamente al arrancar Flask.
+
 * **`POST /api/auth/login`**
 Inicia sesión utilizando **flask-login**. Valida credenciales y establece la sesión indicando el rol (alumno/profesor, bibliotecario/admin).
 * **`POST /api/auth/logout`**
@@ -10,11 +17,11 @@ Devuelve los datos de perfil y el rol del usuario actualmente autenticado.
 ### Usuarios (`/api/usuarios`)
 
 * **`GET /api/usuarios`**
-Lista los usuarios registrados. **(Solo Admin)**.
+Lista los usuarios registrados. **(Admin y bibliotecario)**.
 * **`POST /api/usuarios`**
-Alta (ABM) de un nuevo usuario. **(Solo Admin)**.
+Alta (ABM) de un nuevo usuario. **(Admin y bibliotecario)**.
 * **`GET /api/usuarios/{id}`**
-Obtiene los detalles de un usuario específico.
+Obtiene los detalles de un usuario específico. **(Admin y bibliotecario)**.
 * **`PUT /api/usuarios/{id}`**
 Modifica los datos de un usuario existente (reemplazo completo).
 * **`DELETE /api/usuarios/{id}`**
@@ -31,7 +38,7 @@ Obtiene las penalizaciones vigentes e históricas de un alumno.
 * **`GET /api/usuario`**
 Lista usuarios desde la tabla `usuarios` (endpoint agregado en cambios recientes).
 * **`GET /api/usuario/<int:usuario_id>`**
-Obtiene un usuario puntual desde la tabla `usuarios` por su identificador.
+Obtiene un usuario puntual desde la tabla `usuarios` por su identificador. **(Admin y bibliotecario)**.
 
 ### Inventario y Materiales (`/api/articulos`)
 

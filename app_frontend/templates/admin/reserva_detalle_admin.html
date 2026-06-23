@@ -62,10 +62,21 @@
         {{ reserva.estado_texto }}
       </div>
     </div>
-    <button class="res-btn btn-secondary">
-      <i class="fa-solid fa-envelope"></i> Contactar Alumno
-    </button>
+    {% if reserva.titular_email %}
+      <a class="res-btn btn-secondary"
+         href="mailto:{{ reserva.titular_email }}?subject={{ ('Préstamo #RES-' ~ reserva.id ~ ' - Biblioteca FIUBA') | urlencode }}">
+        <i class="fa-solid fa-envelope"></i> Contactar Alumno
+      </a>
+    {% else %}
+      <button class="res-btn btn-secondary" disabled title="Email no disponible">
+        <i class="fa-solid fa-envelope"></i> Contactar Alumno
+      </button>
+    {% endif %}
   </div>
+
+  {% if mensaje_error %}
+    <p class="text-danger fw-bold mb-4">{{ mensaje_error }}</p>
+  {% endif %}
 
   <div class="admin-detail-layout reveal delay-2">
     <div class="profile-card">
@@ -107,28 +118,32 @@
     <div class="admin-actions-card profile-card">
       <h3><i class="fa-solid fa-sliders"></i> Panel de Acciones</h3>
       <form
-        action="{{ url_for('admin.reserva_detalle', id=reserva.id) }}"
+        action="{{ url_for('admin.reserva_detalle', reserva_id=reserva.id) }}"
         method="POST"
         class="admin-form">
         <div class="form-group mb-4">
           <label>Cambiar Estado General</label>
-          <select class="form-control admin-select" name="nuevo_estado">
-            <option value="pendiente">Pendiente de Retiro</option>
-            <option value="aprobado">Aprobado</option>
-            <option value="devuelto">Devuelto</option>
-            <option value="rechazado">Rechazado</option>
-            <option value="cancelado">Cancelado</option>
+          <select class="form-control admin-select" id="estado_reserva" name="estado_reserva">
+            <option value="pendiente" {% if reserva.estado_general == 'pendiente' %}selected{% endif %}>Pendiente de Retiro</option>
+            <option value="aprobado" {% if reserva.estado_general == 'aprobado' %}selected{% endif %}>Aprobado</option>
+            <option value="entregado" {% if reserva.estado_general == 'entregado' %}selected{% endif %}>Entregado</option>
+            <option value="devuelto" {% if reserva.estado_general == 'devuelto' %}selected{% endif %}>Devuelto</option>
+            <option value="rechazado" {% if reserva.estado_general == 'rechazado' %}selected{% endif %}>Rechazado</option>
+            <option value="cancelado" {% if reserva.estado_general == 'cancelado' %}selected{% endif %}>Cancelado</option>
           </select>
         </div>
 
         <div class="form-group mb-4">
           <label>Estado Físico (Al Devolver)</label>
-          <select class="form-control admin-select" name="estado_devuelto">
-            <option value="no_aplica">No aplica aún</option>
-            <option value="bueno">Buen estado (Sin daños)</option>
-            <option value="danado">Dañado (Requiere revisión)</option>
-            <option value="perdido">Extraviado / No devuelto</option>
+          <select class="form-control admin-select" id="estado_devuelto" name="estado_devuelto">
+            <option value="no_aplica" {% if reserva.estado_devuelto == 'no_aplica' %}selected{% endif %}>No aplica aún</option>
+            <option value="bueno" {% if reserva.estado_devuelto == 'bueno' %}selected{% endif %}>Buen estado (Sin daños)</option>
+            <option value="danado" {% if reserva.estado_devuelto == 'danado' %}selected{% endif %}>Dañado (Requiere revisión)</option>
+            <option value="perdido" {% if reserva.estado_devuelto == 'perdido' %}selected{% endif %}>Extraviado / No devuelto</option>
           </select>
+          {% if reserva.condiciones %}
+            <p class="text-muted mt-2 mb-0">{{ reserva.condiciones }}</p>
+          {% endif %}
         </div>
 
         <button type="submit" class="res-btn btn-primary mt-3 btn-block btn-lg">
@@ -137,4 +152,5 @@
       </form>
     </div>
   </div>
+
 {% endblock %}

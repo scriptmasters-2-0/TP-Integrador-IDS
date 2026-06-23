@@ -28,8 +28,7 @@
         <div class="data-group">
           <label>Estado</label>
           <div class="data-value">
-            <span
-              class="badge {% if reserva.estado_reserva == 'pendiente' %}badge-warning{% elif reserva.estado_reserva == 'devuelto' %}badge-success{% elif reserva.estado_reserva == 'entregado' %}badge-info{% else %}badge-success{% endif %}">
+            <span class="badge {{ reserva.estado_clase }}">
               {{ reserva.estado_reserva }}
             </span>
           </div>
@@ -48,8 +47,8 @@
     <div class="profile-card">
       <h3>Código QR</h3>
       <div class="qr-code-box">
-        {% if reserva.qr_url %}
-          <img src="{{ reserva.qr_url }}" alt="QR del préstamo" />
+        {% if reserva.qrData %}
+          <img src="data:image/png;base64,{{ reserva.qrData }}" alt="QR del préstamo" />
         {% else %}
           <div class="empty-state">
             <i class="fa-solid fa-qrcode empty-icon"></i>

@@ -75,6 +75,10 @@
       </a>
     </div>
 
+    {% if mensaje_error %}
+      <p class="text-danger fw-bold mb-4">{{ mensaje_error }}</p>
+    {% endif %}
+
     {# ── Filtros ── #}
     <form method="GET" action="{{ url_for('admin.listar_articulos') }}" class="data-grid mb-4">
       <div class="data-group">

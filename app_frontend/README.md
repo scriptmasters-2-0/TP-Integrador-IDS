@@ -30,8 +30,8 @@ Esto es algo que habíamos estado conversando con Erick
 
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| `GET` | `/alumno/dashboard` | Panel principal: reservas activas, puntaje, alertas de penalización |
-| `GET` | `/alumno/perfil` | Datos personales: nombre, email, carrera, puntaje |
+| `GET` | `/alumno/dashboard` | Panel principal: reservas activas y alertas de penalización |
+| `GET` | `/alumno/perfil` | Datos personales: nombre, email, carrera |
 | `GET` | `/alumno/mis-reservas` | Reservas activas con estado (`pendiente` / `entregado` / `devuelto`). Incluye acción de cancelar reservas pendientes (acción backend). |
 | `GET` | `/alumno/mis-reservas/nueva` | Formulario para crear nueva reserva (valida stock y penalizaciones activas). Al enviar, envía la solicitud al backend. |
 | `GET` | `/alumno/historial` | Historial completo de reservas pasadas |
@@ -65,11 +65,11 @@ Esto es algo que habíamos estado conversando con Erick
 | `GET` | `/admin/articulos/{id}/editar` | Formulario edición de artículo para el artículo con id: muestra datos y permite editar. Al enviar, actualiza datos del artículo (incluye `necesita_reparacion`) (acción backend). |
 | `GET` | `/admin/reservas` | Lista todos los préstamos con filtros por estado/fecha/usuario |
 | `GET` | `/admin/reservas/{id}` | Detalle del préstamo; permite cambiar estado y registrar devolución (`estado_devuelto`) |
-| `GET` | `/admin/usuarios` | ABM de usuarios: listado con rol, carrera, puntaje. Permite editar usuarios (acción backend) y acceder a perfiles. |
-| `GET` | `/admin/usuarios/{id}` | Perfil completo: historial, penalizaciones, puntaje. Desde aquí se pueden modificar datos o rol (acción backend). |
+| `GET` | `/admin/usuarios` | ABM de usuarios: listado con rol, carrera y email. Permite editar usuarios (acción backend) y acceder a perfiles. |
+| `GET` | `/admin/usuarios/{id}` | Perfil completo: historial, penalizaciones y datos de contacto. Desde aquí se pueden modificar datos o rol (acción backend). |
 | `GET` | `/admin/penalizaciones` | Lista penalizaciones activas con severidad (campo en el que se define la gravedad) y fechas. Se pueden levantar manualmente (acción backend). |
 | `GET` | `/admin/normativas` | ABM de normativas (tabla `normativa`). Permite crear y editar normativas (acciones backend). |
-| `GET` | `/admin/reportes` | Panel de reportes: gráficos de demanda por carrera |
+| `GET` | `/admin/reportes` | Panel de reportes para `admin` y `bibliotecario`: gráficos de demanda por carrera |
 | `GET` | `/admin/reportes/morosidad` | Reporte de morosidad exportable en PDF |
 
 ---

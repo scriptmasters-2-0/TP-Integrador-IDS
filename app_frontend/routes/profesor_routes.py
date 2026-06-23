@@ -3,11 +3,10 @@
 from flask import Blueprint, redirect, render_template, request, session, url_for
 
 from servicios import articulos_servicio, reservas_servicio
-from servicios.api_client import get_json
 from servicios.fechas_servicio import formatear_fecha_argentina
 from servicios.paginacion_servicio import DEFAULT_PER_PAGE, paginar_lista
 from servicios.reservas_servicio import establecer_estado_reserva, obtener_qr_reserva
-from servicios.usuario_servicio import obtener_reservas_usuario_con_error
+from servicios.usuario_servicio import actualizar_usuario, obtener_reservas_usuario
 
 profesor_bp = Blueprint("profesor", __name__, url_prefix="/profesor")
 
@@ -31,8 +30,11 @@ def cambiar_contrasena():
     nueva_contrasena = request.form.get("nueva_contrasena")
     usuario_id = usuario.get("id")
 
-    from servicios.usuario_servicio import actualizar_usuario
-    actualizar_usuario(usuario_id, {"contrasenia": nueva_contrasena}, token=token)
+    payload, error, status = actualizar_usuario(
+        usuario_id, {"contrasenia": nueva_contrasena}, token=token
+    )
+    if error:
+        return redirect(url_for("profesor.perfil", mensaje="No se pudo actualizar la contraseña."))
 
     return redirect(url_for("profesor.perfil", mensaje="Contraseña actualizada exitosamente"))
 
@@ -44,7 +46,7 @@ def dashboard():
         return redirect(url_for("public.login"))
     usuario_id = (session.get("usuario") or {}).get("id")
 
-    payload, error = obtener_reservas_usuario_con_error(usuario_id, token=token)
+    payload, error = obtener_reservas_usuario(usuario_id, token=token)
 
     reservas = []
     total_activas = 0
@@ -55,10 +57,10 @@ def dashboard():
             estado = reserva.get("estado_reserva", "")
             entrada = {
                 "id": reserva.get("id"),
-                "estado_clase": "status-pending" if estado == "pendiente" else "status-active",
+                "estado_clase": reservas_servicio.status_class(estado),
                 "estado_texto": estado,
                 "equipo": reserva.get("nombre_art") or f"Artículo {reserva.get('id_reservado') or ''}",
-                "fecha": reserva.get("fecha_retiro", "Desconocida"),
+                "fecha": formatear_fecha_argentina(reserva.get("fecha_retiro")),
                 "ubicacion": "Sede FIUBA",
             }
             if estado in ("pendiente", "aprobado", "entregado"):
@@ -86,7 +88,7 @@ def historial_reserva():
         return redirect(url_for("public.login"))
 
     usuario_id = (session.get("usuario") or {}).get("id")
-    payload, error = obtener_reservas_usuario_con_error(usuario_id, token=token)
+    payload, error = obtener_reservas_usuario(usuario_id, token=token)
 
     q = (request.args.get("q") or "").strip().lower()
     estado_filtro = (request.args.get("estado") or "").strip()
@@ -107,6 +109,7 @@ def historial_reserva():
                 "id": reserva.get("id"),
                 "nombre_articulo": nombre,
                 "estado_reserva": estado,
+                "estado_clase": reservas_servicio.badge_class(estado),
                 "fecha_regreso": formatear_fecha_argentina(reserva.get("fecha_regreso")),
             })
 
@@ -136,17 +139,22 @@ def detalle_reserva(id):
     if not token or session.get("rol") != "profesor":
         return redirect(url_for("public.login"))
 
-    datos_api, error = get_json(f"/reservas/{id}", token=token)
+    datos_api, error = reservas_servicio.obtener_reserva(id, token=token)
 
     reserva = None
     if not error and datos_api:
+        qr, qr_error = obtener_qr_reserva(id, token=token)
         reserva = {
             "id": datos_api.get("id", id),
             "estado_reserva": datos_api.get("estado_reserva", "N/A"),
-            "fecha_retiro": datos_api.get("fecha_retiro", "N/A"),
-            "fecha_regreso": datos_api.get("fecha_regreso", "N/A"),
-            "qr_url": f"https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=FIUBA-RES-{id}",
+            "estado_clase": reservas_servicio.badge_class(
+                datos_api.get("estado_reserva")
+            ),
+            "fecha_retiro": formatear_fecha_argentina(datos_api.get("fecha_retiro")),
+            "fecha_regreso": formatear_fecha_argentina(datos_api.get("fecha_regreso")),
+            "qrData": (qr or {}).get("qrData"),
         }
+        error = error or qr_error
 
     return render_template(
         "profesor/detalle_reserva.html",
@@ -161,7 +169,7 @@ def nueva_reserva():
     token = session.get("token")
     if not token or session.get("rol") != "profesor":
         return redirect(url_for("public.login"))
-    articulos = articulos_servicio.obtener_articulos()
+    articulos = articulos_servicio.obtener_articulos(token=token)
 
     return render_template(
         "profesor/nueva_reserva.html",
@@ -177,9 +185,30 @@ def guardar_reserva():
         return redirect(url_for("public.login"))
     usuario_id = (session.get("usuario") or {}).get("id")
     articulo_id = request.form.get("articulo")
+    fecha = request.form.get("fecha")
+    desde = request.form.get("desde")
+    hasta = request.form.get("hasta")
 
     if usuario_id and articulo_id:
-        reservas_servicio.crear_reserva({"usuario_id": usuario_id, "articulo_id": articulo_id})
+        reserva_data = {"usuario_id": usuario_id, "articulo_id": articulo_id}
+        if fecha and desde and hasta:
+            reserva_data.update(
+                {
+                    "fecha_retiro": f"{fecha} {desde}:00",
+                    "hora_regreso": f"{hasta}:00",
+                }
+            )
+        payload, error, status = reservas_servicio.crear_reserva(
+            reserva_data,
+            token=token,
+        )
+        if error:
+            return redirect(
+                url_for(
+                    "profesor.mis_reservas",
+                    mensaje_error="No se pudo crear la reserva.",
+                )
+            )
 
     return redirect(url_for("profesor.mis_reservas"))
 
@@ -190,8 +219,9 @@ def mis_reservas():
     if not token or session.get("rol") != "profesor":
         return redirect(url_for("public.login"))
 
+    mensaje_error = request.args.get("mensaje_error")
     usuario_id = (session.get("usuario") or {}).get("id")
-    payload, error = obtener_reservas_usuario_con_error(usuario_id, token=token)
+    payload, error = obtener_reservas_usuario(usuario_id, token=token)
 
     reservas_activas = []
     reservas_historicas = []
@@ -207,6 +237,7 @@ def mis_reservas():
                     or "Artículo"
                 ),
                 "estado_reserva": estado,
+                "estado_clase": reservas_servicio.badge_class(estado),
                 "fecha_retiro": formatear_fecha_argentina(reserva.get("fecha_retiro")),
                 "fecha_regreso": formatear_fecha_argentina(reserva.get("fecha_regreso")),
             }
@@ -220,6 +251,7 @@ def mis_reservas():
         reservas_activas=reservas_activas,
         reservas_historicas=reservas_historicas,
         fetch_error=error,
+        mensaje_error=mensaje_error,
     )
 
 @profesor_bp.route("/reservas/<int:id>/comprobante", methods=["GET"])
@@ -229,7 +261,7 @@ def comprobante(id):
     if not token or session.get("rol") != "profesor":
         return redirect(url_for("public.login"))
 
-    reserva, error = get_json(f"/reservas/{id}", token=token)
+    datos_api, error = reservas_servicio.obtener_reserva(id, token=token)
 
     if error:
         return render_template(
@@ -238,14 +270,14 @@ def comprobante(id):
             fetch_error=error
         )
 
-    if reserva.get("estado_reserva") != "aprobado":
+    if datos_api.get("estado_reserva") not in ["aprobado", "entregado"]:
         return render_template(
             "profesor/comprobante.html",
             qr=None,
             acceso_denegado=True
         )
 
-    qr, error = obtener_qr_reserva(id)
+    qr, error = obtener_qr_reserva(id, token=token)
 
     return render_template("profesor/comprobante.html", qr=qr, acceso_denegado=False)
 
@@ -262,5 +294,14 @@ def profesor_cancelar_reserva(id):
     if not token or session.get("rol") != "profesor":
         return redirect(url_for("public.login"))
 
-    establecer_estado_reserva(id, {"estado_reserva": "cancelado"})
+    cancelada, error, status = establecer_estado_reserva(
+        id, {"estado_reserva": "cancelado"}, token=token
+    )
+    if error or not cancelada:
+        return redirect(
+            url_for(
+                "profesor.mis_reservas",
+                mensaje_error="No se pudo cancelar la reserva.",
+            )
+        )
     return redirect(url_for("profesor.mis_reservas"))

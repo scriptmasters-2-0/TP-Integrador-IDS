@@ -57,5 +57,12 @@ temp/
 # Herramientas de node
 node_modules/
 
+# uv (Python package manager)
+.uv/
+.uv-cache/
+.uv-python/
+
 # Otros
 .github
+tests/
+

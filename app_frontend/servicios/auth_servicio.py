@@ -2,8 +2,6 @@
 # Funciones de servicio para consumir endpoints /auth
 from servicios.api_client import post_json, get_json
 
-TIMEOUT = 5
-
 
 def crear_usuario(credentials):
     """POST /auth/logup
@@ -21,10 +19,15 @@ def iniciar_sesion(credentials):
     credentials: dict (ej., {"nombre": "...", "contrasenia": "..."})
     Devuelve el JSON parseado en caso de éxito, {} en caso de fallo.
     """
-    payload, error, status = post_json("/auth/login", credentials)
+    payload, error, status = autenticar_usuario(credentials)
     if error:
         return {}
     return payload or {}
+
+
+def autenticar_usuario(credentials):
+    """POST /auth/login y conserva payload, error y status."""
+    return post_json("/auth/login", credentials)
 
 
 def cerrar_sesion(token=None):

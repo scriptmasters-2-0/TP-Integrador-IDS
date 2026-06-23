@@ -1,13 +1,14 @@
 """Rutas publicas del frontend."""
 
+import logging
+
 from flask import Blueprint, redirect, render_template, request, session, url_for
 
-from http_codes_and_messages import HTTP_UNAUTHORIZED
-from servicios import auth_servicio, normativas_servicio
-from servicios.api_client import get_json, post_json
-from servicios.articulos_servicio import obtener_articulos
+from http_codes_and_messages import HTTP_FORBIDDEN, HTTP_UNAUTHORIZED
+from servicios import articulos_servicio, auth_servicio, normativas_servicio
 
 public_bp = Blueprint("public", __name__)
+logger = logging.getLogger(__name__)
 
 
 @public_bp.route("/")
@@ -83,12 +84,22 @@ def login_submit():
     email = (request.form.get("email") or "").strip()
     contrasenia = request.form.get("contrasenia") or ""
 
-    payload, error, status_code = post_json(
-        "/auth/login", {"email": email, "contrasenia": contrasenia}
+    payload, error, status_code = auth_servicio.autenticar_usuario(
+        {"email": email, "contrasenia": contrasenia}
     )
 
     if error:
-        print(error)
+        if status_code == HTTP_FORBIDDEN and (payload or {}).get("detail") == "inactive_user":
+            return (
+                render_template(
+                    "public/login.html",
+                    hasError=True,
+                    errorMessage="Tu cuenta está inactiva o suspendida. Contacta al administrador.",
+                ),
+                HTTP_FORBIDDEN,
+            )
+
+        logger.warning("Error de login: %s", error)
         return (
             render_template(
                 "public/login.html",
@@ -169,7 +180,7 @@ def mostrar_catalogo():
     if seccion_actual:
         filtros["seccion"] = seccion_actual
 
-    articulos = obtener_articulos(filtros)
+    articulos = articulos_servicio.obtener_articulos(filtros)
 
     return render_template(
         "public/catalogo.html",
@@ -188,7 +199,7 @@ def mostrar_faq():
 @public_bp.route("/articulos/<int:articulo_id>")
 def get_article_details(articulo_id):
     """Muestra el detalle público de un artículo."""
-    articulo, fetch_error = get_json(f"/articulos/{articulo_id}")
+    articulo, fetch_error = articulos_servicio.obtener_articulo(articulo_id)
 
     return render_template(
         "public/article_details.html", articulo=articulo, fetch_error=fetch_error

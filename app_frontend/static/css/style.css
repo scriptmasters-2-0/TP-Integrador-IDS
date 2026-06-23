@@ -1480,7 +1480,7 @@ h3 {
   margin-bottom: 20px;
 }
 
-.user-score-box {
+.user-penalty-alert {
   background: linear-gradient(135deg, #fff0d9 0%, #ffe0b2 100%);
   border: 1px solid #ffd180;
   width: 100%;
@@ -1492,7 +1492,7 @@ h3 {
   margin-top: 10px;
 }
 
-.score-icon {
+.penalty-alert-icon {
   width: 45px;
   height: 45px;
   background-color: white;
@@ -1505,27 +1505,27 @@ h3 {
   box-shadow: 0 5px 10px rgba(255, 153, 0, 0.1);
 }
 
-.score-details {
+.penalty-alert-details {
   display: flex;
   flex-direction: column;
   text-align: left;
 }
 
-.score-value {
+.penalty-alert-value {
   font-size: 22px;
   font-weight: 800;
   color: #cc7a00;
   font-family: "Exo 2", sans-serif;
 }
 
-.score-label {
+.penalty-alert-label {
   font-size: 12px;
   font-weight: 700;
   color: #cc7a00;
   text-transform: uppercase;
 }
 
-.score-hint {
+.penalty-alert-hint {
   font-size: 13px;
   color: var(--text-grey);
   margin-top: 15px;
@@ -3057,6 +3057,11 @@ h3 {
 .status-aprobado {
   background-color: #e3f2fd;
   color: #1565c0;
+}
+
+.status-entregado {
+  background-color: #e0f7fa;
+  color: #00838f;
 }
 
 .status-pendiente {

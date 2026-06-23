@@ -61,6 +61,10 @@
       <p>Administra las normativas del sistema.</p>
     </div>
 
+    {% if mensaje_error %}
+      <p class="text-danger fw-bold mb-4">{{ mensaje_error }}</p>
+    {% endif %}
+
     <form method="POST" class="normativa-form">
       <input
         type="hidden"
@@ -83,7 +87,7 @@
         </textarea>
       </div>
 
-      <button type="submit" class="btn-">
+      <button type="submit" class="btn-create">
         {{ 'Actualizar normativa' if normativa_editada else 'Crear normativa' }}
       </button>
     </form>

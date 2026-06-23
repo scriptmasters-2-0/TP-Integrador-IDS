@@ -115,7 +115,7 @@
         </p>
         <div class="qr-code-box">
           <img
-            src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=FIUBA-RES-{{ reserva.id }}"
+            src="data:image/png;base64,{{ qr.qrData }}"
             alt="Código QR de Reserva"
             width="180"
             height="180" />

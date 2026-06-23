@@ -6,7 +6,6 @@ from flask import Flask, send_from_directory
 from flask_swagger_ui import get_swaggerui_blueprint
 
 import config
-from database import init_database
 from routes.auth_route import auth_bp
 from routes.articulos_route import articulos_bp
 from routes.reservas_route import reservas_bp
@@ -19,7 +18,6 @@ from routes.usuarios_routes import usuarios_bp
 
 app = Flask(__name__)
 
-init_database()
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(articulos_bp)

@@ -5,8 +5,9 @@ decodificación de tokens JWT, y un decorador para proteger rutas que
 requieren autenticación.
 """
 
+from datetime import datetime, timedelta, timezone
 from functools import wraps
-import traceback
+import logging
 
 import bcrypt
 import jwt
@@ -14,12 +15,13 @@ import mysql.connector
 from flask import Blueprint, jsonify, request
 from mysql.connector import errorcode
 
-from config import JWT_ALGORITMO, JWT_SECRETO
+from config import JWT_ALGORITMO, JWT_HORAS_DE_EXPIRACION, JWT_SECRETO
 from database import obtener_conexion
 from http_codes_and_messages import (
     HTTP_BAD_REQUEST,
     HTTP_CONFLICT,
     HTTP_CREATED,
+    HTTP_FORBIDDEN,
     HTTP_INTERNAL_SERVER_ERROR,
     HTTP_NOT_FOUND,
     HTTP_OK,
@@ -27,13 +29,15 @@ from http_codes_and_messages import (
     MSG_BAD_REQUEST,
     MSG_CONFLICT,
     MSG_DB_CONNECTION_FAILED,
+    MSG_FORBIDDEN,
     MSG_INTERNAL_SERVER_ERROR,
     MSG_NOT_FOUND,
     MSG_UNAUTHORIZED,
 )
-from validators import valid_login, valid_usuario
+from validators import valid_contrasenia, valid_login, valid_usuario
 
 auth_bp = Blueprint("auth", __name__)
+logger = logging.getLogger(__name__)
 
 
 def hashear_contrasenia(contrasenia):
@@ -66,7 +70,7 @@ def validar_contrasenia(contrasenia, contrasenia_hash):
         return bcrypt.checkpw(contrasenia.encode("utf-8"), contrasenia_hash.encode("utf-8"))
 
     except (ValueError, TypeError):
-        print("Error al verificar la contraseña")
+        logger.warning("Error al verificar la contraseña")
         return False
 
 
@@ -84,6 +88,7 @@ def generar_token(usuario_id, rol):
     payload = {
         "usuario_id": usuario_id,
         "rol": rol,
+        "exp": datetime.now(timezone.utc) + timedelta(hours=JWT_HORAS_DE_EXPIRACION),
     }
 
     return jwt.encode(payload, JWT_SECRETO, algorithm=JWT_ALGORITMO)
@@ -98,18 +103,18 @@ def decodificar_token(token):
     Returns:
         tuple: Una tupla (payload, mensaje) donde payload es un diccionario
             con los datos del token si es válido o None si no lo es, y
-            mensaje es un string indicando el estado ("Valid", "Expired"
-            o "Invalid").
+            mensaje es un string indicando el estado ("Válido", "Token expirado"
+            o "Token inválido").
 
     """
     try:
-        return jwt.decode(token, JWT_SECRETO, algorithms=[JWT_ALGORITMO]), "Valid"
+        return jwt.decode(token, JWT_SECRETO, algorithms=[JWT_ALGORITMO]), "Válido"
 
     except jwt.ExpiredSignatureError:
-        return None, "Expired"
+        return None, "Token expirado"
 
     except jwt.InvalidTokenError:
-        return None, "Invalid"
+        return None, "Token inválido"
 
 
 def extraer_token_del_header():
@@ -120,15 +125,15 @@ def extraer_token_del_header():
     Returns:
         tuple: Una tupla (token, mensaje) donde token es el string del JWT
             si se extrajo correctamente o None si el formato es incorrecto,
-            y mensaje indica el estado ("Ok" o "Incorrect token type").
+            y mensaje indica el estado ("OK" o "Tipo de token incorrecto").
 
     """
     header = request.headers.get("Authorization", "")
 
     if not header.startswith("Bearer "):
-        return None, "Incorrect token type"
+        return None, "Tipo de token incorrecto"
 
-    return header[len("Bearer ") :].strip(), "Ok"
+    return header[len("Bearer ") :].strip(), "OK"
 
 
 # decorator
@@ -212,7 +217,7 @@ def login():
         cursor = conn.cursor(dictionary=True)
 
         sql_query = """
-            SELECT id, nombre, email, puntaje, rol, carrera, contrasenia_hash, activo
+            SELECT id, nombre, email, rol, carrera, contrasenia_hash, activo
             FROM usuario
             WHERE email = %(value)s
             LIMIT 1
@@ -228,19 +233,24 @@ def login():
                 HTTP_UNAUTHORIZED,
             )
 
-        contrasenia_hash = usuario.get("contrasenia_hash", "")
+        contrasenia_hash = usuario.get("contrasenia_hash") or ""
 
-        if not validar_contrasenia(contrasenia, contrasenia_hash) and contrasenia_hash != "":
+        if not contrasenia_hash or not validar_contrasenia(contrasenia, contrasenia_hash):
             return (
                 jsonify({"error": MSG_UNAUTHORIZED, "detail": "invalid_credentials"}),
                 HTTP_UNAUTHORIZED,
+            )
+
+        if usuario.get("activo") in (False, 0, "0"):
+            return (
+                jsonify({"error": MSG_FORBIDDEN, "detail": "inactive_user"}),
+                HTTP_FORBIDDEN,
             )
 
         usuario_profile = {
             "id": usuario.get("id"),
             "nombre": usuario.get("nombre"),
             "email": usuario.get("email"),
-            "puntaje": usuario.get("puntaje"),
             "rol": usuario.get("rol"),
             "carrera": usuario.get("carrera"),
             "activo": bool(usuario.get("activo", True)),
@@ -268,7 +278,7 @@ def login():
 
 
 @auth_bp.route("/api/auth/logout", methods=["POST"])
-@requiere_auth(roles=["admin"])
+@requiere_auth(roles=["admin", "alumno", "profesor", "bibliotecario"])
 def logout():
     """Cierra la sesión del usuario autenticado.
 
@@ -310,10 +320,8 @@ def obtener_perfil():
                 u.id,
                 u.nombre,
                 u.email,
-                u.puntaje,
                 u.rol,
                 u.carrera,
-                u.contrasenia_hash,
                 COUNT(p.id) AS penalizaciones
             FROM usuario u
             LEFT JOIN penalizacion p ON u.id = p.id_usuario
@@ -336,7 +344,6 @@ def obtener_perfil():
             "id": usuario.get("id"),
             "nombre": usuario.get("nombre"),
             "email": usuario.get("email"),
-            "puntaje": usuario.get("puntaje"),
             "rol": usuario.get("rol"),
             "carrera": usuario.get("carrera"),
             "penalizaciones": usuario.get("penalizaciones", 0),
@@ -381,8 +388,9 @@ def logup():
         return jsonify({"error": MSG_BAD_REQUEST, "detail": error}), HTTP_BAD_REQUEST
 
     contrasenia = data.get("contrasenia")
-    if contrasenia is None or not isinstance(contrasenia, str) or contrasenia.strip() == "":
-        return jsonify({"error": MSG_BAD_REQUEST, "detail": "missing:contrasenia"}), HTTP_BAD_REQUEST
+    is_valid, error = valid_contrasenia(contrasenia)
+    if not is_valid:
+        return jsonify({"error": MSG_BAD_REQUEST, "detail": error}), HTTP_BAD_REQUEST
 
     contrasenia_hash = hashear_contrasenia(contrasenia)
 
@@ -395,13 +403,12 @@ def logup():
     try:
         cursor = conn.cursor()
         sql = """
-            INSERT INTO usuario (nombre, email, puntaje, rol, carrera, contrasenia_hash)
-            VALUES (%(nombre)s, %(email)s, %(puntaje)s, %(rol)s, %(carrera)s, %(contrasenia_hash)s)
+            INSERT INTO usuario (nombre, email, rol, carrera, contrasenia_hash)
+            VALUES (%(nombre)s, %(email)s, %(rol)s, %(carrera)s, %(contrasenia_hash)s)
         """
         values = {
             "nombre": data.get("nombre"),
             "email": data.get("email"),
-            "puntaje": 0,
             "rol": "alumno",
             "carrera": data.get("carrera"),
             "contrasenia_hash": contrasenia_hash,
@@ -414,7 +421,6 @@ def logup():
             "id": usuario_id,
             "nombre": data.get("nombre"),
             "email": data.get("email"),
-            "puntaje": 0,
             "rol": "alumno",
             "carrera": data.get("carrera"),
         }

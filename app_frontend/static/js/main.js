@@ -18,9 +18,9 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
           }
 
-          if (contraseniaValue.length < 2) {
+          if (contraseniaValue.length < 8) {
             event.preventDefault();
-            alert("La contrasena debe tener al menos 2 caracteres.");
+            alert("La contrasena debe tener al menos 8 caracteres.");
             return;
           }
         }
@@ -82,32 +82,6 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
 
-        if (mode === "profesor-reserva") {
-          const articulo = form.querySelector("#articulo_id");
-          const inicio = form.querySelector("#fecha_inicio");
-          const fin = form.querySelector("#fecha_fin");
-
-          const articuloValue = articulo ? articulo.value.trim() : "";
-          const inicioValue = inicio ? inicio.value : "";
-          const finValue = fin ? fin.value : "";
-
-          if (!articuloValue) {
-            event.preventDefault();
-            alert("Selecciona un articulo para reservar.");
-            return;
-          }
-
-          if (!inicioValue || !finValue) {
-            event.preventDefault();
-            alert("Completa fecha de inicio y devolucion.");
-            return;
-          }
-
-          if (inicioValue > finValue) {
-            event.preventDefault();
-            alert("La fecha de inicio no puede ser posterior a la fecha de devolucion.");
-          }
-        }
       });
     });
   };
@@ -133,6 +107,34 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   attachTicketActions();
+
+  const attachReturnConditionSync = () => {
+    const estadoReserva = document.getElementById("estado_reserva");
+    const estadoDevuelto = document.getElementById("estado_devuelto");
+
+    if (!estadoReserva || !estadoDevuelto) {
+      return;
+    }
+
+    const noAplica = estadoDevuelto.querySelector('option[value="no_aplica"]');
+    if (!noAplica) {
+      return;
+    }
+
+    const sincronizarEstadoFisico = () => {
+      const esDevuelto = estadoReserva.value === "devuelto";
+      estadoDevuelto.required = esDevuelto;
+      noAplica.disabled = esDevuelto;
+      if (esDevuelto && estadoDevuelto.value === "no_aplica") {
+        estadoDevuelto.value = "bueno";
+      }
+    };
+
+    estadoReserva.addEventListener("change", sincronizarEstadoFisico);
+    sincronizarEstadoFisico();
+  };
+
+  attachReturnConditionSync();
 
   document.querySelectorAll(".reportes-bar").forEach((bar) => {
     const w = bar.dataset.width;
@@ -207,4 +209,3 @@ document.addEventListener("DOMContentLoaded", () => {
     revealOnScroll.observe(reveal);
   });
 });
-

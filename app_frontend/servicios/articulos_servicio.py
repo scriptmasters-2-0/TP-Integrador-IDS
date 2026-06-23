@@ -2,8 +2,6 @@
 # Funciones de servicio para consumir endpoints /articulos
 from servicios.api_client import get_json, post_json, put_json, delete_json, patch_json
 
-TIMEOUT = 5
-
 
 def obtener_articulos(params=None, token=None):
     """GET /articulos
@@ -27,12 +25,10 @@ def crear_articulo(articulo_data, token=None):
 
 def obtener_articulo(articulo_id, token=None):
     """GET /articulos/{id}
-    Devuelve el JSON del ítem en caso de éxito, {} en caso de fallo.
+    Devuelve (payload, error) con {} como fallback.
     """
     payload, error = get_json(f"/articulos/{articulo_id}", token=token)
-    if error:
-        return {}
-    return payload or {}
+    return payload or {}, error
 
 
 def actualizar_articulo(articulo_id, articulo_data, token=None):
@@ -47,12 +43,12 @@ def actualizar_articulo(articulo_id, articulo_data, token=None):
 
 def eliminar_articulo(articulo_id, token=None):
     """DELETE /articulos/{id}
-    Devuelve True en caso de éxito, {} en caso de fallo.
+    Devuelve (ok, error, status) para que la ruta decida el flujo.
     """
     payload, error, status = delete_json(f"/articulos/{articulo_id}", token=token)
     if error:
-        return {}
-    return True
+        return False, error, status
+    return True, None, status
 
 
 def establecer_condicion_articulo(articulo_id, condition_data, token=None):

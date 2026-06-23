@@ -59,10 +59,10 @@
       <h1>{{ "Editar Artículo" if articulo else "Nuevo Artículo" }}</h1>
       <p>Complete los datos requeridos para gestionar el inventario.</p>
       {% if form_error %}
-        <p class="form-success-msg">{{ form_exito }}</p>
+        <p class="form-error-msg">{{ form_error }}</p>
       {% endif %}
       {% if form_exito %}
-        <p style="color: #2e7d32; font-weight: 700; margin-top: 8px;">{{ form_exito }}</p>
+        <p class="form-success-msg">{{ form_exito }}</p>
       {% endif %}
     </div>
 
@@ -91,16 +91,6 @@
           </select>
         </div>
       </div>
-      <div class="data-group mt-4">
-        <label for="descripcion">Descripción</label>
-        <textarea
-          id="descripcion"
-          name="descripcion"
-          class="admin-input"
-          rows="4"
-          placeholder="Detalles técnicos o estado del equipo..."></textarea>
-      </div>
-        
       <div class="admin-form-grid">
         <div class="data-group">
           <label for="stock">Stock Inicial</label>

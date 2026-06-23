@@ -61,35 +61,49 @@
       <p>Consulta y administra los usuarios registrados en el sistema.</p>
     </div>
 
+    {% if mensaje_error %}
+      <p class="text-danger fw-bold mb-4">{{ mensaje_error }}</p>
+    {% endif %}
+
     {% if usuario_editado or creando_usuario %}
-      <input type="hidden" name="id" value="{{ usuario_editado.id if usuario_editado else '' }}">
       <form method="POST" class="normativa-form">
+        <input type="hidden" name="id" value="{{ usuario_editado.id if usuario_editado else '' }}">
+
         <div>
           <label>Nombre</label>
           <input type="text" name="nombre" class="admin-input" value="{{ usuario_editado.nombre if usuario_editado else '' }}" required>
         </div>
 
         <div>
+          <label>Email</label>
+          <input type="email" name="email" class="admin-input" value="{{ usuario_editado.email if usuario_editado else '' }}" required>
+        </div>
+
+        <div>
           <label>Carrera</label>
-          <input type="text" name="carrera" class="admin-input" value="{{ usuario_editado.carrera if usuario_editado else '' }}">
+          <input type="text" name="carrera" class="admin-input" value="{{ usuario_editado.carrera if usuario_editado else '' }}" required>
         </div>
 
-        <div>
-          <label>Score</label>
-          <input type="number" name="puntaje" class="admin-input" min="0" value="{{ usuario_editado.puntaje if usuario_editado else 0 }}">
-        </div>
+        {% if usuario_editado %}
+          <div>
+            <label>Estado</label>
+            <select name="activo" class="admin-input" required>
+              <option value="1" {% if usuario_editado.activo %}selected{% endif %}>
+                Activo
+              </option>
+              <option value="0" {% if not usuario_editado.activo %}selected{% endif %}>
+                Inactivo
+              </option>
+            </select>
+          </div>
+        {% endif %}
 
-        <div>
-          <label>Estado</label>
-          <select name="estado" class="admin-input">
-            <option value="1" {% if usuario_editado and usuario_editado.activo == 1 %}selected{% endif %}>
-              Activo
-            </option>
-            <option value="0" {% if usuario_editado and usuario_editado.activo == 0 %}selected{% endif %}>
-              Inactivo
-            </option>
-          </select>
-        </div>
+        {% if not usuario_editado %}
+          <div>
+            <label>Contraseña</label>
+            <input type="password" name="contrasenia" class="admin-input" required>
+          </div>
+        {% endif %}
 
         <button type="submit" class="btn-create">
           {{ 'Actualizar usuario' if usuario_editado else 'Crear usuario' }}
@@ -109,7 +123,7 @@
 
     <form method="get" class="history-filter-form">
       <div class="filter-group">
-        <input type="text" name="usuario" id="usuario" class="admin-input" placeholder="Buscar por nombre">
+        <input type="text" name="usuario" id="usuario" class="admin-input" value="{{ usuario or '' }}" placeholder="Buscar por nombre">
         <br/>
         <button type="submit" class="res-btn btn-primary">Buscar</button>
       </div>
@@ -118,12 +132,14 @@
     <br/>
 
     <div class="history-table-wrapper">
+      {% set usuario_busqueda = usuario or '' %}
+      {% set pagina_actual = pagination.page if pagination else 1 %}
       <table class="history-table">
         <thead>
           <tr>
             <th>Nombre</th>
             <th>Carrera</th>
-            <th>Puntaje</th>
+            <th>Email</th>
             <th>Estado</th>
             <th> </th>
           </tr>
@@ -135,7 +151,7 @@
               <tr>
                 <td>{{ usuario.nombre }}</td>
                 <td>{{ usuario.carrera }}</td>
-                <td>{{ usuario.puntaje }}</td>
+                <td>{{ usuario.email }}</td>
                 <td>
                   {% if usuario.activo %}
                     <span class="badge bg-success-light text-success">Activo</span>
@@ -144,7 +160,7 @@
                   {% endif %}
                 </td>
                 <td>
-                  <a href="{{ url_for('admin.usuarios', editar=usuario.id) }}" class="btn-edit-abm">
+                  <a href="{{ url_for('admin.usuarios', editar=usuario.id, page=pagina_actual, usuario=usuario_busqueda) }}" class="btn-edit-abm">
                     Editar
                   </a>
                   <form action="{{ url_for('admin.eliminar_usuario', id=usuario.id) }}" method="POST">
@@ -157,7 +173,7 @@
             {% endfor %}
           {% else %}
             <tr>
-              <td colspan="6" class="text-center text-muted">
+              <td colspan="5" class="text-center text-muted">
                 No hay usuarios para mostrar.
               </td>
             </tr>
@@ -165,21 +181,44 @@
         </tbody>
       </table>
 
-      <div class="pagination">
-        {% if page > 1 %}
-          <a href="{{ url_for('admin.usuarios', page=page-1 )}}">
-            Anterior
-          </a>
-        {% endif %}
-
-        <span>Página {{ page }}</span>
-
-        {% if usuarios|length == 20 %}
-          <a href="{{ url_for('admin.usuarios', page=page+1 )}}">
-            Siguiente
-          </a>
-        {% endif %}
-      </div>
+      {% if pagination and pagination.total_pages > 1 %}
+        <div class="pagination-container">
+          <ul class="pagination">
+            <li>
+              {% if pagination.has_prev %}
+                <a class="page-link" href="{{ url_for('admin.usuarios', page=pagination.prev_page, usuario=usuario_busqueda) }}" title="Página anterior">
+                  <i class="fa-solid fa-chevron-left"></i>
+                </a>
+              {% else %}
+                <span class="page-link disabled"><i class="fa-solid fa-chevron-left"></i></span>
+              {% endif %}
+            </li>
+            {% for p in pagination.pages %}
+              {% if p is none %}
+                <li><span class="page-dots">…</span></li>
+              {% elif p == pagination.page %}
+                <li><span class="page-link active">{{ p }}</span></li>
+              {% else %}
+                <li>
+                  <a class="page-link" href="{{ url_for('admin.usuarios', page=p, usuario=usuario_busqueda) }}">{{ p }}</a>
+                </li>
+              {% endif %}
+            {% endfor %}
+            <li>
+              {% if pagination.has_next %}
+                <a class="page-link" href="{{ url_for('admin.usuarios', page=pagination.next_page, usuario=usuario_busqueda) }}" title="Página siguiente">
+                  <i class="fa-solid fa-chevron-right"></i>
+                </a>
+              {% else %}
+                <span class="page-link disabled"><i class="fa-solid fa-chevron-right"></i></span>
+              {% endif %}
+            </li>
+          </ul>
+        </div>
+        <p class="text-center text-muted text-sm mt-3">
+          Mostrando {{ pagination.first_item }}–{{ pagination.last_item }} de {{ pagination.total_items }}
+        </p>
+      {% endif %}
     </div>
   </div>
 {% endblock %}

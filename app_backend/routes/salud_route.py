@@ -22,6 +22,9 @@ def verificar_backend_db():
     """
     try:
         conexion = obtener_conexion()
+        if conexion is None:
+            return None
+
         cursor = conexion.cursor()
 
         cursor.execute("SELECT 1")

@@ -4,7 +4,6 @@ CREATE TABLE IF NOT EXISTS usuario (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(50) NOT NULL,
   email VARCHAR(50) UNIQUE NOT NULL,
-  puntaje INT DEFAULT 0,
   rol enum('alumno', 'profesor', 'bibliotecario', 'admin') NOT NULL DEFAULT 'alumno',
   carrera VARCHAR(50),
   contrasenia_hash VARCHAR(255) DEFAULT '',
@@ -29,7 +28,7 @@ CREATE TABLE IF NOT EXISTS reserva (
   estado_reserva VARCHAR(20) NOT NULL DEFAULT 'pendiente',
   fecha_retiro DATETIME NOT NULL,
   fecha_regreso DATETIME NOT NULL,
-  FOREIGN KEY (id_usuario) REFERENCES usuario(id),
+  FOREIGN KEY (id_usuario) REFERENCES usuario(id) ON DELETE CASCADE,
   FOREIGN KEY (id_reservado) REFERENCES articulos(id)
 );
 
@@ -38,7 +37,7 @@ CREATE TABLE IF NOT EXISTS estado_devuelto (
   id_reserva INT NOT NULL,
   dias_retraso INT DEFAULT 0,
   condiciones VARCHAR(255),
-  FOREIGN KEY (id_reserva) REFERENCES reserva(id)
+  FOREIGN KEY (id_reserva) REFERENCES reserva(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS penalizacion (
@@ -50,8 +49,8 @@ CREATE TABLE IF NOT EXISTS penalizacion (
   fecha_fin DATETIME,
   activa BOOLEAN DEFAULT TRUE,
   severidad enum('baja', 'media', 'alta') NOT NULL DEFAULT 'media',
-  FOREIGN KEY (id_usuario) REFERENCES usuario(id),
-  FOREIGN KEY (id_reserva) REFERENCES reserva(id)
+  FOREIGN KEY (id_usuario) REFERENCES usuario(id) ON DELETE CASCADE,
+  FOREIGN KEY (id_reserva) REFERENCES reserva(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS qr (
@@ -60,7 +59,7 @@ CREATE TABLE IF NOT EXISTS qr (
   fecha_generado DATETIME NOT NULL,
   codigo VARCHAR(255) UNIQUE,
   escaneado BOOLEAN DEFAULT FALSE,
-  FOREIGN KEY (id_reserva) REFERENCES reserva(id)
+  FOREIGN KEY (id_reserva) REFERENCES reserva(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS normativa (
