@@ -6,7 +6,16 @@ actualización y filtrado de usuarios, ítems, préstamos y penalidades.
 
 MIN_USERNAME_LENGTH = 3
 MIN_PASSWORD_LENGTH = 8
+ESTADOS_VALIDOS = (
+    "pendiente",
+    "aprobado",
+    "entregado",
+    "devuelto",
+    "cancelado",
+    "rechazado",
+)
 
+from datetime import date
 
 def valid_id(value):
     """Valida identificadores enteros positivos.
@@ -519,6 +528,37 @@ def valid_penalty_patch(data):
     return True, None
 
 
+def valid_reserva_filters(filters):
+    """
+    """
+    parsed_filters = {
+        "estado": None,
+        "usuario": None,
+        "fecha": None,
+    }
+
+    estado = filters.get("estado")
+    if estado is not None:
+        if estado not in ESTADOS_VALIDOS:
+            return False, "invalid_value:estado", None
+        parsed_filters["estado"] = estado
+
+    fecha = filters.get("fecha")
+    if fecha is not None:
+        try:
+            date.fromisoformat(fecha)
+        except (TypeError, ValueError):
+            return False, "invalid_value:fecha", None
+        parsed_filters["fecha"] = fecha
+
+    usuario = filters.get("usuario")
+    if usuario is not None:
+        if usuario.strip() == "":
+            return False, "empty:usuario", None
+        
+    return True, None, parsed_filters
+
+
 def valid_reserva_status_update(data):
     """Valida el payload de actualización de estado de un préstamo.
 
@@ -541,14 +581,8 @@ def valid_reserva_status_update(data):
     if not isinstance(data.get("estado_reserva"), str):
         return False, "invalid_type:estado_reserva"
 
-    allowed_statuses = (
-        "pendiente",
-        "aprobado",
-        "entregado",
-        "devuelto",
-        "cancelado",
-        "rechazado",
-    )
+    allowed_statuses = ESTADOS_VALIDOS
+
     if data.get("estado_reserva") not in allowed_statuses:
         return False, "invalid_value:estado_reserva"
 
