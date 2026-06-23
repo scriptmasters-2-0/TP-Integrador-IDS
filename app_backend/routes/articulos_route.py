@@ -45,6 +45,7 @@ def format_articulo(row):
         "prestacion_maxima": row.get("prestacion_maxima"),
         "stock": row.get("stock"),
         "necesita_reparacion": bool(row.get("necesita_reparacion")),
+        "activo": bool(row.get("activo")),
     }
 
 
@@ -74,7 +75,7 @@ def get_articulos():
     if conn is None:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
 
-    where_conditions = ["activo = 1"]
+    where_conditions = [] if request.args.get("incluir_inactivos") else ["activo = 1"]
     values = {}
 
     if parsed_filters.get("tipo") is not None:
@@ -103,7 +104,8 @@ def get_articulos():
                seccion,
                prestacion_maxima,
                stock,
-               necesita_reparacion
+               necesita_reparacion,
+               activo
         FROM articulos
     """
 
@@ -268,7 +270,7 @@ def update_articulo(articulo_id):
     for field in data:
         if field in ("prestacion_maxima", "stock"):
             values[field] = int(data.get(field))
-        elif field == "necesita_reparacion":
+        elif field in ("necesita_reparacion", "activo"):
             values[field] = 1 if data.get(field) else 0
         else:
             values[field] = data.get(field)
@@ -292,7 +294,8 @@ def update_articulo(articulo_id):
                    seccion,
                    prestacion_maxima,
                    stock,
-                   necesita_reparacion
+                   necesita_reparacion,
+                   activo
             FROM articulos
             WHERE id = %(articulo_id)s
             """,
@@ -321,88 +324,6 @@ def update_articulo(articulo_id):
             conn.close()
         except Exception:
             pass
-
-
-@articulos_bp.route("/api/articulos/<int:articulo_id>/condition", methods=["PATCH"])
-@requiere_auth(roles=["admin", "bibliotecario", "profesor"])
-def actualizar_condicion(articulo_id):
-    """Actualiza la condición o estado de un artículo.
-
-    Recibe el ID del artículo y un JSON con el nuevo estado ('disponible', 'dañado', 'reparacion', 'dado de baja').
-
-    Args:
-        articulo_id (int): ID único del artículo a actualizar.
-
-    Returns:
-        tuple: JSON con el artículo actualizado y el código HTTP correspondiente.
-
-    """
-    if articulo_id <= 0:
-        return jsonify({"error": MSG_BAD_REQUEST}), HTTP_BAD_REQUEST
-
-    try:
-        data = request.get_json()
-        nuevo_estado = data.get("estado")
-
-    except Exception:
-        return jsonify({"error": MSG_BAD_REQUEST}), HTTP_BAD_REQUEST
-
-    estados_validos = ["disponible", "dañado", "reparacion", "dado de baja"]
-
-    if nuevo_estado not in estados_validos:
-        return jsonify(
-            {"error": MSG_BAD_REQUEST, "detail": "Estado no permitido"}
-        ), HTTP_BAD_REQUEST
-
-    conn = obtener_conexion()
-    if conn is None:
-        return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
-
-    cursor = None
-
-    try:
-        cursor = conn.cursor(dictionary=True)
-
-        if nuevo_estado in ["reparacion", "dañado"]:
-            cursor.execute(
-                "UPDATE articulos SET necesita_reparacion = 1 WHERE id = %s", (articulo_id,)
-            )
-
-        elif nuevo_estado == "dado de baja":
-            cursor.execute(
-                "UPDATE articulos SET stock = 0, necesita_reparacion = 1 WHERE id = %s",
-                (articulo_id,),
-            )
-
-        else:
-            cursor.execute(
-                "UPDATE articulos SET necesita_reparacion = 0 WHERE id = %s", (articulo_id,)
-            )
-
-        conn.commit()
-
-        if cursor.rowcount == 0:
-            return jsonify({"error": MSG_NOT_FOUND}), HTTP_NOT_FOUND
-
-        cursor.execute(
-            """
-            SELECT id, nombre_art, tipo, seccion, prestacion_maxima, stock, necesita_reparacion
-            FROM articulos
-            WHERE id = %s
-        """,
-            (articulo_id,),
-        )
-
-        articulo = cursor.fetchone()
-        return jsonify(format_articulo(articulo)), HTTP_OK
-
-    except Exception:
-        return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
-
-    finally:
-        if cursor:
-            cursor.close()
-        conn.close()
 
 
 @articulos_bp.route("/api/articulos/<int:articulo_id>", methods=["DELETE"])
@@ -478,9 +399,11 @@ def get_articulo_by_id(articulo_id):
 
     try:
         cursor = conn.cursor(dictionary=True)
+        # Admin puede abrir inactivos con ?incluir_inactivos=1; resto solo activos.
+        where_activo = "" if request.args.get("incluir_inactivos") else " AND activo = 1"
         query = (
-            "SELECT id, nombre_art, tipo, seccion, prestacion_maxima, stock, necesita_reparacion "
-            "FROM articulos WHERE id = %s AND activo = 1"
+            "SELECT id, nombre_art, tipo, seccion, prestacion_maxima, stock, necesita_reparacion, activo "
+            "FROM articulos WHERE id = %s" + where_activo
         )
         cursor.execute(query, (articulo_id,))
         articulo = cursor.fetchone()
@@ -490,7 +413,7 @@ def get_articulo_by_id(articulo_id):
                 {"error": f"Artículo con ID {articulo_id} no encontrado"}
             ), HTTP_NOT_FOUND
 
-        return jsonify(articulo), HTTP_OK
+        return jsonify(format_articulo(articulo)), HTTP_OK
 
     except mysql.connector.Error as query_err:
         logger.error("Error en la consulta a la base de datos en get_articulo_by_id: %s", query_err)

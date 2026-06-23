@@ -124,6 +124,13 @@
             {% if articulo and articulo.necesita_reparacion %}checked{% endif %} />
           <label for="necesita_reparacion" class="form-check-label">¿Necesita reparación?</label>
         </div>
+        <div class="data-group">
+          <label for="activo">Estado</label>
+          <select id="activo" name="activo" class="admin-select">
+            <option value="1" {% if not articulo or articulo.activo %}selected{% endif %}>Activo</option>
+            <option value="0" {% if articulo and not articulo.activo %}selected{% endif %}>Inactivo</option>
+          </select>
+        </div>
       </div>
 
       <div class="admin-form-actions">

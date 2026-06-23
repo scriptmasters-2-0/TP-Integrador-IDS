@@ -147,7 +147,11 @@
                 <td class="text-muted">{{ articulo.seccion or '—' }}</td>
                 <td>{{ articulo.stock }}</td>
                 <td>
-                  {% if articulo.necesita_reparacion %}
+                  {% if not articulo.activo %}
+                    <span class="badge badge-danger">
+                      <i class="fa-solid fa-ban"></i> Inactivo
+                    </span>
+                  {% elif articulo.necesita_reparacion %}
                     <span class="badge badge-warning">
                       <i class="fa-solid fa-wrench"></i> Reparación
                     </span>

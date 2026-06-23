@@ -1,6 +1,6 @@
 # articulos_servicio.py
 # Funciones de servicio para consumir endpoints /articulos
-from servicios.api_client import get_json, post_json, put_json, delete_json, patch_json
+from servicios.api_client import get_json, post_json, put_json, delete_json
 
 
 def obtener_articulos(params=None, token=None):
@@ -23,11 +23,11 @@ def crear_articulo(articulo_data, token=None):
     return payload or {}
 
 
-def obtener_articulo(articulo_id, token=None):
+def obtener_articulo(articulo_id, token=None, params=None):
     """GET /articulos/{id}
     Devuelve (payload, error) con {} como fallback.
     """
-    payload, error = get_json(f"/articulos/{articulo_id}", token=token)
+    payload, error = get_json(f"/articulos/{articulo_id}", token=token, params=params)
     return payload or {}, error
 
 
@@ -49,14 +49,3 @@ def eliminar_articulo(articulo_id, token=None):
     if error:
         return False, error, status
     return True, None, status
-
-
-def establecer_condicion_articulo(articulo_id, condition_data, token=None):
-    """PATCH /articulos/{id}/condition
-    condition_data: dict (ej., {"condition": "good"})
-    Devuelve True en caso de éxito, {} en caso de fallo.
-    """
-    payload, error, status = patch_json(f"/articulos/{articulo_id}/condition", condition_data, token=token)
-    if error:
-        return {}
-    return True
