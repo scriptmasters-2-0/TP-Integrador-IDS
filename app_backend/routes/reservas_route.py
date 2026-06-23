@@ -19,6 +19,7 @@ from http_codes_and_messages import (
     MSG_INTERNAL_SERVER_ERROR,
     MSG_NOT_FOUND,
 )
+from paginacion import construir_respuesta_paginada, obtener_parametros_paginacion
 from routes.auth_route import requiere_auth
 from validators import valid_id, valid_reserva_create, valid_reserva_status_update
 
@@ -446,6 +447,11 @@ def patch_reserva_status(reserva_id):
 @requiere_auth(roles=["bibliotecario"])
 def listar_solicitudes():
     """Muestra las solicitudes de reserva en estado pendiente"""
+    pagination, error = obtener_parametros_paginacion(request.args)
+        
+    if error:
+        return jsonify({"error": error}), HTTP_BAD_REQUEST
+
     conn = obtener_conexion()
     if conn is None:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
@@ -453,20 +459,36 @@ def listar_solicitudes():
     try:
         cursor = conn.cursor(dictionary=True)
 
+        cursor.execute(
+            "SELECT COUNT(*) AS total FROM reserva WHERE estado_reserva = 'pendiente'"
+        )
+
+        total = cursor.fetchone()["total"]
+
         cursor.execute("""
             SELECT
-                r.id, r.id_usuario, u.nombre, a.nombre_art, r.estado_reserva 
-            FROM reserva r
-            JOIN usuario u
-                ON r.id_usuario = u.id
-            JOIN articulos a
-                ON r.id_reservado = a.id
-            WHERE r.estado_reserva = 'pendiente'
-            ORDER BY fecha_retiro DESC
-        """)
-
+                reservas_listadas.id, reservas_listadas.id_usuario, reserva_usuario.nombre, reserva_articulo.nombre_art, reservas_listadas.estado_reserva 
+            FROM reserva reservas_listadas
+            JOIN usuario reserva_usuario
+                ON reservas_listadas.id_usuario = reserva_usuario.id
+            JOIN articulos reserva_articulo
+                ON reservas_listadas.id_reservado = reserva_articulo.id
+            WHERE reservas_listadas.estado_reserva = 'pendiente'
+            ORDER BY fecha_retiro LIMIT %(limit)s OFFSET %(offset)s
+        """, pagination)
         solicitudes = cursor.fetchall()
-        return jsonify(solicitudes), HTTP_OK
+        return (
+        jsonify(
+            construir_respuesta_paginada(
+                solicitudes,
+                total,
+                request,
+                pagination["limit"],
+                pagination["offset"],
+            )
+        ),
+            HTTP_OK,
+        )
 
     except Exception:
         logger.exception("Error al listar solicitudes de reserva")

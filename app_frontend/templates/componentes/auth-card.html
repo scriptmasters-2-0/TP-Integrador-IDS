@@ -28,26 +28,26 @@
 
       <div class="data-group">
         <label for="email">Correo electrónico</label>
-        <input type="email" id="email" name="email" class="auth-input" required />
+        <input type="email" id="email" name="email" class="auth-input" pattern=".+@fi\.uba\.ar" title="Debe usar su cuenta institucional @fi.uba.ar" required />
       </div>
 
       {% if isLogUp %}
       <div class="data-group">
         <label for="carrera">Carrera</label>
         <select id="carrera" name="carrera" class="auth-input" required>
-          <option value="arquitectura">Arquitectura</option>
-          <option value="biologia">Biologia</option>
-          <option value="derecho">Derecho</option>
-          <option value="economia">Economia</option>
-          <option value="fisica">Fisica</option>
-          <option value="ingenieria civil">Ingenieria Civil</option>
-          <option value="ingenieria electronica">Ingenieria Electronica</option>
-          <option value="ingenieria en sistemas">Ingenieria en Sistemas</option>
-          <option value="ingenieria industrial">Ingenieria Industrial</option>
-          <option value="matematica">Matematica</option>
-          <option value="medicina">Medicina</option>
-          <option value="psicologia">Psicologia</option>
-          <option value="quimica">Quimica</option>
+          <option value="Ingeniería Civil">Ingeniería Civil</option>
+          <option value="Ingeniería en Alimentos">Ingeniería en Alimentos</option>
+          <option value="Ingeniería en Energía Eléctrica">Ingeniería en Energía Eléctrica</option>
+          <option value="Ingeniería Electrónica">Ingeniería Electrónica</option>
+          <option value="Ingeniería en Agrimensura">Ingeniería en Agrimensura</option>
+          <option value="Ingeniería en Informática">Ingeniería en Informática</option>
+          <option value="Ingeniería en Petróleo">Ingeniería en Petróleo</option>
+          <option value="Ingeniería Industrial">Ingeniería Industrial</option>
+          <option value="Ingeniería Mecánica">Ingeniería Mecánica</option>
+          <option value="Ingeniería Naval">Ingeniería Naval</option>
+          <option value="Ingeniería Química">Ingeniería Química</option>
+          <option value="Lic. en Análisis de Sistemas">Lic. en Análisis de Sistemas</option>
+          <option value="Bioingeniería">Bioingeniería</option>
         </select>
       </div>
       {% endif %}

@@ -276,6 +276,11 @@ def get_usuario_reservas(usuario_id):
             error interno).
 
     """
+    pagination, error = obtener_parametros_paginacion(request.args)
+        
+    if error:
+        return jsonify({"error": error}), HTTP_BAD_REQUEST
+        
     if (
         request.usuario_rol not in ("admin", "bibliotecario")
         and usuario_id != request.usuario_id
@@ -301,8 +306,15 @@ def get_usuario_reservas(usuario_id):
                 HTTP_NOT_FOUND,
             )
 
+        cursor.execute(
+            "SELECT COUNT(*) AS total FROM reserva WHERE id_usuario = %(usuario_id)s",
+            {"usuario_id": usuario_id},
+        )
+
+        total = cursor.fetchone()["total"]
+
         sql_query = """
-            SELECT r.id,
+        SELECT r.id,
                    r.id_reservado,
                    a.nombre_art AS nombre_articulo,
                    r.estado_reserva,
@@ -311,14 +323,25 @@ def get_usuario_reservas(usuario_id):
             FROM reserva r
             LEFT JOIN articulos a ON r.id_reservado = a.id
             WHERE r.id_usuario = %(usuario_id)s
-            ORDER BY r.fecha_retiro DESC
+            ORDER BY r.fecha_retiro LIMIT %(limit)s OFFSET %(offset)s
         """
-        values = {"usuario_id": usuario_id}
+        values = {**pagination, "usuario_id": usuario_id}
 
-        cursor.execute(sql_query, values)
+        cursor.execute(sql_query, values) 
         reservas = [format_usuario_reserva(row) for row in cursor.fetchall()]
 
-        return jsonify(reservas), HTTP_OK
+        return (
+        jsonify(
+            construir_respuesta_paginada(
+                reservas,
+                total,
+                request,
+                pagination["limit"],
+                pagination["offset"],
+            )
+        ),
+            HTTP_OK,
+        )
 
     except Exception:
         return (

@@ -3,7 +3,7 @@ SET NAMES utf8mb4;
 CREATE TABLE IF NOT EXISTS usuario (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(50) NOT NULL,
-  email VARCHAR(50) UNIQUE NOT NULL,
+  email VARCHAR(50) UNIQUE NOT NULL CHECK (email LIKE '%@fi.uba.ar'),
   rol enum('alumno', 'profesor', 'bibliotecario', 'admin') NOT NULL DEFAULT 'alumno',
   carrera VARCHAR(50),
   contrasenia_hash VARCHAR(255) DEFAULT '',

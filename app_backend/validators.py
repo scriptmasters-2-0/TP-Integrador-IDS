@@ -66,7 +66,7 @@ def valid_usuario(data):
             return False, f"empty:{f}"
 
     email = data.get("email")
-    if not isinstance(email, str) or "@" not in email or "." not in email.split("@")[-1]:
+    if not isinstance(email, str) or not email.endswith("@fi.uba.ar"):
         return False, "invalid:email"
 
     rol = data.get("rol")
@@ -135,7 +135,7 @@ def valid_usuario_update(data):
             return False, "invalid_type:email"
         if data["email"].strip() == "":
             return False, "empty:email"
-        if "@" not in data["email"] or "." not in data["email"].split("@")[-1]:
+        if not data["email"].endswith("@fi.uba.ar"):
             return False, "invalid_format:email"
 
     if "rol" in data:
