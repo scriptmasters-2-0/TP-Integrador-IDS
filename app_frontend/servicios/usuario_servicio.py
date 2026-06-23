@@ -60,8 +60,16 @@ def obtener_reservas_usuario(usuario_id, params=None, token=None):
     """GET /usuarios/{id}/reservas
     Devuelve (payload, error) con [] como fallback.
     """
+    if params is None:
+        params = {"limit": 100}
+    elif "limit" not in params:
+        params["limit"] = 100
+
     payload, error = get_json(f"/usuarios/{usuario_id}/reservas", token=token, params=params)
-    return payload or [], error
+    if error:
+        return [], error
+    return extraer_data_paginada(payload), error
+
 
 def obtener_penalizaciones_usuario(usuario_id, params=None, token=None):
     """GET /usuarios/{id}/penalizaciones
