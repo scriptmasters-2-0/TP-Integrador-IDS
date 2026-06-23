@@ -4,6 +4,8 @@ import logging
 
 import mysql.connector
 from flask import Blueprint, jsonify, request
+from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 from database import obtener_conexion
 from http_codes_and_messages import (
@@ -599,6 +601,22 @@ def crear_reserva():
             ), HTTP_BAD_REQUEST
 
         if fecha_retiro and hora_regreso:
+            try:
+                dt_retiro_local = datetime.strptime(fecha_retiro.strip(), "%Y-%m-%d %H:%M:%S")
+                hora_regreso_dt = datetime.strptime(hora_regreso.strip(), "%H:%M:%S")
+
+            except ValueError as val_err:
+                return jsonify({"error": "Formato de fecha u hora invalido", "detail": str(val_err)}), HTTP_BAD_REQUEST
+            
+            dt_regreso_local = datetime.combine(dt_retiro_local.date() + timedelta(days=7), hora_regreso_dt.time())
+
+            arg_tz = ZoneInfo("America/Argentina/Buenos_Aires")
+            dt_retiro_local = dt_retiro_local.replace(tzinfo=arg_tz)
+            dt_regreso_local = dt_regreso_local.replace(tzinfo=arg_tz)
+
+            dt_retiro_utc = dt_retiro_local.astimezone(timezone.utc)
+            dt_regreso_utc = dt_regreso_local.astimezone(timezone.utc)
+
             insert_query = (
                 "INSERT INTO reserva (id_usuario, id_reservado, estado_reserva, fecha_retiro, fecha_regreso) "
                 "VALUES (%(usuario_id)s, %(articulo_id)s, 'pendiente', %(fecha_retiro)s, "
@@ -609,10 +627,11 @@ def crear_reserva():
                 {
                     "usuario_id": usuario_id,
                     "articulo_id": articulo_id,
-                    "fecha_retiro": fecha_retiro,
-                    "hora_regreso": hora_regreso,
+                    "fecha_retiro": dt_retiro_utc.strftime("%Y-%m-%d %H:%M:%S"),
+                    "hora_regreso": dt_regreso_utc.strftime("%Y-%m-%d %H:%M:%S"),
                 },
             )
+
         else:
             insert_query = (
                 "INSERT INTO reserva (id_usuario, id_reservado, estado_reserva, fecha_retiro, fecha_regreso) "
