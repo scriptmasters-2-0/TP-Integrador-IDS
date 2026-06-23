@@ -41,448 +41,501 @@ INSERT INTO
     activo
   )
 VALUES
-  -- Administración y Staff (IDs 1 al 5)
   (
     'Admin Sistema',
-    'admin@instituto.edu.ar',
+    'admin@fi.uba.ar',
     'admin',
     NULL,
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Biblio Principal',
-    'biblioteca@instituto.edu.ar',
+    'biblioteca@fi.uba.ar',
     'bibliotecario',
     NULL,
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Profesor Laboratorio',
-    'proflab@instituto.edu.ar',
+    'proflab@fi.uba.ar',
     'profesor',
-    'Ingenieria Electronica',
+    'Ingeniería Electrónica',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Profesor Taller',
-    'proftaller@instituto.edu.ar',
+    'proftaller@fi.uba.ar',
     'profesor',
-    'Ingenieria Mecanica',
+    'Ingeniería Mecánica',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Profesor Sistemas',
-    'profsis@instituto.edu.ar',
+    'profsis@fi.uba.ar',
     'profesor',
-    'Ingenieria en Sistemas',
+    'Ingeniería en Informática',
     @dummy_hash,
     1
-  ),
-  -- Alumnos (IDs 6 al 50)
+  )
+  ,
   (
     'Ana Martinez',
-    'amartinez@instituto.edu.ar',
+    'amartinez@fi.uba.ar',
     'alumno',
-    'Ingenieria en Sistemas',
+    'Ingeniería Civil',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Carlos Ruiz',
-    'cruiz@instituto.edu.ar',
+    'cruiz@fi.uba.ar',
     'alumno',
-    'Ingenieria Electronica',
+    'Ingeniería en Alimentos',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Laura Gomez',
-    'lgomez@instituto.edu.ar',
+    'lgomez@fi.uba.ar',
     'alumno',
-    'Arquitectura',
+    'Ingeniería en Energía Eléctrica',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Diego Fernandez',
-    'dfernandez@instituto.edu.ar',
+    'dfernandez@fi.uba.ar',
     'alumno',
-    'Derecho',
+    'Ingeniería Electrónica',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Sofia Silva',
-    'ssilva@instituto.edu.ar',
+    'ssilva@fi.uba.ar',
     'alumno',
-    'Medicina',
+    'Ingeniería en Agrimensura',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Martin Castro',
-    'mcastro@instituto.edu.ar',
+    'mcastro@fi.uba.ar',
     'alumno',
-    'Ingenieria Civil',
+    'Ingeniería en Informática',
     @dummy_hash,
     0
-  ),  -- Inactivo
+  )
+  ,
   (
     'Lucia Torres',
-    'ltorres@instituto.edu.ar',
+    'ltorres@fi.uba.ar',
     'alumno',
-    'Quimica',
+    'Ingeniería en Petróleo',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Javier Lopez',
-    'jlopez@instituto.edu.ar',
+    'jlopez@fi.uba.ar',
     'alumno',
-    'Fisica',
+    'Ingeniería Industrial',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Camila Diaz',
-    'cdiaz@instituto.edu.ar',
+    'cdiaz@fi.uba.ar',
     'alumno',
-    'Biologia',
+    'Ingeniería Mecánica',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Facundo Morales',
-    'fmorales@instituto.edu.ar',
+    'fmorales@fi.uba.ar',
     'alumno',
-    'Matematica',
+    'Ingeniería Naval',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Valentina Herrera',
-    'vherrera@instituto.edu.ar',
+    'vherrera@fi.uba.ar',
     'alumno',
-    'Ingenieria en Sistemas',
+    'Ingeniería Química',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Matias Romero',
-    'mromero@instituto.edu.ar',
+    'mromero@fi.uba.ar',
     'alumno',
-    'Ingenieria Electronica',
+    'Lic. en Análisis de Sistemas',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Florencia Suarez',
-    'fsuarez@instituto.edu.ar',
+    'fsuarez@fi.uba.ar',
     'alumno',
-    'Arquitectura',
+    'Bioingeniería',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Ezequiel Dominguez',
-    'edominguez@instituto.edu.ar',
+    'edominguez@fi.uba.ar',
     'alumno',
-    'Derecho',
+    'Ingeniería Civil',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Julieta Gimenez',
-    'jgimenez@instituto.edu.ar',
+    'jgimenez@fi.uba.ar',
     'alumno',
-    'Psicologia',
+    'Ingeniería en Alimentos',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Tomas Alonso',
-    'talonso@instituto.edu.ar',
+    'talonso@fi.uba.ar',
     'alumno',
-    'Ingenieria en Sistemas',
+    'Ingeniería en Energía Eléctrica',
     @dummy_hash,
     0
-  ),  -- Inactivo
+  )
+  ,
   (
     'Rocio Blanco',
-    'rblanco@instituto.edu.ar',
+    'rblanco@fi.uba.ar',
     'alumno',
-    'Quimica',
+    'Ingeniería Electrónica',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Nicolas Medina',
-    'nmedina@instituto.edu.ar',
+    'nmedina@fi.uba.ar',
     'alumno',
-    'Fisica',
+    'Ingeniería en Agrimensura',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Micaela Vega',
-    'mvega@instituto.edu.ar',
+    'mvega@fi.uba.ar',
     'alumno',
-    'Biologia',
+    'Ingeniería en Informática',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Gaston Navarro',
-    'gnavarro@instituto.edu.ar',
+    'gnavarro@fi.uba.ar',
     'alumno',
-    'Matematica',
+    'Ingeniería en Petróleo',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Paula Iglesias',
-    'piglesias@instituto.edu.ar',
+    'piglesias@fi.uba.ar',
     'alumno',
-    'Ingenieria Industrial',
+    'Ingeniería Industrial',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Agustin Cabrera',
-    'acabrera@instituto.edu.ar',
+    'acabrera@fi.uba.ar',
     'alumno',
-    'Arquitectura',
+    'Ingeniería Mecánica',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Carolina Vidal',
-    'cvidal@instituto.edu.ar',
+    'cvidal@fi.uba.ar',
     'alumno',
-    'Medicina',
+    'Ingeniería Naval',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Julian Mendoza',
-    'jmendoza@instituto.edu.ar',
+    'jmendoza@fi.uba.ar',
     'alumno',
-    'Derecho',
+    'Ingeniería Química',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Emilia Ortiz',
-    'eortiz@instituto.edu.ar',
+    'eortiz@fi.uba.ar',
     'alumno',
-    'Economia',
+    'Lic. en Análisis de Sistemas',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Lucas Rios',
-    'lrios@instituto.edu.ar',
+    'lrios@fi.uba.ar',
     'alumno',
-    'Psicologia',
+    'Bioingeniería',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Agostina Castillo',
-    'acastillo@instituto.edu.ar',
+    'acastillo@fi.uba.ar',
     'alumno',
-    'Quimica',
+    'Ingeniería Civil',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Franco Acosta',
-    'facosta@instituto.edu.ar',
+    'facosta@fi.uba.ar',
     'alumno',
-    'Fisica',
+    'Ingeniería en Alimentos',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Daniela Peralta',
-    'dperalta@instituto.edu.ar',
+    'dperalta@fi.uba.ar',
     'alumno',
-    'Biologia',
+    'Ingeniería en Energía Eléctrica',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Ignacio Paz',
-    'ipaz@instituto.edu.ar',
+    'ipaz@fi.uba.ar',
     'alumno',
-    'Matematica',
+    'Ingeniería Electrónica',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Martina Nuñez',
-    'mnunez@instituto.edu.ar',
+    'mnunez@fi.uba.ar',
     'alumno',
-    'Ingenieria en Sistemas',
+    'Ingeniería en Agrimensura',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Pablo Aguilar',
-    'paguilar@instituto.edu.ar',
+    'paguilar@fi.uba.ar',
     'alumno',
-    'Arquitectura',
+    'Ingeniería en Informática',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Victoria Mendez',
-    'vmendez@instituto.edu.ar',
+    'vmendez@fi.uba.ar',
     'alumno',
-    'Medicina',
+    'Ingeniería en Petróleo',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Rodrigo Cruz',
-    'rcruz@instituto.edu.ar',
+    'rcruz@fi.uba.ar',
     'alumno',
-    'Derecho',
+    'Ingeniería Industrial',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Belen Arias',
-    'barias@instituto.edu.ar',
+    'barias@fi.uba.ar',
     'alumno',
-    'Economia',
+    'Ingeniería Mecánica',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Joaquin Cabrera',
-    'jcabrera@instituto.edu.ar',
+    'jcabrera@fi.uba.ar',
     'alumno',
-    'Psicologia',
+    'Ingeniería Naval',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Candela Molina',
-    'cmolina@instituto.edu.ar',
+    'cmolina@fi.uba.ar',
     'alumno',
-    'Quimica',
+    'Ingeniería Química',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Alejandro Rojas',
-    'arojas@instituto.edu.ar',
+    'arojas@fi.uba.ar',
     'alumno',
-    'Fisica',
+    'Lic. en Análisis de Sistemas',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Renata Luna',
-    'rluna@instituto.edu.ar',
+    'rluna@fi.uba.ar',
     'alumno',
-    'Biologia',
+    'Bioingeniería',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Esteban Miranda',
-    'emiranda@instituto.edu.ar',
+    'emiranda@fi.uba.ar',
     'alumno',
-    'Matematica',
+    'Ingeniería Civil',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Josefina Soto',
-    'jsoto@instituto.edu.ar',
+    'jsoto@fi.uba.ar',
     'alumno',
-    'Ingenieria en Sistemas',
+    'Ingeniería en Alimentos',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Marcos Bravo',
-    'mbravo@instituto.edu.ar',
+    'mbravo@fi.uba.ar',
     'alumno',
-    'Arquitectura',
+    'Ingeniería en Energía Eléctrica',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Antonella Gallardo',
-    'agallardo@instituto.edu.ar',
+    'agallardo@fi.uba.ar',
     'alumno',
-    'Medicina',
+    'Ingeniería Electrónica',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Leandro Marquez',
-    'lmarquez@instituto.edu.ar',
+    'lmarquez@fi.uba.ar',
     'alumno',
-    'Derecho',
+    'Ingeniería en Agrimensura',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Solange Paredes',
-    'sparedes@instituto.edu.ar',
+    'sparedes@fi.uba.ar',
     'alumno',
-    'Economia',
+    'Ingeniería en Informática',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Emanuel Rivas',
-    'erivas@instituto.edu.ar',
+    'erivas@fi.uba.ar',
     'alumno',
-    'Psicologia',
+    'Ingeniería en Petróleo',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Abril Ferreyra',
-    'aferreyra@instituto.edu.ar',
+    'aferreyra@fi.uba.ar',
     'alumno',
-    'Quimica',
+    'Ingeniería Industrial',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Guillermo Ponce',
-    'gponce@instituto.edu.ar',
+    'gponce@fi.uba.ar',
     'alumno',
-    'Fisica',
+    'Ingeniería Mecánica',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Melina Correa',
-    'mcorrea@instituto.edu.ar',
+    'mcorrea@fi.uba.ar',
     'alumno',
-    'Biologia',
+    'Ingeniería Naval',
     @dummy_hash,
     1
-  ),
+  )
+  ,
   (
     'Hernan Varela',
-    'hvarela@instituto.edu.ar',
+    'hvarela@fi.uba.ar',
     'alumno',
-    'Matematica',
+    'Ingeniería Química',
     @dummy_hash,
     1
-  );
+  )
+;
 
 -- ==============================================================================
 -- 2. ARTICULOS (Equipamiento real de laboratorio, IT, herramientas manuales y libros)

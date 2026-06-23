@@ -12,9 +12,9 @@ document.addEventListener("DOMContentLoaded", () => {
           const emailValue = email ? email.value.trim() : "";
           const contraseniaValue = contrasenia ? contrasenia.value : "";
 
-          if (!emailValue || !emailValue.includes("@") || !emailValue.includes(".")) {
+          if (!emailValue || !emailValue.endsWith("@fi.uba.ar")) {
             event.preventDefault();
-            alert("Ingresa un correo institucional valido.");
+            alert("Ingresa un correo institucional válido (@fi.uba.ar).");
             return;
           }
 
@@ -39,9 +39,9 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
           }
 
-          if (!emailValue || !emailValue.includes("@")) {
+          if (!emailValue || !emailValue.endsWith("@fi.uba.ar")) {
             event.preventDefault();
-            alert("Ingresa un correo electronico valido.");
+            alert("Ingresa un correo institucional válido (@fi.uba.ar).");
             return;
           }
 
