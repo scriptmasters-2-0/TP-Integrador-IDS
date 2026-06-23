@@ -21,7 +21,8 @@ from http_codes_and_messages import (
 )
 from paginacion import construir_respuesta_paginada, obtener_parametros_paginacion
 from routes.auth_route import requiere_auth
-from validators import valid_id, valid_reserva_create, valid_reserva_status_update
+from validators import valid_id, valid_reserva_create, valid_reserva_status_update, valid_reserva_filters
+from paginacion import obtener_parametros_paginacion, construir_respuesta_paginada
 
 reservas_bp = Blueprint("reservas", __name__)
 logger = logging.getLogger(__name__)
@@ -168,55 +169,88 @@ def format_reserva(row):
 @reservas_bp.route("/api/reservas", methods=["GET"])
 @requiere_auth(roles=["admin", "profesor", "bibliotecario", "alumno"])
 def listar_reservas():
+
+    es_admin = request.usuario_rol in ("admin", "bibliotecario")
+
+    filters = {
+        "estado": request.args.get("estado"),
+        "usuario": request.args.get("usuario"),
+        "fecha": request.args.get("fecha"),
+    }
+
+    is_valid, error, parsed_filters  = valid_reserva_filters(filters)
+    if not is_valid:
+        return jsonify({"error": MSG_BAD_REQUEST, "detail": error}), HTTP_BAD_REQUEST
+    
+    pagination, pag_error = obtener_parametros_paginacion(request.args)
+    if pag_error:
+        return jsonify({"error": pag_error}), HTTP_BAD_REQUEST
+    
     conn = obtener_conexion()
     if conn is None:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
+    
     cursor = None
+
     try:
         cursor = conn.cursor(dictionary=True)
-        es_admin = request.usuario_rol in ("admin", "bibliotecario")
+
+        query_base = """
+            FROM reserva r
+            JOIN articulos a ON r.id_reservado = a.id
+            JOIN usuario u ON r.id_usuario = u.id
+        """
 
         if es_admin:
-            estado = request.args.get("estado")
-            usuario_id = request.args.get("usuario")
-            fecha = request.args.get("fecha")
-
-            query = """
-                SELECT r.id, r.id_usuario, u.nombre AS usuario_nombre,
-                       r.id_reservado, a.nombre_art,
-                       r.estado_reserva, r.fecha_retiro, r.fecha_regreso
-                FROM reserva r
-                JOIN articulos a ON r.id_reservado = a.id
-                JOIN usuario u ON r.id_usuario = u.id
-                WHERE 1=1
-            """
+            where_conditions = ["1=1"]
             params = {}
-            if estado:
-                query += " AND r.estado_reserva = %(estado)s"
-                params["estado"] = estado
-            if usuario_id:
-                query += " AND r.id_usuario = %(usuario_id)s"
-                params["usuario_id"] = usuario_id
-            if fecha:
-                query += " AND DATE(r.fecha_retiro) = %(fecha)s"
-                params["fecha"] = fecha
 
-            query += " ORDER BY r.fecha_retiro DESC"
-            cursor.execute(query, params)
+            if parsed_filters.get("estado") is not None:
+                where_conditions.append("r.estado_reserva = %(estado)s")
+                params["estado"] = parsed_filters.get("estado")
+            if parsed_filters.get("usuario") is not None:
+                where_conditions.append("u.nombre LIKE %(usuario)s")
+                params["usuario"] = f"%{parsed_filters.get('usuario')}%"
+            if parsed_filters.get("fecha") is not None:
+                where_conditions.append("DATE(r.fecha_retiro) = %(fecha)s")
+                params["fecha"] = parsed_filters.get("fecha")
+            
+            where_clause = " WHERE " + " AND ".join(where_conditions)
         else:
-            cursor.execute("""
-                SELECT r.id, r.id_usuario, u.nombre AS usuario_nombre,
-                       r.id_reservado, a.nombre_art,
-                       r.estado_reserva, r.fecha_retiro, r.fecha_regreso
-                FROM reserva r
-                JOIN articulos a ON r.id_reservado = a.id
-                JOIN usuario u ON r.id_usuario = u.id
-                WHERE r.id_usuario = %(usuario_id)s
-                ORDER BY r.fecha_retiro DESC
-            """, {"usuario_id": request.usuario_id})
+            where_clause = "WHERE r.id_usuario = %(usuario_id)s"
+            params = {"usuario_id": request.usuario_id}
+
+        sql_count = f"SELECT COUNT(*) AS total {query_base}{where_clause}"
+
+        query = f"""
+            SELECT r.id, r.id_usuario, u.nombre AS usuario_nombre,
+                    r.id_reservado, a.nombre_art,
+                    r.estado_reserva, r.fecha_retiro, r.fecha_regreso
+            {query_base}
+            {where_clause}
+            ORDER BY r.fecha_retiro DESC
+            LIMIT %(limit)s OFFSET %(offset)s
+        """
+
+        cursor.execute(sql_count, params)
+        total = cursor.fetchone()["total"]
+        
+        values_page = dict(params)
+        values_page["limit"] = pagination["limit"]
+        values_page["offset"] = pagination["offset"]
+        cursor.execute(query, values_page)
 
         reservas = [format_reserva(row) for row in cursor.fetchall()]
-        return jsonify(reservas), HTTP_OK
+
+        respuesta = construir_respuesta_paginada(
+            reservas,
+            total,
+            request,
+            pagination["limit"],
+            pagination["offset"],
+        )
+
+        return jsonify(respuesta), HTTP_OK
 
     except Exception:
         logger.exception("Error al listar reservas")

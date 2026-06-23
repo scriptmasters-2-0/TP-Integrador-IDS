@@ -93,7 +93,7 @@ def get_articulos():
 
     if parsed_filters.get("nombre") is not None:
         where_conditions.append("nombre_art LIKE %(nombre)s")
-        values["nombre"] = f"%parsed_filters.get('nombre')%"
+        values["nombre"] = f"%{parsed_filters.get('nombre')}%"
 
     if parsed_filters.get("disponible") is not None:
         if parsed_filters.get("disponible"):

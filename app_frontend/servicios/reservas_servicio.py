@@ -39,6 +39,33 @@ def obtener_reservas(params=None, token=None):
     return payload or []
 
 
+def obtener_reservas_paginadas(params=None, token=None):
+    """Obtiene el listado paginado de reservas.
+
+    Args: 
+        params (dict|none): parametros de consulta opcionales.
+        token (str|none): JWT de autenticación.
+
+    Returns:
+        datos: lista de reservas de la pagina actual.
+        pagination: metadata con limit, offset, total y count.
+        links: enlaces HATEOAS first, prev, next, last.
+        En caso de error, devuelve vacio.
+    """
+
+    payload, error = get_json("/reservas", token=token, params=params)
+    if error:
+        return {}
+    if not isinstance(payload, dict):
+        return {}
+    
+    return {
+        "datos": extraer_data_paginada(payload),
+        "pagination": payload.get("pagination") or {},
+        "links": payload.get("links") or {},
+    }
+
+
 def crear_reserva(reserva_data, token=None):
     """POST /reservas
     Devuelve (payload, error, status) para que la ruta decida el flujo.

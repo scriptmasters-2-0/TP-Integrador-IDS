@@ -535,7 +535,7 @@ def editar_articulo(id):
 
 @admin_bp.route("/reservas", methods=["GET"])
 def lista_reservas():
-    """Lista todos los préstamos con filtros por estado, fecha o usuario."""
+    """Lista todas las reservas paginadas, con filtros opcionales por estado, fecha o usuario."""
     token = session.get("token")
     rol = session.get("rol")
     if not token:
@@ -543,20 +543,24 @@ def lista_reservas():
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
-    estado = request.args.get("estado")
-    usuario = request.args.get("usuario")
-    fecha = request.args.get("fecha")
+    estado = request.args.get("estado", "").strip()
+    usuario = request.args.get("usuario", "").strip()
+    fecha = request.args.get("fecha", "").strip()
     page = request.args.get("page", 1, type=int)
+    offset = calcular_offset(page, DEFAULT_API_LIMIT)
 
-    params = {}
-    if estado:
-        params["estado"] = estado
-    if usuario:
-        params["usuario"] = usuario
-    if fecha:
-        params["fecha"] = fecha
-
-    raw = reservas_servicio.obtener_reservas(params=params or None, token=token)
+    resultado = reservas_servicio.obtener_reservas_paginadas(
+        params={
+            "limit": DEFAULT_API_LIMIT,
+            "offset": offset,
+            "estado": estado or None,
+            "usuario": usuario or None,
+            "fecha": fecha or None,
+        },
+        token=token,      
+    )
+    raw = resultado.get("datos", [])
+    pagination = adaptar_pagination_hateoas(resultado)
 
     reservas = [
         {
@@ -569,11 +573,9 @@ def lista_reservas():
         for r in raw
     ]
 
-    reservas_paginadas, pagination = paginar_lista(reservas, pagina=page)
-
     return render_template(
         "admin/reservas.html",
-        reservas=reservas_paginadas,
+        reservas=reservas,
         pagination=pagination,
     )
 
