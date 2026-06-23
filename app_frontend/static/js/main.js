@@ -108,6 +108,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
   attachTicketActions();
 
+  const attachReturnConditionSync = () => {
+    const estadoReserva = document.getElementById("estado_reserva");
+    const estadoDevuelto = document.getElementById("estado_devuelto");
+
+    if (!estadoReserva || !estadoDevuelto) {
+      return;
+    }
+
+    const noAplica = estadoDevuelto.querySelector('option[value="no_aplica"]');
+    if (!noAplica) {
+      return;
+    }
+
+    const sincronizarEstadoFisico = () => {
+      const esDevuelto = estadoReserva.value === "devuelto";
+      estadoDevuelto.required = esDevuelto;
+      noAplica.disabled = esDevuelto;
+      if (esDevuelto && estadoDevuelto.value === "no_aplica") {
+        estadoDevuelto.value = "bueno";
+      }
+    };
+
+    estadoReserva.addEventListener("change", sincronizarEstadoFisico);
+    sincronizarEstadoFisico();
+  };
+
+  attachReturnConditionSync();
+
   document.querySelectorAll(".reportes-bar").forEach((bar) => {
     const w = bar.dataset.width;
     if (w) bar.style.setProperty("--bar-width", w + "px");

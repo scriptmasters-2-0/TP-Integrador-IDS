@@ -79,6 +79,7 @@
           <option value="" {% if not request.args.get('estado') %}selected{% endif %}>Todos</option>
           <option value="pendiente" {% if request.args.get('estado') == 'pendiente' %}selected{% endif %}>Pendiente</option>
           <option value="aprobado" {% if request.args.get('estado') == 'aprobado' %}selected{% endif %}>Aprobado</option>
+          <option value="entregado" {% if request.args.get('estado') == 'entregado' %}selected{% endif %}>Entregado</option>
           <option value="devuelto" {% if request.args.get('estado') == 'devuelto' %}selected{% endif %}>Devuelto</option>
           <option value="rechazado" {% if request.args.get('estado') == 'rechazado' %}selected{% endif %}>Rechazado</option>
           <option value="cancelado" {% if request.args.get('estado') == 'cancelado' %}selected{% endif %}>Cancelado</option>
@@ -116,7 +117,7 @@
                 <td>{{ p.fecha }}</td>
                 <td class="text-center">
                   <a
-                    href="{{ url_for('admin.reserva_detalle', id=p.id) }}"
+                    href="{{ url_for('admin.reserva_detalle', reserva_id=p.id) }}"
                     class="btn-icon"
                     title="Ver Detalle">
                     <i class="fa-solid fa-eye"></i>
@@ -139,28 +140,39 @@
     <div class="pagination-container">
       <ul class="pagination">
         <li>
-          <a href="?page={{ pagination.prev_page }}&estado={{ request.args.get('estado', '') }}&usuario={{ request.args.get('usuario', '') }}&fecha={{ request.args.get('fecha', '') }}"
-             class="page-link {% if not pagination.has_prev %}disabled{% endif %}">
-            <i class="fa-solid fa-chevron-left"></i>
-          </a>
+          {% if pagination.has_prev %}
+            <a
+              href="{{ url_for('admin.lista_reservas', page=pagination.prev_page, estado=request.args.get('estado', ''), usuario=request.args.get('usuario', ''), fecha=request.args.get('fecha', '')) }}"
+              class="page-link">
+              <i class="fa-solid fa-chevron-left"></i>
+            </a>
+          {% else %}
+            <span class="page-link disabled"><i class="fa-solid fa-chevron-left"></i></span>
+          {% endif %}
         </li>
         {% for p in pagination.pages %}
           {% if p is none %}
             <li><span class="page-dots">…</span></li>
           {% else %}
             <li>
-              <a href="?page={{ p }}&estado={{ request.args.get('estado', '') }}&usuario={{ request.args.get('usuario', '') }}&fecha={{ request.args.get('fecha', '') }}"
-                 class="page-link {% if p == pagination.page %}active{% endif %}">
+              <a
+                href="{{ url_for('admin.lista_reservas', page=p, estado=request.args.get('estado', ''), usuario=request.args.get('usuario', ''), fecha=request.args.get('fecha', '')) }}"
+                class="page-link {% if p == pagination.page %}active{% endif %}">
                 {{ p }}
               </a>
             </li>
           {% endif %}
         {% endfor %}
         <li>
-          <a href="?page={{ pagination.next_page }}&estado={{ request.args.get('estado', '') }}&usuario={{ request.args.get('usuario', '') }}&fecha={{ request.args.get('fecha', '') }}"
-             class="page-link {% if not pagination.has_next %}disabled{% endif %}">
-            <i class="fa-solid fa-chevron-right"></i>
-          </a>
+          {% if pagination.has_next %}
+            <a
+              href="{{ url_for('admin.lista_reservas', page=pagination.next_page, estado=request.args.get('estado', ''), usuario=request.args.get('usuario', ''), fecha=request.args.get('fecha', '')) }}"
+              class="page-link">
+              <i class="fa-solid fa-chevron-right"></i>
+            </a>
+          {% else %}
+            <span class="page-link disabled"><i class="fa-solid fa-chevron-right"></i></span>
+          {% endif %}
         </li>
       </ul>
     </div>

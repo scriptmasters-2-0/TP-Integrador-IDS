@@ -57,7 +57,7 @@ def dashboard():
             estado = reserva.get("estado_reserva", "")
             entrada = {
                 "id": reserva.get("id"),
-                "estado_clase": "status-pending" if estado == "pendiente" else "status-active",
+                "estado_clase": reservas_servicio.status_class(estado),
                 "estado_texto": estado,
                 "equipo": reserva.get("nombre_art") or f"Artículo {reserva.get('id_reservado') or ''}",
                 "fecha": reserva.get("fecha_retiro", "Desconocida"),
@@ -109,6 +109,7 @@ def historial_reserva():
                 "id": reserva.get("id"),
                 "nombre_articulo": nombre,
                 "estado_reserva": estado,
+                "estado_clase": reservas_servicio.badge_class(estado),
                 "fecha_regreso": formatear_fecha_argentina(reserva.get("fecha_regreso")),
             })
 
@@ -146,6 +147,9 @@ def detalle_reserva(id):
         reserva = {
             "id": datos_api.get("id", id),
             "estado_reserva": datos_api.get("estado_reserva", "N/A"),
+            "estado_clase": reservas_servicio.badge_class(
+                datos_api.get("estado_reserva")
+            ),
             "fecha_retiro": datos_api.get("fecha_retiro", "N/A"),
             "fecha_regreso": datos_api.get("fecha_regreso", "N/A"),
             "qrData": (qr or {}).get("qrData"),
@@ -233,6 +237,7 @@ def mis_reservas():
                     or "Artículo"
                 ),
                 "estado_reserva": estado,
+                "estado_clase": reservas_servicio.badge_class(estado),
                 "fecha_retiro": formatear_fecha_argentina(reserva.get("fecha_retiro")),
                 "fecha_regreso": formatear_fecha_argentina(reserva.get("fecha_regreso")),
             }
@@ -256,7 +261,7 @@ def comprobante(id):
     if not token or session.get("rol") != "profesor":
         return redirect(url_for("public.login"))
 
-    reserva, error = reservas_servicio.obtener_reserva(id, token=token)
+    datos_api, error = reservas_servicio.obtener_reserva(id, token=token)
 
     if error:
         return render_template(
@@ -265,7 +270,7 @@ def comprobante(id):
             fetch_error=error
         )
 
-    if reserva.get("estado_reserva") != "aprobado":
+    if datos_api.get("estado_reserva") not in ["aprobado", "entregado"]:
         return render_template(
             "profesor/comprobante.html",
             qr=None,

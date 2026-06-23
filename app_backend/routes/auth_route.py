@@ -34,7 +34,7 @@ from http_codes_and_messages import (
     MSG_NOT_FOUND,
     MSG_UNAUTHORIZED,
 )
-from validators import valid_login, valid_usuario
+from validators import valid_contrasenia, valid_login, valid_usuario
 
 auth_bp = Blueprint("auth", __name__)
 logger = logging.getLogger(__name__)
@@ -388,8 +388,9 @@ def logup():
         return jsonify({"error": MSG_BAD_REQUEST, "detail": error}), HTTP_BAD_REQUEST
 
     contrasenia = data.get("contrasenia")
-    if contrasenia is None or not isinstance(contrasenia, str) or contrasenia.strip() == "":
-        return jsonify({"error": MSG_BAD_REQUEST, "detail": "missing:contrasenia"}), HTTP_BAD_REQUEST
+    is_valid, error = valid_contrasenia(contrasenia)
+    if not is_valid:
+        return jsonify({"error": MSG_BAD_REQUEST, "detail": error}), HTTP_BAD_REQUEST
 
     contrasenia_hash = hashear_contrasenia(contrasenia)
 

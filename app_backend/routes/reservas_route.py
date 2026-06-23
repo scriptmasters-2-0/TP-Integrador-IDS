@@ -25,6 +25,11 @@ from validators import valid_id, valid_reserva_create, valid_reserva_status_upda
 reservas_bp = Blueprint("reservas", __name__)
 logger = logging.getLogger(__name__)
 ESTADOS_LIBERAN_STOCK = {"cancelado", "rechazado", "devuelto"}
+CONDICIONES_DEVOLUCION = {
+    "bueno": ("Buen estado (sin daños)", False),
+    "danado": ("Dañado (requiere revisión)", True),
+    "perdido": ("Extraviado / no devuelto", True),
+}
 
 
 def _debe_liberar_stock(estado_actual, nuevo_estado):
@@ -73,6 +78,54 @@ def _ajustar_stock_reserva(cursor, estado_actual, articulo_id, nuevo_estado):
         if not _restar_stock_si_hay(cursor, articulo_id):
             return False, "stock_insuficiente"
     return True, None
+
+
+def _registrar_devolucion(cursor, reserva, estado_devuelto):
+    condicion = CONDICIONES_DEVOLUCION.get(estado_devuelto)
+    if condicion is None:
+        return
+
+    condiciones, necesita_reparacion = condicion
+    cursor.execute(
+        """
+        DELETE FROM estado_devuelto
+        WHERE id_reserva = %(id_reserva)s
+        """,
+        {"id_reserva": reserva.get("id")},
+    )
+    cursor.execute(
+        """
+        INSERT INTO estado_devuelto (id_reserva, dias_retraso, condiciones)
+        VALUES (
+            %(id_reserva)s,
+            GREATEST(DATEDIFF(CURDATE(), DATE(%(fecha_regreso)s)), 0),
+            %(condiciones)s
+        )
+        """,
+        {
+            "id_reserva": reserva.get("id"),
+            "fecha_regreso": reserva.get("fecha_regreso"),
+            "condiciones": condiciones,
+        },
+    )
+    if necesita_reparacion:
+        cursor.execute(
+            """
+            UPDATE articulos
+            SET necesita_reparacion = 1
+            WHERE id = %(articulo_id)s
+            """,
+            {"articulo_id": reserva.get("id_reservado")},
+        )
+    else:
+        cursor.execute(
+            """
+            UPDATE articulos
+            SET necesita_reparacion = 0
+            WHERE id = %(articulo_id)s
+            """,
+            {"articulo_id": reserva.get("id_reservado")},
+        )
 
 
 def _revertir_transaccion(conn):
@@ -204,15 +257,26 @@ def obtener_detalle_reserva_db(reserva_id):
                 reserva.id_usuario,
                 reserva.id_reservado,
                 usuario.nombre,
+                usuario.carrera,
                 articulos.nombre_art,
                 reserva.estado_reserva,
                 reserva.fecha_retiro,
-                reserva.fecha_regreso
+                reserva.fecha_regreso,
+                estado_devuelto.dias_retraso,
+                estado_devuelto.condiciones,
+                CASE estado_devuelto.condiciones
+                    WHEN 'Buen estado (sin daños)' THEN 'bueno'
+                    WHEN 'Dañado (requiere revisión)' THEN 'danado'
+                    WHEN 'Extraviado / no devuelto' THEN 'perdido'
+                    ELSE NULL
+                END AS estado_devuelto
             FROM reserva
             JOIN usuario
                 ON reserva.id_usuario = usuario.id
             JOIN articulos
                 ON reserva.id_reservado = articulos.id
+            LEFT JOIN estado_devuelto
+                ON estado_devuelto.id_reserva = reserva.id
             WHERE reserva.id = %s
             """,
             (reserva_id,),
@@ -314,6 +378,13 @@ def patch_reserva_status(reserva_id):
             return (
                 jsonify({"error": MSG_BAD_REQUEST, "detail": stock_error}),
                 HTTP_BAD_REQUEST,
+            )
+
+        if nuevo_estado == "devuelto":
+            _registrar_devolucion(
+                cursor,
+                reserva_actual,
+                data.get("estado_devuelto"),
             )
 
         cursor.execute(
@@ -501,7 +572,7 @@ def crear_reserva():
 
         return jsonify(
             {
-                "message": "Reserva creada correctamente",
+                "mensaje": "Reserva creada correctamente",
                 "reserva_id": new_reserva_id,
                 "usuario_id": usuario_id,
                 "articulo_id": articulo_id,

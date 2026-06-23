@@ -277,7 +277,7 @@ def get_penalty(penalty_id):
         row = cursor.fetchone()
 
         if not row:
-            return jsonify({"message": MSG_NOT_FOUND}), HTTP_NOT_FOUND
+            return jsonify({"error": MSG_NOT_FOUND}), HTTP_NOT_FOUND
 
         return jsonify(format_penalty(row)), HTTP_OK
 
@@ -362,7 +362,7 @@ def patch_penalty(penalty_id):
         conn.commit()
 
         if cursor.rowcount == 0:
-            return jsonify({"message": MSG_NOT_FOUND}), HTTP_NOT_FOUND
+            return jsonify({"error": MSG_NOT_FOUND}), HTTP_NOT_FOUND
 
         cursor.execute(
             """
@@ -383,7 +383,7 @@ def patch_penalty(penalty_id):
         row = cursor.fetchone()
 
         if not row:
-            return jsonify({"message": MSG_NOT_FOUND}), HTTP_NOT_FOUND
+            return jsonify({"error": MSG_NOT_FOUND}), HTTP_NOT_FOUND
 
         return jsonify(format_penalty(row)), HTTP_OK
 

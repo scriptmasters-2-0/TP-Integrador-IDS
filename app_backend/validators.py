@@ -5,6 +5,7 @@ actualización y filtrado de usuarios, ítems, préstamos y penalidades.
 """
 
 MIN_USERNAME_LENGTH = 3
+MIN_PASSWORD_LENGTH = 8
 
 
 def valid_id(value):
@@ -76,6 +77,20 @@ def valid_usuario(data):
     carrera = data.get("carrera")
     if carrera is not None and not isinstance(carrera, str):
         return False, "invalid:carrera"
+
+    return True, None
+
+
+def valid_contrasenia(value):
+    """Valida una contraseña para creación o cambio de usuario."""
+    if value is None:
+        return False, "missing:contrasenia"
+    if not isinstance(value, str):
+        return False, "invalid_type:contrasenia"
+    if value.strip() == "":
+        return False, "empty:contrasenia"
+    if len(value) < MIN_PASSWORD_LENGTH:
+        return False, "invalid_length:contrasenia"
 
     return True, None
 
@@ -535,6 +550,17 @@ def valid_reserva_status_update(data):
     )
     if data.get("estado_reserva") not in allowed_statuses:
         return False, "invalid_value:estado_reserva"
+
+    if "estado_devuelto" in data and data.get("estado_devuelto") is not None:
+        if not isinstance(data.get("estado_devuelto"), str):
+            return False, "invalid_type:estado_devuelto"
+
+        allowed_return_conditions = ("bueno", "danado", "perdido")
+        if data.get("estado_reserva") == "devuelto":
+            if data.get("estado_devuelto") not in allowed_return_conditions:
+                return False, "invalid_value:estado_devuelto"
+        elif data.get("estado_devuelto") not in (*allowed_return_conditions, "no_aplica"):
+            return False, "invalid_value:estado_devuelto"
 
     return True, None
 

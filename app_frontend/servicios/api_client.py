@@ -12,6 +12,11 @@ from http_codes_and_messages import HTTP_BAD_REQUEST
 
 logger = logging.getLogger(__name__)
 DEFAULT_TIMEOUT = 8
+ERRORES_TOKEN = {
+    "Token expirado",
+    "Token inválido",
+    "Tipo de token incorrecto",
+}
 
 
 def _build_url(path):
@@ -26,6 +31,32 @@ def get_auth_headers(token=None):
     return {"Authorization": f"Bearer {token}"} if token else {}
 
 
+def _error_token(error):
+    return error in ERRORES_TOKEN
+
+
+def _limpiar_sesion_token(error):
+    if _error_token(error):
+        session.clear()
+
+
+def _extraer_error_back(response, payload=None, default="Error al consumir backend"):
+    if isinstance(payload, dict):
+        return payload.get("error") or payload.get("message") or str(payload)
+
+    if response.text:
+        return response.text
+
+    return default
+
+
+def _parsear_payload(response):
+    try:
+        return response.json()
+    except Exception:
+        return None
+
+
 def get_json(path, token=None, params=None):
     """Ejecuta un GET y retorna (json, error)."""
     headers = get_auth_headers(token)
@@ -37,11 +68,13 @@ def get_json(path, token=None, params=None):
         return None, error_msg
 
     if response.status_code >= HTTP_BAD_REQUEST:
-        try:
-            payload = response.json()
-            detail = payload.get("error") or payload.get("message") or str(payload)
-        except Exception:
-            detail = response.text or f"HTTP {response.status_code}"
+        payload = _parsear_payload(response)
+        detail = _extraer_error_back(
+            response,
+            payload,
+            default=f"HTTP {response.status_code}",
+        )
+        _limpiar_sesion_token(detail)
         logger.warning("Backend devolvió %s: %s", response.status_code, detail)
         return None, detail
 
@@ -64,18 +97,11 @@ def post_json(path, data, token=None):
         logger.warning("No se pudo conectar con backend: %s", exc)
         return None, error_msg, 0
 
-    payload = None
-    try:
-        payload = response.json()
-    except Exception:
-        payload = None
+    payload = _parsear_payload(response)
 
     if response.status_code >= HTTP_BAD_REQUEST:
-        detail = "Error al consumir backend"
-        if isinstance(payload, dict):
-            detail = payload.get("error") or payload.get("message") or str(payload)
-        elif response.text:
-            detail = response.text
+        detail = _extraer_error_back(response, payload)
+        _limpiar_sesion_token(detail)
         logger.warning("Backend devolvió %s: %s", response.status_code, detail)
         return payload, detail, response.status_code
 
@@ -93,18 +119,11 @@ def patch_json(path, data, token=None):
         logger.warning("No se pudo conectar con backend: %s", exc)
         return None, error_msg, 0
 
-    payload = None
-    try:
-        payload = response.json()
-    except Exception:
-        payload = None
+    payload = _parsear_payload(response)
 
     if response.status_code >= HTTP_BAD_REQUEST:
-        detail = "Error al consumir backend"
-        if isinstance(payload, dict):
-            detail = payload.get("error") or payload.get("message") or str(payload)
-        elif response.text:
-            detail = response.text
+        detail = _extraer_error_back(response, payload)
+        _limpiar_sesion_token(detail)
         logger.warning("Backend devolvió %s: %s", response.status_code, detail)
         return payload, detail, response.status_code
 
@@ -122,18 +141,11 @@ def put_json(path, data, token=None):
         logger.warning("No se pudo conectar con backend: %s", exc)
         return None, error_msg, 0
 
-    payload = None
-    try:
-        payload = response.json()
-    except Exception:
-        payload = None
+    payload = _parsear_payload(response)
 
     if response.status_code >= HTTP_BAD_REQUEST:
-        detail = "Error al consumir backend"
-        if isinstance(payload, dict):
-            detail = payload.get("error") or payload.get("message") or str(payload)
-        elif response.text:
-            detail = response.text
+        detail = _extraer_error_back(response, payload)
+        _limpiar_sesion_token(detail)
         logger.warning("Backend devolvió %s: %s", response.status_code, detail)
         return payload, detail, response.status_code
 
@@ -150,18 +162,11 @@ def delete_json(path, token=None):
         logger.warning("No se pudo conectar con backend: %s", exc)
         return None, error_msg, 0
 
-    payload = None
-    try:
-        payload = response.json()
-    except Exception:
-        payload = None
+    payload = _parsear_payload(response)
 
     if response.status_code >= HTTP_BAD_REQUEST:
-        detail = "Error al consumir backend"
-        if isinstance(payload, dict):
-            detail = payload.get("error") or payload.get("message") or str(payload)
-        elif response.text:
-            detail = response.text
+        detail = _extraer_error_back(response, payload)
+        _limpiar_sesion_token(detail)
         logger.warning("Backend devolvió %s: %s", response.status_code, detail)
         return payload, detail, response.status_code
 

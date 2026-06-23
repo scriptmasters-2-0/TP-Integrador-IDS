@@ -24,8 +24,8 @@ from servicios import reservas_servicio
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
-@admin_bp.route("/reservas/<int:id>", methods=["GET", "POST"])
-def reserva_detalle(id):
+@admin_bp.route("/reservas/<int:reserva_id>", methods=["GET", "POST"])
+def reserva_detalle(reserva_id):
     """Renderiza y procesa la vista de detalle de préstamo para administradores."""
     token = session.get("token")
     rol = session.get("rol")
@@ -35,38 +35,69 @@ def reserva_detalle(id):
         return redirect(url_for("public.home"))
 
     if request.method == "POST":
-        return redirect(url_for("admin.reserva_detalle", id=id))
+        mensaje_error_estado = "No se pudo cambiar el estado de la reserva."
+        estado_reserva = request.form.get("estado_reserva")
+        if not estado_reserva:
+            return redirect(
+                url_for(
+                    "admin.reserva_detalle",
+                    reserva_id=reserva_id,
+                    mensaje_error=mensaje_error_estado,
+                )
+            )
+
+        status_data = {"estado_reserva": estado_reserva}
+        estado_devuelto = request.form.get("estado_devuelto")
+        if estado_devuelto:
+            status_data["estado_devuelto"] = estado_devuelto
+
+        actualizada, error, status = reservas_servicio.establecer_estado_reserva(
+            reserva_id, status_data, token=token
+        )
+        if error or not actualizada:
+            return redirect(
+                url_for(
+                    "admin.reserva_detalle",
+                    reserva_id=reserva_id,
+                    mensaje_error=error or mensaje_error_estado,
+                )
+            )
+        return redirect(url_for("admin.reserva_detalle", reserva_id=reserva_id))
 
     estado_clases = {
-        "pendiente": "status-pending",
+        "pendiente": "status-pendiente",
         "aprobado": "status-aprobado",
+        "entregado": "status-entregado",
         "devuelto": "status-devuelto",
         "rechazado": "status-rechazado",
         "cancelado": "status-cancelado",
     }
 
     try:
-        datos_api = reservas_servicio.obtener_detalle_reserva(id, token=token)
+        datos_api = reservas_servicio.obtener_detalle_reserva(reserva_id, token=token)
         estado = datos_api.get("estado_reserva", "pendiente")
         reserva = {
-            "id": datos_api.get("id", id),
+            "id": datos_api.get("id", reserva_id),
             "estado_general": estado,
             "estado_texto": estado,
-            "estado_clase": estado_clases.get(estado, "status-pending"),
+            "estado_clase": estado_clases.get(estado, "status-pendiente"),
             "equipo_nombre": datos_api.get("nombre_art", "Material no especificado"),
             "equipo_id": datos_api.get("id_reservado", "N/A"),
             "titular_nombre": datos_api.get("nombre", "Alumno"),
             "titular_legajo": datos_api.get("id_usuario", "N/A"),
             "titular_carrera": datos_api.get("carrera", "No definida"),
-            "fecha_retiro": datos_api.get("fecha_retiro", "N/A"),
-            "fecha_limite": datos_api.get("fecha_regreso", "N/A"),
+            "fecha_retiro": formatear_fecha_argentina(datos_api.get("fecha_retiro")),
+            "fecha_limite": formatear_fecha_argentina(datos_api.get("fecha_regreso")),
+            "estado_devuelto": datos_api.get("estado_devuelto") or "no_aplica",
+            "dias_retraso": datos_api.get("dias_retraso"),
+            "condiciones": datos_api.get("condiciones"),
         }
     except Exception:
         reserva = {
-            "id": id,
+            "id": reserva_id,
             "estado_general": "error",
             "estado_texto": "Error al cargar",
-            "estado_clase": "status-pending",
+            "estado_clase": "status-pendiente",
             "equipo_nombre": "No disponible",
             "equipo_id": "N/A",
             "titular_nombre": "Usuario",
@@ -74,9 +105,16 @@ def reserva_detalle(id):
             "titular_carrera": "N/A",
             "fecha_retiro": "N/A",
             "fecha_limite": "N/A",
+            "estado_devuelto": "no_aplica",
+            "dias_retraso": None,
+            "condiciones": None,
         }
 
-    return render_template("admin/reserva_detalle_admin.html", reserva=reserva)
+    return render_template(
+        "admin/reserva_detalle_admin.html",
+        reserva=reserva,
+        mensaje_error=request.args.get("mensaje_error"),
+    )
 
 
 @admin_bp.route("/articulos")

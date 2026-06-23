@@ -3059,6 +3059,11 @@ h3 {
   color: #1565c0;
 }
 
+.status-entregado {
+  background-color: #e0f7fa;
+  color: #00838f;
+}
+
 .status-pendiente {
   background-color: #fff8e1;
   color: #f9a825;

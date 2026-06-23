@@ -941,6 +941,7 @@ components:
         contrasenia:
           type: string
           format: password
+          minLength: 8
 
     LogUpResponse:
       type: object
@@ -1027,6 +1028,7 @@ components:
         contrasenia:
           type: string
           format: password
+          minLength: 8
 
     UserUpdate:
       type: object
@@ -1053,6 +1055,7 @@ components:
         contrasenia:
           type: string
           format: password
+          minLength: 8
 
     ItemDetail:
       type: object
@@ -1147,13 +1150,23 @@ components:
           format: int64
         estado_reserva:
           type: string
-          enum: [pendiente, aprobado, entregado, devuelto, cancelado]
+          enum: [pendiente, aprobado, entregado, devuelto, cancelado, rechazado]
         fecha_retiro:
           type: string
           format: date-time
         fecha_regreso:
           type: string
           format: date-time
+        estado_devuelto:
+          type: string
+          enum: [bueno, danado, perdido]
+          nullable: true
+        dias_retraso:
+          type: integer
+          nullable: true
+        condiciones:
+          type: string
+          nullable: true
 
     LoanCompact:
       type: object
@@ -1194,7 +1207,7 @@ components:
           format: date-time
         estado_reserva:
           type: string
-          enum: [pendiente, aprobado, entregado, devuelto, rechazado]
+          enum: [pendiente, aprobado, entregado, devuelto, cancelado, rechazado]
 
     LoanCreateLegacyRequest:
       type: object
@@ -1231,7 +1244,11 @@ components:
       properties:
         estado_reserva:
           type: string
-          enum: [pendiente, aprobado, entregado, devuelto, cancelado]
+          enum: [pendiente, aprobado, entregado, devuelto, cancelado, rechazado]
+        estado_devuelto:
+          type: string
+          enum: [bueno, danado, perdido]
+          description: Condición física registrada al cerrar la reserva como devuelta.
 
     PenaltyDetail:
       type: object

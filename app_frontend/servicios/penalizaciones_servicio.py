@@ -1,6 +1,6 @@
 # penalizaciones_servicio.py
 # Funciones de servicio para consumir endpoints /penalizaciones
-from servicios.api_client import get_json, post_json, put_json, patch_json
+from servicios.api_client import get_json, post_json, patch_json
 from servicios.paginacion_servicio import extraer_data_paginada
 
 
@@ -37,16 +37,6 @@ def obtener_penalizacion(penalty_id, token=None):
     Devuelve el JSON de la penalización en caso de éxito, {} en caso de fallo.
     """
     payload, error = get_json(f"/penalizaciones/{penalty_id}", token=token)
-    if error:
-        return {}
-    return payload or {}
-
-
-def actualizar_penalizacion(penalty_id, penalty_data, token=None):
-    """PUT /penalizaciones/{id}
-    Devuelve el JSON actualizado en caso de éxito, {} en caso de fallo.
-    """
-    payload, error, status = put_json(f"/penalizaciones/{penalty_id}", penalty_data, token=token)
     if error:
         return {}
     return payload or {}

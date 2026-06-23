@@ -29,7 +29,7 @@ from http_codes_and_messages import (
 )
 from paginacion import construir_respuesta_paginada, obtener_parametros_paginacion
 from routes.auth_route import hashear_contrasenia, requiere_auth
-from validators import valid_id, valid_usuario, valid_usuario_update
+from validators import valid_contrasenia, valid_id, valid_usuario, valid_usuario_update
 
 usuarios_bp = Blueprint("usuarios", __name__)
 logger = logging.getLogger(__name__)
@@ -297,7 +297,7 @@ def get_usuario_reservas(usuario_id):
         )
         if not cursor.fetchone():
             return (
-                jsonify({"message": MSG_NOT_FOUND}),
+                jsonify({"error": MSG_NOT_FOUND}),
                 HTTP_NOT_FOUND,
             )
 
@@ -368,8 +368,9 @@ def create_usuario():
         return jsonify({"error": MSG_BAD_REQUEST, "detail": error}), HTTP_BAD_REQUEST
 
     contrasenia = data.get("contrasenia")
-    if contrasenia is None or not isinstance(contrasenia, str) or contrasenia.strip() == "":
-        return jsonify({"error": MSG_BAD_REQUEST, "detail": "missing:contrasenia"}), HTTP_BAD_REQUEST
+    is_valid, error = valid_contrasenia(contrasenia)
+    if not is_valid:
+        return jsonify({"error": MSG_BAD_REQUEST, "detail": error}), HTTP_BAD_REQUEST
 
     contrasenia_hash = hashear_contrasenia(contrasenia)
     rol = data.get("rol") or "alumno"
@@ -450,7 +451,7 @@ def get_usuario(usuario_id):
         )
         usuario = cursor.fetchone()
         if not usuario:
-            return jsonify({"message": MSG_NOT_FOUND}), HTTP_NOT_FOUND
+            return jsonify({"error": MSG_NOT_FOUND}), HTTP_NOT_FOUND
         return jsonify(usuario), HTTP_OK
     except Exception:
         return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
@@ -504,8 +505,9 @@ def update_usuario(usuario_id):
             return jsonify({"error": MSG_FORBIDDEN}), HTTP_FORBIDDEN
 
         contrasenia = data.get("contrasenia")
-        if contrasenia is None or not isinstance(contrasenia, str) or contrasenia.strip() == "":
-            return jsonify({"error": MSG_BAD_REQUEST, "detail": "missing:contrasenia"}), HTTP_BAD_REQUEST
+        is_valid, error = valid_contrasenia(contrasenia)
+        if not is_valid:
+            return jsonify({"error": MSG_BAD_REQUEST, "detail": error}), HTTP_BAD_REQUEST
 
         set_clause = "contrasenia_hash = %(contrasenia_hash)s"
         data = {
@@ -539,7 +541,7 @@ def update_usuario(usuario_id):
         conn.commit()
 
         if cursor.rowcount == 0:
-            return jsonify({"message": MSG_NOT_FOUND}), HTTP_NOT_FOUND
+            return jsonify({"error": MSG_NOT_FOUND}), HTTP_NOT_FOUND
 
         cursor.execute(
             """

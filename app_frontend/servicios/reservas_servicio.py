@@ -2,6 +2,32 @@
 # Funciones de servicio para consumir endpoints /reservas
 from servicios.api_client import get_json, post_json, patch_json
 
+BADGE_CLASSES = {
+    "pendiente": "badge-warning",
+    "aprobado": "badge-success",
+    "entregado": "badge-success",
+    "devuelto": "badge-success",
+    "cancelado": "badge-danger",
+    "rechazado": "badge-danger",
+}
+
+STATUS_CLASSES = {
+    "pendiente": "status-pending",
+    "aprobado": "status-active",
+    "entregado": "status-active",
+    "devuelto": "status-devuelto",
+    "cancelado": "status-cancelado",
+    "rechazado": "status-rechazado",
+}
+
+
+def badge_class(estado):
+    return BADGE_CLASSES.get(estado, "badge-success")
+
+
+def status_class(estado):
+    return STATUS_CLASSES.get(estado, "status-active")
+
 
 def obtener_reservas(params=None, token=None):
     """GET /reservas

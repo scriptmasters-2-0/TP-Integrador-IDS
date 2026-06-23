@@ -94,13 +94,7 @@ def historial():
                     "id_equipo": reserva.get("id_reservado"),
                     "sede": reserva.get("seccion", "Sede FIUBA"),
                     "estado_texto": estado_reserva,
-                    "estado_clase": (
-                        "badge-warning"
-                        if estado_reserva == "pendiente"
-                        else "badge-danger"
-                        if estado_reserva == "cancelado"
-                        else "badge-success"
-                    ),
+                    "estado_clase": reservas_servicio.badge_class(estado_reserva),
                 }
             )
 
@@ -192,7 +186,9 @@ def comprobante(id):
         reserva = {
             "id": datos_api.get("id", id),
             "estado_texto": datos_api.get("estado_reserva", "pendiente"),
-            "estado_clase": "status-active",
+            "estado_clase": reservas_servicio.status_class(
+                datos_api.get("estado_reserva", "pendiente")
+            ),
             "equipo_nombre": datos_api.get("nombre_art", "Material no especificado"),
             "equipo_id": datos_api.get("id_reservado", "N/A"),
             "sede": datos_api.get("seccion", "Sede Central FIUBA"),
@@ -229,17 +225,6 @@ def comprobante(id):
     )
 
 
-@alumno_bp.route("/reservas/id/comprobante")
-def comprobante_sin_id():
-    """Redirige comprobantes sin reserva al historial."""
-    token = session.get("token")
-    usuario = session.get("usuario")
-    if not token or not usuario:
-        return redirect(url_for("public.login"))
-
-    return redirect(url_for("alumno.historial"))
-
-
 @alumno_bp.route("/dashboard")
 def dashboard():
     """Panel principal: reservas activas y alertas de penalización."""
@@ -260,7 +245,7 @@ def dashboard():
             estado = reserva.get("estado_reserva", "")
             entrada = {
                 "id": reserva.get("id"),
-                "estado_clase": "status-pending" if estado == "pendiente" else "status-active",
+                "estado_clase": reservas_servicio.status_class(estado),
                 "estado_texto": estado,
                 "equipo": (
                     reserva.get("nombre_articulo")
@@ -381,6 +366,7 @@ def alumno_mis_reservas():
                         or "Artículo"
                     ),
                     "estado_reserva": estado,
+                    "estado_clase": reservas_servicio.badge_class(estado),
                     "fecha_retiro": formatear_fecha_argentina(reserva.get("fecha_retiro")),
                     "fecha_regreso": formatear_fecha_argentina(reserva.get("fecha_regreso")),
                 }

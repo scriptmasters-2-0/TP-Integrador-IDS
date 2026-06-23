@@ -301,7 +301,7 @@ def update_articulo(articulo_id):
         articulo = cursor.fetchone()
 
         if not articulo:
-            return jsonify({"message": MSG_NOT_FOUND}), HTTP_NOT_FOUND
+            return jsonify({"error": MSG_NOT_FOUND}), HTTP_NOT_FOUND
 
         return jsonify(format_articulo(articulo)), HTTP_OK
 
@@ -382,7 +382,7 @@ def actualizar_condicion(articulo_id):
         conn.commit()
 
         if cursor.rowcount == 0:
-            return jsonify({"message": MSG_NOT_FOUND}), HTTP_NOT_FOUND
+            return jsonify({"error": MSG_NOT_FOUND}), HTTP_NOT_FOUND
 
         cursor.execute(
             """
@@ -435,7 +435,7 @@ def eliminar_articulo(articulo_id):
         conn.commit()
 
         if cursor.rowcount == 0:
-            return jsonify({"message": MSG_NOT_FOUND}), HTTP_NOT_FOUND
+            return jsonify({"error": MSG_NOT_FOUND}), HTTP_NOT_FOUND
 
         return jsonify({"mensaje": "Artículo eliminado con éxito"}), HTTP_OK
 

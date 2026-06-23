@@ -113,7 +113,7 @@ def crear_normativa():
 
         conn.commit()
 
-        return jsonify({"message": "Normativa creada"}), HTTP_CREATED
+        return jsonify({"mensaje": "Normativa creada"}), HTTP_CREATED
     except mysql.connector.Error as err:
         _revertir_transaccion(conn)
         logger.error("Error de base de datos al crear normativa: %s", err)
@@ -155,11 +155,11 @@ def editar_normativa(id):
         )
 
         if cursor.rowcount == 0:
-            return jsonify({"message": MSG_NOT_FOUND}), HTTP_NOT_FOUND
+            return jsonify({"error": MSG_NOT_FOUND}), HTTP_NOT_FOUND
 
         conn.commit()
 
-        return jsonify({"message": "Normativa actualizada"}), HTTP_OK
+        return jsonify({"mensaje": "Normativa actualizada"}), HTTP_OK
     except mysql.connector.Error as err:
         _revertir_transaccion(conn)
         logger.error("Error de base de datos al editar normativa: %s", err)
@@ -189,11 +189,11 @@ def eliminar_normativa(id):
         cursor.execute("DELETE FROM normativa WHERE id = %s", (id,))
 
         if cursor.rowcount == 0:
-            return jsonify({"message": MSG_NOT_FOUND}), HTTP_NOT_FOUND
+            return jsonify({"error": MSG_NOT_FOUND}), HTTP_NOT_FOUND
 
         conn.commit()
 
-        return jsonify({"message": "Normativa eliminada"}), HTTP_OK
+        return jsonify({"mensaje": "Normativa eliminada"}), HTTP_OK
     except mysql.connector.Error as err:
         _revertir_transaccion(conn)
         logger.error("Error de base de datos al eliminar normativa: %s", err)

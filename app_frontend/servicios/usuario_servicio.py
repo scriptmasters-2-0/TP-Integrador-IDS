@@ -1,6 +1,6 @@
 # usuario_servicio.py
 # Funciones de servicio para consumir endpoints /usuarios
-from servicios.api_client import get_json, post_json, put_json, delete_json, patch_json
+from servicios.api_client import get_json, post_json, put_json, delete_json
 from servicios.paginacion_servicio import extraer_data_paginada
 
 def obtener_usuarios(params=None, token=None):
@@ -54,17 +54,6 @@ def eliminar_usuario(usuario_id, token=None):
     if error:
         return False, error, status
     return True, None, status
-
-
-def establecer_estado_usuario(usuario_id, status_data, token=None):
-    """PATCH /usuarios/{id}/status
-    status_data: dict (ej., {"active": True})
-    Devuelve True en caso de éxito, {} en caso de fallo.
-    """
-    payload, error, status = patch_json(f"/usuarios/{usuario_id}/status", status_data, token=token)
-    if error:
-        return {}
-    return True
 
 
 def obtener_reservas_usuario(usuario_id, params=None, token=None):
