@@ -257,6 +257,7 @@ def obtener_detalle_reserva_db(reserva_id):
                 reserva.id_usuario,
                 reserva.id_reservado,
                 usuario.nombre,
+                usuario.email,
                 usuario.carrera,
                 articulos.nombre_art,
                 reserva.estado_reserva,

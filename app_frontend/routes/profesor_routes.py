@@ -60,7 +60,7 @@ def dashboard():
                 "estado_clase": reservas_servicio.status_class(estado),
                 "estado_texto": estado,
                 "equipo": reserva.get("nombre_art") or f"Artículo {reserva.get('id_reservado') or ''}",
-                "fecha": reserva.get("fecha_retiro", "Desconocida"),
+                "fecha": formatear_fecha_argentina(reserva.get("fecha_retiro")),
                 "ubicacion": "Sede FIUBA",
             }
             if estado in ("pendiente", "aprobado", "entregado"):
@@ -150,8 +150,8 @@ def detalle_reserva(id):
             "estado_clase": reservas_servicio.badge_class(
                 datos_api.get("estado_reserva")
             ),
-            "fecha_retiro": datos_api.get("fecha_retiro", "N/A"),
-            "fecha_regreso": datos_api.get("fecha_regreso", "N/A"),
+            "fecha_retiro": formatear_fecha_argentina(datos_api.get("fecha_retiro")),
+            "fecha_regreso": formatear_fecha_argentina(datos_api.get("fecha_regreso")),
             "qrData": (qr or {}).get("qrData"),
         }
         error = error or qr_error

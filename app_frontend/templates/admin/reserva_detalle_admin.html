@@ -62,9 +62,16 @@
         {{ reserva.estado_texto }}
       </div>
     </div>
-    <button class="res-btn btn-secondary">
-      <i class="fa-solid fa-envelope"></i> Contactar Alumno
-    </button>
+    {% if reserva.titular_email %}
+      <a class="res-btn btn-secondary"
+         href="mailto:{{ reserva.titular_email }}?subject={{ ('Préstamo #RES-' ~ reserva.id ~ ' - Biblioteca FIUBA') | urlencode }}">
+        <i class="fa-solid fa-envelope"></i> Contactar Alumno
+      </a>
+    {% else %}
+      <button class="res-btn btn-secondary" disabled title="Email no disponible">
+        <i class="fa-solid fa-envelope"></i> Contactar Alumno
+      </button>
+    {% endif %}
   </div>
 
   {% if mensaje_error %}

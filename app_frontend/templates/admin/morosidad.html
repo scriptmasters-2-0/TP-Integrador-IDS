@@ -114,7 +114,7 @@
                   {% if p.nombre_art %}
                     {{ p.nombre_art }}
                   {% else %}
-                    <span class="text-muted">(Artículo eliminado)</span>
+                    <span class="text-muted">(Sin artículo)</span>
                   {% endif %}
                 </td>
                 <td>{{ p.severidad | capitalize }}</td>
@@ -125,8 +125,8 @@
                   </div>
                 </td>
                 <td>
-                  {% if p.retrazo and p.retrazo > 0 %}
-                    {{ p.retrazo }} días
+                  {% if p.retraso and p.retraso > 0 %}
+                    {{ p.retraso }} días
                   {% else %}
                     <span class="text-muted">No tiene</span>
                   {% endif %}
