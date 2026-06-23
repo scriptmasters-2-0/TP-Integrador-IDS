@@ -313,22 +313,22 @@ def get_usuario_reservas(usuario_id):
 
         total = cursor.fetchone()["total"]
 
-        consulta_sql = """
-        SELECT reservacion.id,
-            reservacion.id_reservado,
-            a.nombre_art AS nombre_articulo,
-            reservacion.estado_reserva,
-            reservacion.fecha_retiro,
-            reservacion.fecha_regreso
-            FROM reserva reservacion
-            LEFT JOIN articulos a ON reservacion.id_reservado = a.id
-            WHERE reservacion.id_usuario = %(usuario_id)s
-            ORDER BY reservacion.fecha_retiro LIMIT %(limit)s OFFSET %(offset)s
+        sql_query = """
+        SELECT r.id,
+                   r.id_reservado,
+                   a.nombre_art AS nombre_articulo,
+                   r.estado_reserva,
+                   r.fecha_retiro,
+                   r.fecha_regreso
+            FROM reserva r
+            LEFT JOIN articulos a ON r.id_reservado = a.id
+            WHERE r.id_usuario = %(usuario_id)s
+            ORDER BY r.fecha_retiro LIMIT %(limit)s OFFSET %(offset)s
         """
         values = {**pagination, "usuario_id": usuario_id}
 
-        cursor.execute(consulta_sql, values)
-        reservas = [format_usuario_reserva(fila) for fila in cursor.fetchall()]
+        cursor.execute(sql_query, values) 
+        reservas = [format_usuario_reserva(row) for row in cursor.fetchall()]
 
         return (
         jsonify(
