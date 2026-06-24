@@ -180,46 +180,43 @@
         </table>
       </div>
 
-      {% if pagination %}
-        <p class="text-muted mt-3">
-          Mostrando {{ pagination.first_item }}-{{ pagination.last_item }} de {{ pagination.total_items }} reservas
-        </p>
-      {% endif %}
-
       {% if pagination and pagination.total_pages > 1 %}
         <div class="pagination-container">
           <ul class="pagination">
             <li>
-              <a
-                href="{{ url_for('alumno.historial', page=pagination.prev_page, **filtros_url) if pagination.has_prev else '#' }}"
-                class="page-link {% if not pagination.has_prev %}disabled{% endif %}"
-                aria-label="Página anterior">
-                <i class="fa-solid fa-chevron-left"></i>
-              </a>
-            </li>
-            {% for page_number in pagination.pages %}
-              {% if page_number %}
-                <li>
-                  <a
-                    href="{{ url_for('alumno.historial', page=page_number, **filtros_url) }}"
-                    class="page-link {% if page_number == pagination.page %}active{% endif %}">
-                    {{ page_number }}
-                  </a>
-                </li>
+              {% if pagination.has_prev %}
+                <a class="page-link" href="{{ url_for('alumno.historial', page=pagination.prev_page, **filtros_url) }}">
+                  <i class="fa-solid fa-chevron-left"></i>
+                </a>
               {% else %}
-                <li><span class="page-dots">...</span></li>
+                <span class="page-link disabled"><i class="fa-solid fa-chevron-left"></i></span>
+              {% endif %}
+            </li>
+            {% for p in pagination.pages %}
+              {% if p is none %}
+                <li><span class="page-dots">…</span></li>
+              {% elif p == pagination.page %}
+                <li><span class="page-link active">{{ p }}</span></li>
+              {% else %}
+                <li>
+                  <a class="page-link" href="{{ url_for('alumno.historial', page=p, **filtros_url) }}">{{ p }}</a>
+                </li>
               {% endif %}
             {% endfor %}
             <li>
-              <a
-                href="{{ url_for('alumno.historial', page=pagination.next_page, **filtros_url) if pagination.has_next else '#' }}"
-                class="page-link {% if not pagination.has_next %}disabled{% endif %}"
-                aria-label="Página siguiente">
-                <i class="fa-solid fa-chevron-right"></i>
-              </a>
+              {% if pagination.has_next %}
+                <a href="{{ url_for('alumno.historial', page=pagination.next_page, **filtros_url) }}">
+                  <i class="fa-solid fa-chevron-right"></i>
+                </a>
+              {% else %}
+                <span class="page-link disabled"><i class="fa-solid fa-chevron-right"></i></span>
+              {% endif %}
             </li>
           </ul>
         </div>
+        <p class="text-center text-muted text-sm mt-3">
+          Mostrando {{ pagination.first_item }}–{{ pagination.last_item }} de {{ pagination.total_items }}
+        </p>
       {% endif %}
     {% else %}
       <div class="empty-state">

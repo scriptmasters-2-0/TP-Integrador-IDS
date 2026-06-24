@@ -169,7 +169,7 @@ def nueva_reserva():
     token = session.get("token")
     if not token or session.get("rol") != "profesor":
         return redirect(url_for("public.login"))
-    articulos = articulos_servicio.obtener_articulos(params={"disponible": "true"}, token=token)
+    articulos = articulos_servicio.obtener_articulos(params={"disponible": "true", "limit": 100}, token=token)
 
     return render_template(
         "profesor/nueva_reserva.html",

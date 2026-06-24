@@ -1,4 +1,4 @@
-"""Rutas del area de administracion."""
+"""Rutas del área de administración."""
 
 from flask import Blueprint, redirect, render_template, request, session, url_for
 
@@ -8,6 +8,7 @@ from servicios.paginacion_servicio import (
     adaptar_pagination_hateoas,
     calcular_offset,
     paginar_lista,
+    extraer_data_paginada,
 )
 from servicios.normativas_servicio import (
     actualizar_normativa,
@@ -129,10 +130,11 @@ def listar_articulos():
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
-    filtro_tipo = request.args.get("tipo", "").strip().lower()
-    filtro_seccion = request.args.get("seccion", "").strip().lower()
-    filtro_nombre = request.args.get("nombre", "").strip().lower()
+    filtro_tipo = request.args.get("tipo", "").strip()
+    filtro_seccion = request.args.get("seccion", "").strip()
+    filtro_nombre = request.args.get("nombre", "").strip()
     pagina = request.args.get("page", 1, type=int)
+    offset = calcular_offset(pagina, DEFAULT_API_LIMIT)
 
     todos = articulos_servicio.obtener_articulos(
         params={"incluir_inactivos": 1}, token=token
@@ -141,19 +143,21 @@ def listar_articulos():
     tipos = sorted({(a.get("tipo") or "").strip() for a in todos if a.get("tipo")})
     secciones = sorted({(a.get("seccion") or "").strip() for a in todos if a.get("seccion")})
 
-    filtrados = todos
+    params = {"limit": DEFAULT_API_LIMIT, "offset": offset}
     if filtro_tipo:
-        filtrados = [a for a in filtrados if filtro_tipo in (a.get("tipo") or "").lower()]
+        params["tipo"] = filtro_tipo
     if filtro_seccion:
-        filtrados = [a for a in filtrados if filtro_seccion in (a.get("seccion") or "").lower()]
+        params["seccion"] = filtro_seccion
     if filtro_nombre:
-        filtrados = [a for a in filtrados if filtro_nombre in (a.get("nombre_art") or "").lower()]
+        params["nombre"] = filtro_nombre
 
-    articulos_pagina, pagination = paginar_lista(filtrados, pagina=pagina, por_pagina=10)
+    resultado = articulos_servicio.obtener_articulos_paginados(params=params, token=token)
+    articulos_paginado = resultado.get("datos", [])
+    pagination = adaptar_pagination_hateoas(resultado)
 
     return render_template(
         "admin/articulos.html",
-        articulos=articulos_pagina,
+        articulos=articulos_paginado,
         pagination=pagination,
         tipos=tipos,
         secciones=secciones,
@@ -538,7 +542,7 @@ def editar_articulo(id):
 
 @admin_bp.route("/reservas", methods=["GET"])
 def lista_reservas():
-    """Lista todos los préstamos con filtros por estado, fecha o usuario."""
+    """Lista todas las reservas paginadas, con filtros opcionales por estado, fecha o usuario."""
     token = session.get("token")
     rol = session.get("rol")
     if not token:
@@ -546,20 +550,24 @@ def lista_reservas():
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
-    estado = request.args.get("estado")
-    usuario = request.args.get("usuario")
-    fecha = request.args.get("fecha")
+    estado = request.args.get("estado", "").strip()
+    usuario = request.args.get("usuario", "").strip()
+    fecha = request.args.get("fecha", "").strip()
     page = request.args.get("page", 1, type=int)
+    offset = calcular_offset(page, DEFAULT_API_LIMIT)
 
-    params = {}
-    if estado:
-        params["estado"] = estado
-    if usuario:
-        params["usuario"] = usuario
-    if fecha:
-        params["fecha"] = fecha
-
-    raw = reservas_servicio.obtener_reservas(params=params or None, token=token)
+    resultado = reservas_servicio.obtener_reservas_paginadas(
+        params={
+            "limit": DEFAULT_API_LIMIT,
+            "offset": offset,
+            "estado": estado or None,
+            "usuario": usuario or None,
+            "fecha": fecha or None,
+        },
+        token=token,      
+    )
+    raw = resultado.get("datos", [])
+    pagination = adaptar_pagination_hateoas(resultado)
 
     reservas = [
         {
@@ -572,11 +580,9 @@ def lista_reservas():
         for r in raw
     ]
 
-    reservas_paginadas, pagination = paginar_lista(reservas, pagina=page)
-
     return render_template(
         "admin/reservas.html",
-        reservas=reservas_paginadas,
+        reservas=reservas,
         pagination=pagination,
     )
 
