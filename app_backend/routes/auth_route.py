@@ -29,7 +29,7 @@ from http_codes_and_messages import (
     MSG_NOT_FOUND,
     MSG_UNAUTHORIZED,
 )
-from utiles.autenticacion import generar_token, hashear_contrasenia, requiere_auth
+from utiles.autenticacion import generar_token, hashear_contrasenia, requiere_auth, validar_contrasenia
 from validators import valid_contrasenia, valid_login, valid_usuario
 
 auth_bp = Blueprint("auth", __name__)
@@ -91,7 +91,7 @@ def login():
 
         contrasenia_hash = usuario.get("contrasenia_hash") or ""
 
-        if not contrasenia_hash or not valid_contrasenia(contrasenia, contrasenia_hash):
+        if not contrasenia_hash or not validar_contrasenia(contrasenia, contrasenia_hash):
             return (
                 jsonify({"error": MSG_UNAUTHORIZED, "detail": "invalid_credentials"}),
                 HTTP_UNAUTHORIZED,

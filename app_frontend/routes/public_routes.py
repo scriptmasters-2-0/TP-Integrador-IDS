@@ -46,13 +46,17 @@ def logup():
 @public_bp.route("/logup", methods=["POST"])
 def logup_submit():
     """Procesa logup contra backend."""
+    try:
+        padron = int(request.form.get("padron"))
+    except:
+        padron = None
     nombre = (request.form.get("nombre") or "").strip()
     email = (request.form.get("email") or "").strip()
     carrera = request.form.get("carrera") or ""
     contrasenia = request.form.get("contrasenia") or ""
 
     respuesta = auth_servicio.crear_usuario(
-        {"nombre": nombre, "email": email, "carrera": carrera, "contrasenia": contrasenia},
+        {"padron": padron, "nombre": nombre, "email": email, "carrera": carrera, "contrasenia": contrasenia},
     )
 
     if not respuesta:
