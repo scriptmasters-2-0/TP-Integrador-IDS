@@ -241,3 +241,14 @@ def get_article_details(articulo_id):
     return render_template(
         "public/article_details.html", articulo=articulo, fetch_error=fetch_error
     )
+
+
+@public_bp.app_errorhandler(404)
+def pagina_no_encontrada(e):
+    return render_template("404.html"), 404
+
+
+@public_bp.app_errorhandler(500)
+def error_interno(e):
+    return render_template("500.html"), 500
+

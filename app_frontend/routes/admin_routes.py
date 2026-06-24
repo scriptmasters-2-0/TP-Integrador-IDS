@@ -396,6 +396,12 @@ def usuarios():
                     )
                 )
         else:
+            padron = request.form.get("padron")
+            if padron:
+                try:
+                    data["padron"] = int(padron)
+                except ValueError:
+                    data["padron"] = padron
             data["contrasenia"] = request.form.get("contrasenia")
             payload, error, status = usuario_servicio.crear_usuario(data, token=token)
             if error:

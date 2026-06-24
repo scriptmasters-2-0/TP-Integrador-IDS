@@ -77,13 +77,14 @@
           <input
             type="text"
             name="titulo"
+            class="admin-input"
             value="{{ normativa_editada.titulo if normativa_editada else '' }}"
             required />
         </div>
 
         <div>
           <label>Descripción</label>
-          <textarea name="descripcion" rows="4" required>{{ normativa_editada.descripcion if normativa_editada else '' }}</textarea>
+          <textarea name="descripcion" class="admin-textarea" rows="4" required>{{ normativa_editada.descripcion if normativa_editada else '' }}</textarea>
         </div>
 
         <button type="submit" class="btn-create">

@@ -75,6 +75,20 @@
   <form method="POST" class="normativa-form">
     <input type="hidden" name="id" value="{{ usuario_editado.id if usuario_editado else '' }}">
 
+    {% if not usuario_editado %}
+    <div>
+      <label>Número de padrón / legajo</label>
+      <input type="number" name="padron" class="admin-input" min="100000" max="999999" required placeholder="Ej. 100000">
+    </div>
+    {% else %}
+      {% if usuario_editado.padron or usuario_editado.legajo %}
+      <div>
+        <label>Número de padrón / legajo</label>
+        <input type="text" class="admin-input" value="{{ usuario_editado.padron or usuario_editado.legajo }}" readonly disabled>
+      </div>
+      {% endif %}
+    {% endif %}
+
     <div>
       <label>Nombre</label>
       <input type="text" name="nombre" class="admin-input"
@@ -199,6 +213,7 @@
       <thead>
         <tr>
           <th>Nombre</th>
+          <th>Padrón / Legajo</th>
           <th>Carrera</th>
           <th>Email</th>
           <th>Estado</th>
@@ -211,6 +226,7 @@
         {% for usuario in usuarios %}
         <tr>
           <td>{{ usuario.nombre }}</td>
+          <td>{{ usuario.padron or usuario.legajo or '—' }}</td>
           <td>{{ usuario.carrera if usuario.rol == 'alumno' and usuario.carrera and usuario.carrera != 'None' and usuario.carrera != 'No aplica' else 'No aplica' }}</td>
           <td>{{ usuario.email }}</td>
           <td>
@@ -235,7 +251,7 @@
         {% endfor %}
         {% else %}
         <tr>
-          <td colspan="5" class="text-center text-muted">
+          <td colspan="6" class="text-center text-muted">
             No hay usuarios para mostrar.
           </td>
         </tr>
