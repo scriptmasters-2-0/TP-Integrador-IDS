@@ -545,16 +545,20 @@ def valid_reserva_filters(filters):
 
     fecha = filters.get("fecha")
     if fecha is not None:
-        try:
-            date.fromisoformat(fecha)
-        except (TypeError, ValueError):
-            return False, "invalid_value:fecha", None
-        parsed_filters["fecha"] = fecha
+        if fecha.strip() == "":
+            parsed_filters["fecha"] = None
+        else: 
+            try:
+                date.fromisoformat(fecha)
+            except (TypeError, ValueError):
+                return False, "invalid_value:fecha", None
+            parsed_filters["fecha"] = fecha
 
     usuario = filters.get("usuario")
     if usuario is not None:
         if usuario.strip() == "":
             return False, "empty:usuario", None
+        parsed_filters["usuario"] = usuario
         
     return True, None, parsed_filters
 

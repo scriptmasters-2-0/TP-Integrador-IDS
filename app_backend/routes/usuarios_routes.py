@@ -300,11 +300,10 @@ def get_usuario_reservas(usuario_id):
             "SELECT id FROM usuario WHERE id = %(usuario_id)s",
             {"usuario_id": usuario_id},
         )
-        if not cursor.fetchone():
-            return (
-                jsonify({"error": MSG_NOT_FOUND}),
-                HTTP_NOT_FOUND,
-            )
+        
+        usuario_existente = cursor.fetchone()
+        if usuario_existente is None:
+            return jsonify({"error": MSG_NOT_FOUND}), HTTP_NOT_FOUND
 
         cursor.execute(
             "SELECT COUNT(*) AS total FROM reserva WHERE id_usuario = %(usuario_id)s",

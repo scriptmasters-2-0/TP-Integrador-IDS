@@ -199,7 +199,7 @@
                 <li><span class="page-link active">{{ p }}</span></li>
               {% else %}
                 <li>
-                  <a class="page-link" href="{{ url_for('alumno.historial', page=p **filtros_url) }}">{{ p }}</a>
+                  <a class="page-link" href="{{ url_for('alumno.historial', page=p, **filtros_url) }}">{{ p }}</a>
                 </li>
               {% endif %}
             {% endfor %}
