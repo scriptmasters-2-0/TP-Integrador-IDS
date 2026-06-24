@@ -130,9 +130,19 @@ def listar_articulos():
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
+    opciones = articulos_servicio.obtener_opciones_articulo()
+    tipos = opciones.get("tipos", [])
+    secciones = opciones.get("secciones", [])
+    tipos_validos = {opcion.get("valor") for opcion in tipos}
+    secciones_validas = {opcion.get("valor") for opcion in secciones}
+
     filtro_tipo = request.args.get("tipo", "").strip()
     filtro_seccion = request.args.get("seccion", "").strip()
-    filtro_nombre = request.args.get("nombre", "").strip()
+    if filtro_tipo not in tipos_validos:
+        filtro_tipo = ""
+    if filtro_seccion not in secciones_validas:
+        filtro_seccion = ""
+    filtro_nombre = request.args.get("nombre", "").strip().lower()
     pagina = request.args.get("page", 1, type=int)
     offset = calcular_offset(pagina, DEFAULT_API_LIMIT)
 
@@ -178,9 +188,13 @@ def crear_articulo():
     if rol not in ["admin", "bibliotecario"]:
         return redirect(url_for("public.home"))
 
+    opciones = articulos_servicio.obtener_opciones_articulo()
+
     return render_template(
         "admin/articulos_form.html",
         articulo=None,
+        tipos=opciones.get("tipos", []),
+        secciones=opciones.get("secciones", []),
         form_error=request.args.get("error"),
         form_exito=request.args.get("exito"),
     )
@@ -203,6 +217,7 @@ def guardar_articulo():
         "prestacion_maxima": 7,
         "stock": int(request.form.get("stock") or 1),
         "necesita_reparacion": False,
+        "activo": request.form.get("activo") == "1",
     }
 
     resultado = articulos_servicio.crear_articulo(payload, token=token)
@@ -521,9 +536,12 @@ def editar_articulo(id):
             articulo, fetch_error = articulos_servicio.obtener_articulo(
                 id, token=token, params={"incluir_inactivos": 1}
             )
+            opciones = articulos_servicio.obtener_opciones_articulo()
             return render_template(
                 "admin/editar_articulo.html",
                 articulo=articulo,
+                tipos=opciones.get("tipos", []),
+                secciones=opciones.get("secciones", []),
                 fetch_error=fetch_error or "No se pudo actualizar el artículo. Intentá de nuevo.",
             )
 
@@ -532,10 +550,13 @@ def editar_articulo(id):
     articulo, fetch_error = articulos_servicio.obtener_articulo(
         id, token=token, params={"incluir_inactivos": 1}
     )
+    opciones = articulos_servicio.obtener_opciones_articulo()
 
     return render_template(
         "admin/editar_articulo.html",
         articulo=articulo,
+        tipos=opciones.get("tipos", []),
+        secciones=opciones.get("secciones", []),
         fetch_error=fetch_error,
     )
 

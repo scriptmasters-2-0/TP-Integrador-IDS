@@ -76,9 +76,10 @@ def dashboard():
 
     return render_template(
         "profesor/dashboard.html",
-        reservas=reservas,
+        reservas=reservas[:3],
         estadisticas=estadisticas,
         fetch_error=error,
+        mostrar_ver_mas_reservas=total_activas > 3,
     )
 
 @profesor_bp.route("/historial", methods=["GET"])

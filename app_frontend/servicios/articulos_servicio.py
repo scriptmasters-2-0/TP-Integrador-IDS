@@ -1,7 +1,46 @@
-# articulos_servicio.py
-# Funciones de servicio para consumir endpoints /articulos
 from servicios.api_client import get_json, post_json, put_json, delete_json
 from servicios.paginacion_servicio import extraer_data_paginada
+
+TIPOS_ARTICULO_RESPALDO = [
+    {"valor": "Libro", "etiqueta": "Libros"},
+    {"valor": "Electronicos", "etiqueta": "Equipos Electrónicos"},
+    {"valor": "Herramienta", "etiqueta": "Herramientas"},
+    {"valor": "Proyector", "etiqueta": "Proyectores"},
+    {"valor": "Accesorios", "etiqueta": "Accesorios y Cables"},
+]
+
+SECCIONES_ARTICULO_RESPALDO = [
+    {"valor": "Biblioteca", "etiqueta": "Biblioteca"},
+    {"valor": "Tecnologia", "etiqueta": "Tecnología"},
+    {"valor": "Bedelia", "etiqueta": "Bedelía"},
+    {"valor": "Laboratorio", "etiqueta": "Laboratorio"},
+    {"valor": "Otros", "etiqueta": "Otros"},
+]
+
+OPCIONES_ARTICULO_RESPALDO = {
+    "tipos": TIPOS_ARTICULO_RESPALDO,
+    "secciones": SECCIONES_ARTICULO_RESPALDO,
+}
+
+ICONOS_TIPO_ARTICULO = {
+    "Libro": "fa-book",
+    "Electronicos": "fa-laptop",
+    "Proyector": "fa-display",
+    "Accesorios": "fa-plug",
+    "Herramienta": "fa-screwdriver-wrench",
+}
+
+
+def obtener_opciones_articulo():
+    """GET /articulos/opciones con respaldo local para renderizar formularios."""
+    payload, error = get_json("/articulos/opciones")
+    if error or not isinstance(payload, dict):
+        return OPCIONES_ARTICULO_RESPALDO
+    if not isinstance(payload.get("tipos"), list) or not isinstance(
+        payload.get("secciones"), list
+    ):
+        return OPCIONES_ARTICULO_RESPALDO
+    return payload
 
 
 def obtener_articulos(params=None, token=None):
