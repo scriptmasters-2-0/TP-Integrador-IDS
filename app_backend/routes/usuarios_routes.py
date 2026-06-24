@@ -87,7 +87,7 @@ def get_all_usuarios():
 
         consulta_total = "SELECT COUNT(*) AS total FROM usuario"
         consulta_usuarios = """
-            SELECT id, nombre, email, rol, carrera, activo
+            SELECT id, padron, nombre, email, rol, carrera, activo
             FROM usuario
         """
         where_clauses = []
@@ -409,7 +409,7 @@ def get_usuario(usuario_id):
     try:
         cursor = conn.cursor(dictionary=True)
         cursor.execute(
-            "SELECT id, nombre, email, rol, carrera, activo FROM usuario WHERE id = %s",
+            "SELECT id, padron, nombre, email, rol, carrera, activo FROM usuario WHERE id = %s",
             (usuario_id,),
         )
         usuario = cursor.fetchone()
