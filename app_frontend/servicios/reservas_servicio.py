@@ -106,11 +106,11 @@ def obtener_qr_reserva(id_reserva, token=None):
     return get_json(f"/qr/reservas/{id_reserva}", token=token)
 
 
-def obtener_solicitudes(token=None):
+def obtener_solicitudes(params=None, token=None):
     """GET /reservas/solicitudes
     Devuelve una lista de reservas pendientes
     """
-    payload, error = get_json("/reservas/solicitudes", token=token)
+    payload, error = get_json("/reservas/solicitudes", params=params, token=token)
     if error:
         return []
     return extraer_data_paginada(payload)

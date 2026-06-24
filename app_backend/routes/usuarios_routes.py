@@ -90,11 +90,26 @@ def get_all_usuarios():
             SELECT id, nombre, email, rol, carrera, activo
             FROM usuario
         """
+        where_clauses = []
         params = dict(pagination)
         if nombre_usuario:
-            consulta_total += " WHERE nombre LIKE %(nombre_usuario)s"
-            consulta_usuarios += " WHERE nombre LIKE %(nombre_usuario)s"
+            where_clauses.append("(nombre LIKE %(nombre_usuario)s OR email LIKE %(nombre_usuario)s OR padron LIKE %(nombre_usuario)s)")
             params["nombre_usuario"] = f"%{nombre_usuario}%"
+
+        rol = request.args.get("rol")
+        if rol:
+            where_clauses.append("rol = %(rol)s")
+            params["rol"] = rol
+
+        activo = request.args.get("activo")
+        if activo is not None and activo != "":
+            where_clauses.append("activo = %(activo)s")
+            params["activo"] = 1 if activo in ["1", "true", "True"] else 0
+
+        if where_clauses:
+            where_str = " WHERE " + " AND ".join(where_clauses)
+            consulta_total += where_str
+            consulta_usuarios += where_str
 
         consulta_usuarios += " ORDER BY nombre LIMIT %(limit)s OFFSET %(offset)s"
 

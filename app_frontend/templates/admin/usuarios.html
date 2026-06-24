@@ -195,19 +195,53 @@
   </a>
   {% endif %}
 
-  <form method="get" class="history-filter-form">
-    <div class="filter-group">
-      <input type="text" name="usuario" id="usuario" class="admin-input" value="{{ usuario or '' }}"
-        placeholder="Buscar por nombre">
-      <br />
-      <button type="submit" class="res-btn btn-primary">Buscar</button>
+  <form method="GET" action="{{ url_for('admin.usuarios') }}" class="data-grid mb-4">
+    <div class="data-group">
+      <label for="f-usuario">Nombre / Padrón / Email</label>
+      <input
+        type="text"
+        id="f-usuario"
+        name="usuario"
+        class="admin-input"
+        placeholder="Buscar..."
+        value="{{ filtros.usuario }}" />
+    </div>
+
+    <div class="data-group">
+      <label for="f-rol">Rol</label>
+      <select id="f-rol" name="rol" class="admin-select">
+        <option value="">Todos los roles</option>
+        <option value="alumno" {% if filtros.rol == 'alumno' %}selected{% endif %}>Alumno</option>
+        <option value="profesor" {% if filtros.rol == 'profesor' %}selected{% endif %}>Profesor</option>
+        <option value="bibliotecario" {% if filtros.rol == 'bibliotecario' %}selected{% endif %}>Bibliotecario</option>
+        <option value="admin" {% if filtros.rol == 'admin' %}selected{% endif %}>Administrador</option>
+      </select>
+    </div>
+
+    <div class="data-group">
+      <label for="f-activo">Estado</label>
+      <select id="f-activo" name="activo" class="admin-select">
+        <option value="">Todos</option>
+        <option value="1" {% if filtros.activo == '1' %}selected{% endif %}>Activo</option>
+        <option value="0" {% if filtros.activo == '0' %}selected{% endif %}>Inactivo</option>
+      </select>
+    </div>
+
+    <div class="filter-actions-group">
+      <button type="submit" class="register-btn-nav">
+        <i class="fa-solid fa-magnifying-glass"></i> Filtrar
+      </button>
+      {% if filtros.usuario or filtros.rol or filtros.activo %}
+        <a href="{{ url_for('admin.usuarios') }}" class="btn-secondary res-btn">
+          <i class="fa-solid fa-xmark"></i> Limpiar
+        </a>
+      {% endif %}
     </div>
   </form>
 
-  <br />
+  <hr class="filter-separator" />
 
   <div class="history-table-wrapper">
-    {% set usuario_busqueda = usuario or '' %}
     {% set pagina_actual = pagination.page if pagination else 1 %}
     <table class="history-table">
       <thead>
@@ -237,7 +271,7 @@
             {% endif %}
           </td>
           <td>
-            <a href="{{ url_for('admin.usuarios', editar=usuario.id, page=pagina_actual, usuario=usuario_busqueda) }}"
+            <a href="{{ url_for('admin.usuarios', editar=usuario.id, page=pagina_actual, usuario=filtros.usuario, rol=filtros.rol, activo=filtros.activo) }}"
               class="btn-edit-abm">
               Editar
             </a>
@@ -266,7 +300,7 @@
           <li>
             {% if pagination.has_prev %}
             <a class="page-link"
-              href="{{ url_for('admin.usuarios', page=pagination.prev_page, usuario=usuario_busqueda) }}"
+              href="{{ url_for('admin.usuarios', page=pagination.prev_page, usuario=filtros.usuario, rol=filtros.rol, activo=filtros.activo) }}"
               title="Página anterior">
               <i class="fa-solid fa-chevron-left"></i>
             </a>
@@ -281,14 +315,14 @@
           <li><span class="page-link active">{{ p }}</span></li>
           {% else %}
           <li>
-            <a class="page-link" href="{{ url_for('admin.usuarios', page=p, usuario=usuario_busqueda) }}">{{ p }}</a>
+            <a class="page-link" href="{{ url_for('admin.usuarios', page=p, usuario=filtros.usuario, rol=filtros.rol, activo=filtros.activo) }}">{{ p }}</a>
           </li>
           {% endif %}
           {% endfor %}
           <li>
             {% if pagination.has_next %}
             <a class="page-link"
-              href="{{ url_for('admin.usuarios', page=pagination.next_page, usuario=usuario_busqueda) }}"
+              href="{{ url_for('admin.usuarios', page=pagination.next_page, usuario=filtros.usuario, rol=filtros.rol, activo=filtros.activo) }}"
               title="Página siguiente">
               <i class="fa-solid fa-chevron-right"></i>
             </a>

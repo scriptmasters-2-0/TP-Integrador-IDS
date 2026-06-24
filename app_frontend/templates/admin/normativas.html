@@ -103,6 +103,31 @@
       </a>
     {% endif %}
 
+    <form method="GET" class="data-grid mb-4">
+      <div class="data-group">
+        <label for="f-q">Buscar normativas</label>
+        <input
+          type="text"
+          id="f-q"
+          name="q"
+          class="admin-input"
+          placeholder="Buscar por título o descripción..."
+          value="{{ q }}" />
+      </div>
+      <div class="filter-actions-group">
+        <button type="submit" class="register-btn-nav">
+          <i class="fa-solid fa-magnifying-glass"></i> Buscar
+        </button>
+        {% if q %}
+          <a href="{{ url_for('admin.normativas') }}" class="btn-secondary res-btn">
+            <i class="fa-solid fa-xmark"></i> Limpiar
+          </a>
+        {% endif %}
+      </div>
+    </form>
+
+    <hr class="filter-separator" />
+
     <div class="history-table-wrapper">
       <table class="history-table">
         <thead>
@@ -126,7 +151,7 @@
                 <td>{{ normativa.fecha }}</td>
 
                 <td>
-                  <a href="{{ url_for('admin.normativas', editar=normativa.id, page=pagination.page if pagination else 1) }}" class="btn-edit-abm">
+                  <a href="{{ url_for('admin.normativas', editar=normativa.id, page=pagination.page if pagination else 1, q=q) }}" class="btn-edit-abm">
                     Editar
                   </a>
 
@@ -152,7 +177,7 @@
         <ul class="pagination">
           <li>
             {% if pagination.has_prev %}
-              <a class="page-link" href="{{ url_for('admin.normativas', page=pagination.prev_page) }}" title="Página anterior">
+              <a class="page-link" href="{{ url_for('admin.normativas', page=pagination.prev_page, q=q) }}" title="Página anterior">
                 <i class="fa-solid fa-chevron-left"></i>
               </a>
             {% else %}
@@ -166,13 +191,13 @@
               <li><span class="page-link active">{{ p }}</span></li>
             {% else %}
               <li>
-                <a class="page-link" href="{{ url_for('admin.normativas', page=p) }}">{{ p }}</a>
+                <a class="page-link" href="{{ url_for('admin.normativas', page=p, q=q) }}">{{ p }}</a>
               </li>
             {% endif %}
           {% endfor %}
           <li>
             {% if pagination.has_next %}
-              <a class="page-link" href="{{ url_for('admin.normativas', page=pagination.next_page) }}" title="Página siguiente">
+              <a class="page-link" href="{{ url_for('admin.normativas', page=pagination.next_page, q=q) }}" title="Página siguiente">
                 <i class="fa-solid fa-chevron-right"></i>
               </a>
             {% else %}

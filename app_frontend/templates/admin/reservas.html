@@ -70,7 +70,7 @@
 
     <form method="GET" class="data-grid mb-4">
       <div class="data-group">
-        <label>ID Usuario</label>
+        <label>Usuario / Padrón / Email</label>
         <input type="text" name="usuario" class="admin-input" placeholder="Buscar por usuario..." value="{{ request.args.get('usuario', '') }}" />
       </div>
       <div class="data-group">
@@ -93,6 +93,8 @@
         <button type="submit" class="register-btn-nav">Filtrar</button>
       </div>
     </form>
+
+    <hr class="filter-separator" />
 
     <div class="history-table-wrapper">
       <table class="history-table">

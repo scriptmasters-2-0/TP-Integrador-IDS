@@ -19,11 +19,17 @@ def listar_pendientes():
     if not token or rol != "bibliotecario":
         return redirect(url_for("public.login"))
 
-    reservas_pendientes = obtener_solicitudes(token=token)
+    q = request.args.get("q", "").strip()
+    params = {}
+    if q:
+        params["q"] = q
+
+    reservas_pendientes = obtener_solicitudes(params=params, token=token)
 
     return render_template(
         "biblioteca/solicitudes_reservas.html",
         reservas=reservas_pendientes,
+        q=q,
         mensaje_error=request.args.get("mensaje_error"),
     )
 

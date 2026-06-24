@@ -73,6 +73,31 @@
       <p class="text-danger fw-bold mb-4">{{ mensaje_error }}</p>
     {% endif %}
 
+    <form method="GET" action="{{ url_for('biblioteca.listar_pendientes') }}" class="data-grid mb-4">
+      <div class="data-group">
+        <label for="f-q">Buscar solicitudes</label>
+        <input
+          type="text"
+          id="f-q"
+          name="q"
+          class="admin-input"
+          placeholder="Buscar por usuario, padrón, email o artículo..."
+          value="{{ q or '' }}" />
+      </div>
+      <div class="filter-actions-group">
+        <button type="submit" class="register-btn-nav">
+          <i class="fa-solid fa-magnifying-glass"></i> Buscar
+        </button>
+        {% if q %}
+          <a href="{{ url_for('biblioteca.listar_pendientes') }}" class="btn-secondary res-btn">
+            <i class="fa-solid fa-xmark"></i> Limpiar
+          </a>
+        {% endif %}
+      </div>
+    </form>
+
+    <hr class="filter-separator" />
+
     <div class="history-table-wrapper">
         <table class="history-table">
             <thead>
@@ -86,34 +111,42 @@
             </thead>
 
             <tbody>
-                {% for reserva in reservas %}
-                <tr>
-                    <td>{{ reserva.id }}</td>
-                    <td>{{ reserva.nombre }}</td>
-                    <td>{{ reserva.nombre_art }}</td>
-                    <td>{{ reserva.estado_reserva }}</td>
+                {% if reservas %}
+                  {% for reserva in reservas %}
+                  <tr>
+                      <td>{{ reserva.id }}</td>
+                      <td>{{ reserva.nombre }}</td>
+                      <td>{{ reserva.nombre_art }}</td>
+                      <td>{{ reserva.estado_reserva }}</td>
 
-                    <td>
-                        <form action="{{ url_for('biblioteca.modificar_estado', id_reserva=reserva.id) }}"
-                              method="POST"
-                              onsubmit="return confirm('Desea aprobar la reserva');">
-                          <input type="hidden" name="estado_reserva" value="aprobado">
-                          <button type="submit" class="btn-edit-abm">
-                              Aceptar
-                          </button>
-                        </form>
+                      <td>
+                          <form action="{{ url_for('biblioteca.modificar_estado', id_reserva=reserva.id) }}"
+                                method="POST"
+                                onsubmit="return confirm('Desea aprobar la reserva');">
+                            <input type="hidden" name="estado_reserva" value="aprobado">
+                            <button type="submit" class="btn-edit-abm">
+                                Aceptar
+                            </button>
+                          </form>
 
-                        <form action="{{ url_for('biblioteca.modificar_estado', id_reserva=reserva.id) }}"
-                              method="POST"
-                              onsubmit="return confirm('¿Desea rechazar la reserva?');">
-                          <input type="hidden" name="estado_reserva" value="rechazado">
-                          <button type="submit" class="btn-delete-abm">
-                              Rechazar
-                          </button>
-                        </form>
+                          <form action="{{ url_for('biblioteca.modificar_estado', id_reserva=reserva.id) }}"
+                                method="POST"
+                                onsubmit="return confirm('¿Desea rechazar la reserva?');">
+                            <input type="hidden" name="estado_reserva" value="rechazado">
+                            <button type="submit" class="btn-delete-abm">
+                                Rechazar
+                            </button>
+                          </form>
+                      </td>
+                  </tr>
+                  {% endfor %}
+                {% else %}
+                  <tr>
+                    <td colspan="5" class="text-center text-muted">
+                      No hay solicitudes de reserva pendientes para mostrar.
                     </td>
-                </tr>
-                {% endfor %}
+                  </tr>
+                {% endif %}
             </tbody>
         </table>
     </div>

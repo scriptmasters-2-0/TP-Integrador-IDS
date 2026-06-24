@@ -209,7 +209,7 @@ def listar_reservas():
                 where_conditions.append("r.estado_reserva = %(estado)s")
                 params["estado"] = parsed_filters.get("estado")
             if parsed_filters.get("usuario") is not None:
-                where_conditions.append("u.nombre LIKE %(usuario)s")
+                where_conditions.append("(u.nombre LIKE %(usuario)s OR u.email LIKE %(usuario)s OR u.padron LIKE %(usuario)s)")
                 params["usuario"] = f"%{parsed_filters.get('usuario')}%"
             if parsed_filters.get("fecha") is not None:
                 where_conditions.append("DATE(r.fecha_retiro) = %(fecha)s")
@@ -486,6 +486,8 @@ def listar_solicitudes():
     if error:
         return jsonify({"error": error}), HTTP_BAD_REQUEST
 
+    q = request.args.get("q", "").strip()
+
     conn = obtener_conexion()
     if conn is None:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
@@ -493,13 +495,27 @@ def listar_solicitudes():
     try:
         cursor = conn.cursor(dictionary=True)
 
-        cursor.execute(
-            "SELECT COUNT(*) AS total FROM reserva WHERE estado_reserva = 'pendiente'"
-        )
+        query_params = {
+            "limit": pagination["limit"],
+            "offset": pagination["offset"]
+        }
 
+        where_clause = "WHERE reservas_listadas.estado_reserva = 'pendiente'"
+        if q:
+            where_clause += " AND (reserva_usuario.nombre LIKE %(q)s OR reserva_articulo.nombre_art LIKE %(q)s OR reserva_usuario.padron LIKE %(q)s OR reserva_usuario.email LIKE %(q)s)"
+            query_params["q"] = f"%{q}%"
+
+        count_query = f"""
+            SELECT COUNT(*) AS total 
+            FROM reserva reservas_listadas
+            JOIN usuario reserva_usuario ON reservas_listadas.id_usuario = reserva_usuario.id
+            JOIN articulos reserva_articulo ON reservas_listadas.id_reservado = reserva_articulo.id
+            {where_clause}
+        """
+        cursor.execute(count_query, query_params)
         total = cursor.fetchone()["total"]
 
-        cursor.execute("""
+        data_query = f"""
             SELECT
                 reservas_listadas.id, reservas_listadas.id_usuario, reserva_usuario.nombre, reserva_articulo.nombre_art, reservas_listadas.estado_reserva 
             FROM reserva reservas_listadas
@@ -507,9 +523,10 @@ def listar_solicitudes():
                 ON reservas_listadas.id_usuario = reserva_usuario.id
             JOIN articulos reserva_articulo
                 ON reservas_listadas.id_reservado = reserva_articulo.id
-            WHERE reservas_listadas.estado_reserva = 'pendiente'
+            {where_clause}
             ORDER BY fecha_retiro LIMIT %(limit)s OFFSET %(offset)s
-        """, pagination)
+        """
+        cursor.execute(data_query, query_params)
         solicitudes = cursor.fetchall()
         return (
         jsonify(
