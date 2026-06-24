@@ -45,7 +45,7 @@
           <select id="articulo" name="articulo" class="admin-select" required>
             <option value="">Seleccionar</option>
             {% for articulo in articulos %}
-              <option value="{{ articulo.id }}">{{ articulo.nombre_art }} (stock: {{ articulo.stock }})</option>
+              <option value="{{ articulo.id }}" {%if articulo_preseleccionado == articulo.id %}selected{% endif %}>{{ articulo.nombre_art }} (stock: {{ articulo.stock }})</option>
             {% endfor %}
           </select>
         </div>
