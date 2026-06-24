@@ -147,14 +147,7 @@ def listar_articulos():
     pagina = request.args.get("page", 1, type=int)
     offset = calcular_offset(pagina, DEFAULT_API_LIMIT)
 
-    todos = articulos_servicio.obtener_articulos(
-        params={"incluir_inactivos": 1}, token=token
-    )
-
-    tipos = sorted({(a.get("tipo") or "").strip() for a in todos if a.get("tipo")})
-    secciones = sorted({(a.get("seccion") or "").strip() for a in todos if a.get("seccion")})
-
-    params = {"limit": DEFAULT_API_LIMIT, "offset": offset}
+    params = {"limit": DEFAULT_API_LIMIT, "offset": offset, "incluir_inactivos": 1}
     if filtro_tipo:
         params["tipo"] = filtro_tipo
     if filtro_seccion:
