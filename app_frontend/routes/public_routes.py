@@ -145,10 +145,12 @@ def login_submit():
     session["usuario"] = usuario_data
 
     articulo_id = request.form.get("articulo_id", "").strip()
-    if rol == "profesor":
-        return redirect(url_for("profesor.nueva_reserva", articulo_id=articulo_id))
-    if rol == "alumno":
-        return redirect(url_for("alumno.nueva_reserva", articulo_id=articulo_id))
+
+    if articulo_id:
+        if rol == "profesor":
+            return redirect(url_for("profesor.nueva_reserva", articulo_id=articulo_id))
+        if rol == "alumno":
+            return redirect(url_for("alumno.nueva_reserva", articulo_id=articulo_id))
     
     if rol in ("admin", "bibliotecario"):
         return redirect(url_for("admin.dashboard"))
