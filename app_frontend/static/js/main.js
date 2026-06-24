@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           if (!padronValue || padronValue < 100000 || padronValue > 999999) {
             event.preventDefault();
-            alert("El padron debe tener 6 caracteres.");
+            alert("El padron debe tener 6 dígitos.");
             return;
           }
 
