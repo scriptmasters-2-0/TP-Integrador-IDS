@@ -421,10 +421,11 @@ def create_usuario():
     try:
         cursor = conn.cursor()
         sql = """
-            INSERT INTO usuario (nombre, email, rol, carrera, contrasenia_hash)
-            VALUES (%(nombre)s, %(email)s, %(rol)s, %(carrera)s, %(contrasenia_hash)s)
+            INSERT INTO usuario (padron, nombre, email, rol, carrera, contrasenia_hash)
+            VALUES (%(padron)s, %(nombre)s, %(email)s, %(rol)s, %(carrera)s, %(contrasenia_hash)s)
         """
         values = {
+            "padron": data.get("padron"),
             "nombre": data.get("nombre"),
             "email": data.get("email"),
             "rol": rol,
@@ -437,6 +438,7 @@ def create_usuario():
 
         usuario = {
             "id": usuario_id,
+            "padron": data.get("padron"),
             "nombre": data.get("nombre"),
             "email": data.get("email"),
             "rol": rol,

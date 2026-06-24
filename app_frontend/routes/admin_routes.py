@@ -382,6 +382,7 @@ def usuarios():
     if request.method == "POST":
         id_usuario = request.form.get("id")
         data = {
+            "padron": request.form.get("padron"),
             "nombre": request.form.get("nombre"),
             "email": request.form.get("email"),
             "carrera": request.form.get("carrera"),
