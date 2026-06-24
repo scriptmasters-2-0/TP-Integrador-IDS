@@ -15,6 +15,7 @@ from servicios.normativas_servicio import (
     crear_normativa,
     eliminar_normativa,
     obtener_normativas,
+    obtener_normativas_paginadas,
 )
 from servicios.reports_servicio import obtener_reportes
 from servicios import articulos_servicio
@@ -291,6 +292,7 @@ def normativas():
                 return redirect(
                     url_for(
                         "admin.normativas",
+                        editar=id_normativa,
                         mensaje_error="No se pudo actualizar la normativa.",
                     )
                 )
@@ -300,18 +302,31 @@ def normativas():
                 return redirect(
                     url_for(
                         "admin.normativas",
+                        creando_normativa=1,
                         mensaje_error="No se pudo crear la normativa.",
                     )
                 )
         return redirect(url_for("admin.normativas"))
+
+    page = request.args.get("page", 1, type=int) or 1
+    q = request.args.get("q", "").strip()
+    offset = calcular_offset(page, DEFAULT_API_LIMIT)
+
+    params = {"limit": DEFAULT_API_LIMIT, "offset": offset}
+    if q:
+        params["q"] = q
+
+    payload_paginado, fetch_error = obtener_normativas_paginadas(params=params)
+    normativas_raw = payload_paginado.get("data", []) if not fetch_error else []
 
     normativas = [
         {
             **normativa,
             "fecha": formatear_fecha_argentina(normativa.get("fecha")),
         }
-        for normativa in obtener_normativas()
+        for normativa in normativas_raw
     ]
+    pagination = adaptar_pagination_hateoas(payload_paginado, pagina=page)
     normativa_editada = None
     id_editar = request.args.get("editar")
 
@@ -324,8 +339,11 @@ def normativas():
     return render_template(
         "admin/normativas.html",
         normativas=normativas,
+        pagination=pagination,
+        q=q,
         normativa_editada=normativa_editada,
-        mensaje_error=request.args.get("mensaje_error"),
+        creando_normativa=request.args.get("creando_normativa") == "1",
+        mensaje_error=request.args.get("mensaje_error") or fetch_error,
     )
 
 
@@ -367,6 +385,7 @@ def usuarios():
             "nombre": request.form.get("nombre"),
             "email": request.form.get("email"),
             "carrera": request.form.get("carrera"),
+            "rol": request.form.get("rol"),
         }
         if id_usuario:
             data["activo"] = request.form.get("activo") == "1"
@@ -381,6 +400,12 @@ def usuarios():
                     )
                 )
         else:
+            padron = request.form.get("padron")
+            if padron:
+                try:
+                    data["padron"] = int(padron)
+                except ValueError:
+                    data["padron"] = padron
             data["contrasenia"] = request.form.get("contrasenia")
             payload, error, status = usuario_servicio.crear_usuario(data, token=token)
             if error:
@@ -396,10 +421,17 @@ def usuarios():
 
     pagina = request.args.get("page", 1, type=int)
     nombre_usuario = request.args.get("usuario")
+    filtro_rol = request.args.get("rol")
+    filtro_activo = request.args.get("activo")
+
     offset = calcular_offset(pagina, DEFAULT_API_LIMIT)
     filtros = {"limit": DEFAULT_API_LIMIT, "offset": offset}
     if nombre_usuario:
         filtros["usuario"] = nombre_usuario
+    if filtro_rol:
+        filtros["rol"] = filtro_rol
+    if filtro_activo is not None and filtro_activo != "":
+        filtros["activo"] = filtro_activo
 
     payload_paginado, fetch_error = usuario_servicio.obtener_usuarios_paginados(
         params=filtros,
@@ -416,11 +448,18 @@ def usuarios():
                 usuario_editado = usuario
                 break
 
+    filtros_url = {
+        "usuario": nombre_usuario or "",
+        "rol": filtro_rol or "",
+        "activo": filtro_activo or "",
+    }
+
     return render_template(
         "admin/usuarios.html",
         usuarios=usuarios_paginados,
         pagination=pagination,
         usuario=nombre_usuario or "",
+        filtros=filtros_url,
         usuario_editado=usuario_editado,
         creando_usuario=request.args.get("creando_usuario") == "1",
         mensaje_error=request.args.get("mensaje_error") or fetch_error,
@@ -461,11 +500,18 @@ def reporte_morosidad():
         return redirect(url_for("public.home"))
 
     usuario = request.args.get("usuario")
+    estado = request.args.get("estado")
+    severidad = request.args.get("severidad")
+
     pagina = request.args.get("page", 1, type=int)
     offset = calcular_offset(pagina, DEFAULT_API_LIMIT)
     filtros = {"limit": DEFAULT_API_LIMIT, "offset": offset}
     if usuario:
         filtros["usuario"] = usuario
+    if estado:
+        filtros["estado"] = estado
+    if severidad:
+        filtros["severidad"] = severidad
 
     payload_paginado, fetch_error = penalizaciones_servicio.obtener_penalizaciones_paginadas(
         params=filtros,
@@ -487,6 +533,8 @@ def reporte_morosidad():
         "admin/morosidad.html",
         penalizaciones=penalizaciones_formateadas,
         usuario=usuario or "",
+        estado=estado or "",
+        severidad=severidad or "",
         fetch_error=fetch_error,
         pagination=pagination,
     )

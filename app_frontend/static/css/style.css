@@ -2951,7 +2951,13 @@ h3 {
   display: flex;
   flex-direction: row;
   align-items: flex-end;
+  justify-content: flex-end;
   gap: 8px;
+}
+
+.filter-actions-group.grid-span-all {
+  grid-column: 1 / -1;
+  justify-content: flex-end;
 }
 
 /* Botón primario de acción en vistas admin (Filtrar, Nuevo Artículo, etc.) */
@@ -3067,4 +3073,35 @@ h3 {
 .status-pendiente {
   background-color: #fff8e1;
   color: #f9a825;
+}
+
+/* ==========================================================================
+   ELEMENTOS DE GESTIÓN Y REPORTES (Filtros y Detalle)
+   ========================================================================== */
+
+/* Separadores de Filtros y Tablas */
+.filter-separator {
+  border: 0;
+  border-top: 1px solid var(--border-color);
+  margin: 20px 0 25px 0;
+}
+
+/* Reportes Detalles Expandibles */
+.reportes-details {
+  margin-top: 15px;
+}
+
+.reportes-details summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--primary-blue);
+  margin-bottom: 15px;
+  outline: none;
+}
+
+.reportes-details-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 5px;
 }

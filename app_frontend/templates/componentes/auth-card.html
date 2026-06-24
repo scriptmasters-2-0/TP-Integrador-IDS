@@ -7,17 +7,17 @@
       Iniciar sesión
       {% endif %}
     </h1>
-      <p>Bienvenido a la comunidad de Biblioteca FIUBA</p>
-      {% if hasError %}
-      <p class="auth-error">{{ errorMessage }}</p>
-      {% endif %}
+    <p>Bienvenido a la comunidad de Biblioteca FIUBA</p>
+    {% if hasError %}
+    <p class="auth-error">{{ errorMessage }}</p>
+    {% endif %}
   </div>
 
   {% if isLogUp %}
   <form action="{{ url_for('public.logup_submit') }}" method="POST" class="auth-form">
-  {% else %}
-  <form action="{{ url_for('public.login_submit') }}" method="POST" class="auth-form">
-  {% endif %}
+    {% else %}
+    <form action="{{ url_for('public.login_submit') }}" method="POST" class="auth-form">
+      {% endif %}
 
       {% if articulo_id %}
         <input type="hidden" name="articulo_id" value="{{ articulo_id }}" />
@@ -31,26 +31,17 @@
 
       <div class="data-group">
         <label for="email">Correo electrónico</label>
-        <input type="email" id="email" name="email" class="auth-input" pattern=".+@fi\.uba\.ar" title="Debe usar su cuenta institucional @fi.uba.ar" required />
+        <input type="email" id="email" name="email" class="auth-input" pattern=".+@fi\.uba\.ar"
+          title="Debe usar su cuenta institucional @fi.uba.ar" required />
       </div>
 
       {% if isLogUp %}
       <div class="data-group">
         <label for="carrera">Carrera</label>
         <select id="carrera" name="carrera" class="auth-input" required>
-          <option value="Ingeniería Civil">Ingeniería Civil</option>
-          <option value="Ingeniería en Alimentos">Ingeniería en Alimentos</option>
-          <option value="Ingeniería en Energía Eléctrica">Ingeniería en Energía Eléctrica</option>
-          <option value="Ingeniería Electrónica">Ingeniería Electrónica</option>
-          <option value="Ingeniería en Agrimensura">Ingeniería en Agrimensura</option>
-          <option value="Ingeniería en Informática">Ingeniería en Informática</option>
-          <option value="Ingeniería en Petróleo">Ingeniería en Petróleo</option>
-          <option value="Ingeniería Industrial">Ingeniería Industrial</option>
-          <option value="Ingeniería Mecánica">Ingeniería Mecánica</option>
-          <option value="Ingeniería Naval">Ingeniería Naval</option>
-          <option value="Ingeniería Química">Ingeniería Química</option>
-          <option value="Lic. en Análisis de Sistemas">Lic. en Análisis de Sistemas</option>
-          <option value="Bioingeniería">Bioingeniería</option>
+          {% set selected_carrera = '' %}
+          {% set ocultar_no_aplica = True %}
+          {% include "admin/opciones_carreras.html" %}
         </select>
       </div>
       {% endif %}
@@ -60,22 +51,20 @@
         <input type="password" id="contrasenia" name="contrasenia" class="auth-input" required />
       </div>
 
-      <button
-          type="submit"
-          class="auth-btn-nav">
-          {% if isLogUp %}
-          Registrarse
-          {% else %}
-          Iniciar sesión
-          {% endif %}
+      <button type="submit" class="auth-btn-nav">
+        {% if isLogUp %}
+        Registrarse
+        {% else %}
+        Iniciar sesión
+        {% endif %}
       </button>
     </form>
 
     <p class="auth-alt-option">
-    {% if isLogUp %}
-    ¿Ya tienes cuenta? <a href="{{ url_for('public.login') }}">Inicia sesión</a>
-    {% else %}
-    ¿No tienes cuenta? <a href="{{ url_for('public.logup') }}">Registrate</a>
-    {% endif %}
+      {% if isLogUp %}
+      ¿Ya tienes cuenta? <a href="{{ url_for('public.login') }}">Inicia sesión</a>
+      {% else %}
+      ¿No tienes cuenta? <a href="{{ url_for('public.logup') }}">Registrate</a>
+      {% endif %}
     </p>
 </div>

@@ -81,17 +81,39 @@
           value="{{ usuario }}"
         >
       </div>
+
+      <div class="data-group">
+        <label for="f-estado">Estado</label>
+        <select id="f-estado" name="estado" class="admin-select">
+          <option value="" {% if not estado %}selected{% endif %}>Todos</option>
+          <option value="activa" {% if estado == 'activa' %}selected{% endif %}>Activa</option>
+          <option value="levantada" {% if estado == 'levantada' %}selected{% endif %}>Finalizada</option>
+        </select>
+      </div>
+
+      <div class="data-group">
+        <label for="f-severidad">Severidad</label>
+        <select id="f-severidad" name="severidad" class="admin-select">
+          <option value="" {% if not severidad %}selected{% endif %}>Todas</option>
+          <option value="baja" {% if severidad == 'baja' %}selected{% endif %}>Baja</option>
+          <option value="media" {% if severidad == 'media' %}selected{% endif %}>Media</option>
+          <option value="alta" {% if severidad == 'alta' %}selected{% endif %}>Alta</option>
+        </select>
+      </div>
+
       <div class="filter-actions-group">
         <button type="submit" class="register-btn-nav">
-          <i class="fa-solid fa-magnifying-glass"></i> Buscar
+          <i class="fa-solid fa-magnifying-glass"></i> Filtrar
         </button>
-        {% if usuario %}
+        {% if usuario or estado or severidad %}
           <a href="{{ url_for('admin.reporte_morosidad') }}" class="btn-secondary res-btn">
             <i class="fa-solid fa-xmark"></i> Limpiar
           </a>
         {% endif %}
       </div>
     </form>
+
+    <hr class="filter-separator" />
 
     <div class="history-table-wrapper">
       <table class="history-table">
@@ -151,11 +173,12 @@
       </table>
     </div>
 
-    {% if pagination and pagination.total_pages > 1 %}
+    {% if pagination %}
+      {% if pagination.total_pages > 1 %}
       <div class="pagination-container">
         <ul class="pagination">
           <li>
-            <a href="{{ url_for('admin.reporte_morosidad', page=pagination.prev_page, usuario=usuario) }}"
+            <a href="{{ url_for('admin.reporte_morosidad', page=pagination.prev_page, usuario=usuario, estado=estado, severidad=severidad) }}"
                class="page-link {% if not pagination.has_prev %}disabled{% endif %}">
               <i class="fa-solid fa-chevron-left"></i>
             </a>
@@ -165,22 +188,25 @@
               <li><span class="page-dots">…</span></li>
             {% else %}
               <li>
-                <a href="{{ url_for('admin.reporte_morosidad', page=p, usuario=usuario) }}"
+                <a href="{{ url_for('admin.reporte_morosidad', page=p, usuario=usuario, estado=estado, severidad=severidad) }}"
                    class="page-link {% if p == pagination.page %}active{% endif %}">{{ p }}</a>
               </li>
             {% endif %}
           {% endfor %}
           <li>
-            <a href="{{ url_for('admin.reporte_morosidad', page=pagination.next_page, usuario=usuario) }}"
+            <a href="{{ url_for('admin.reporte_morosidad', page=pagination.next_page, usuario=usuario, estado=estado, severidad=severidad) }}"
                class="page-link {% if not pagination.has_next %}disabled{% endif %}">
               <i class="fa-solid fa-chevron-right"></i>
             </a>
           </li>
         </ul>
       </div>
+      {% endif %}
+      {% if pagination.total_items > 0 %}
       <p class="text-center text-muted text-sm mt-3">
         Mostrando {{ pagination.first_item }}–{{ pagination.last_item }} de {{ pagination.total_items }}
       </p>
+      {% endif %}
     {% endif %}
 
   </div>

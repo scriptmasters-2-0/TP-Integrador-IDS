@@ -44,17 +44,23 @@ def listar_normativas():
 
     try:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT COUNT(*) AS total FROM normativa")
+        q = request.args.get("q")
+        
+        consulta_total = "SELECT COUNT(*) AS total FROM normativa"
+        consulta_select = "SELECT * FROM normativa"
+        params = dict(pagination)
+        
+        if q:
+            consulta_total += " WHERE titulo LIKE %(q)s OR descripcion LIKE %(q)s"
+            consulta_select += " WHERE titulo LIKE %(q)s OR descripcion LIKE %(q)s"
+            params["q"] = f"%{q}%"
+            
+        consulta_select += " ORDER BY fecha DESC LIMIT %(limit)s OFFSET %(offset)s"
+        
+        cursor.execute(consulta_total, params)
         total = cursor.fetchone()["total"]
 
-        cursor.execute(
-            """
-            SELECT * FROM normativa
-            ORDER BY fecha DESC
-            LIMIT %(limit)s OFFSET %(offset)s
-            """,
-            pagination,
-        )
+        cursor.execute(consulta_select, params)
         data = cursor.fetchall()
 
         return (

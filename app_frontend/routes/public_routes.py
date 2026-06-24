@@ -4,11 +4,12 @@ import logging
 
 from flask import Blueprint, redirect, render_template, request, session, url_for
 
-from http_codes_and_messages import HTTP_UNAUTHORIZED
+from http_codes_and_messages import HTTP_FORBIDDEN, HTTP_UNAUTHORIZED
 from servicios import auth_servicio, normativas_servicio
 from servicios.api_client import get_json, post_json
 from servicios.articulos_servicio import obtener_articulos_paginados
 from servicios.paginacion_servicio import adaptar_pagination_hateoas, calcular_offset, DEFAULT_API_LIMIT
+from servicios.fechas_servicio import formatear_fecha_argentina
 
 public_bp = Blueprint("public", __name__)
 logger = logging.getLogger(__name__)
@@ -176,9 +177,29 @@ def registro():
 
 @public_bp.route("/normas", methods=["GET"])
 def normas():
-    """Descripción: función normas."""
-    normativas = normativas_servicio.obtener_normativas()
-    return render_template("public/normas.html", normativas=normativas)
+    """Descripción: función normas con paginación."""
+    page = request.args.get("page", 1, type=int) or 1
+    offset = calcular_offset(page, DEFAULT_API_LIMIT)
+
+    payload_paginado, fetch_error = normativas_servicio.obtener_normativas_paginadas(
+        params={"limit": DEFAULT_API_LIMIT, "offset": offset}
+    )
+    normativas_raw = payload_paginado.get("data", []) if not fetch_error else []
+
+    normativas = [
+        {
+            **normativa,
+            "fecha": formatear_fecha_argentina(normativa.get("fecha")),
+        }
+        for normativa in normativas_raw
+    ]
+    pagination = adaptar_pagination_hateoas(payload_paginado, pagina=page)
+
+    return render_template(
+        "public/normas.html",
+        normativas=normativas,
+        pagination=pagination,
+    )
 
 
 @public_bp.route("/catalogo", methods=["GET"])
@@ -222,3 +243,14 @@ def get_article_details(articulo_id):
     return render_template(
         "public/article_details.html", articulo=articulo, fetch_error=fetch_error
     )
+
+
+@public_bp.app_errorhandler(404)
+def pagina_no_encontrada(e):
+    return render_template("404.html"), 404
+
+
+@public_bp.app_errorhandler(500)
+def error_interno(e):
+    return render_template("500.html"), 500
+

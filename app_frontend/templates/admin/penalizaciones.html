@@ -103,12 +103,19 @@
         <input type="date" name="fecha" class="admin-input" value="{{ request.args.get('fecha', '') }}"/>
       </div>
 
-      <div class="data-group align-items-end">
+      <div class="filter-actions-group grid-span-all">
         <button type="submit" class="register-btn-nav">
-          Filtrar
+          <i class="fa-solid fa-magnifying-glass"></i> Filtrar
         </button>
+        {% if request.args.get('usuario') or request.args.get('estado') or request.args.get('severidad') or request.args.get('fecha') %}
+          <a href="{{ url_for('admin.listar_penalizaciones') }}" class="btn-secondary res-btn">
+            <i class="fa-solid fa-xmark"></i> Limpiar
+          </a>
+        {% endif %}
       </div>
     </form>
+
+    <hr class="filter-separator" />
 
     <div class="history-table-wrapper">
       <table class="history-table">
@@ -170,12 +177,13 @@
       </table>
     </div>
 
-    {% if pagination and pagination.total_pages > 1 %}
+    {% if pagination %}
+      {% if pagination.total_pages > 1 %}
       <div class="pagination-container">
         <ul class="pagination">
           <li>
             {% if pagination.has_prev %}
-              <a class="page-link" href="{{ url_for('admin.listar_penalizaciones', page=pagination.prev_page) }}" title="Página anterior">
+              <a class="page-link" href="{{ url_for('admin.listar_penalizaciones', page=pagination.prev_page, usuario=request.args.get('usuario', ''), estado=request.args.get('estado', ''), severidad=request.args.get('severidad', ''), fecha=request.args.get('fecha', '')) }}" title="Página anterior">
                 <i class="fa-solid fa-chevron-left"></i>
               </a>
             {% else %}
@@ -189,13 +197,13 @@
               <li><span class="page-link active">{{ p }}</span></li>
             {% else %}
               <li>
-                <a class="page-link" href="{{ url_for('admin.listar_penalizaciones', page=p) }}">{{ p }}</a>
+                <a class="page-link" href="{{ url_for('admin.listar_penalizaciones', page=p, usuario=request.args.get('usuario', ''), estado=request.args.get('estado', ''), severidad=request.args.get('severidad', ''), fecha=request.args.get('fecha', '')) }}">{{ p }}</a>
               </li>
             {% endif %}
           {% endfor %}
           <li>
             {% if pagination.has_next %}
-              <a class="page-link" href="{{ url_for('admin.listar_penalizaciones', page=pagination.next_page) }}" title="Página siguiente">
+              <a class="page-link" href="{{ url_for('admin.listar_penalizaciones', page=pagination.next_page, usuario=request.args.get('usuario', ''), estado=request.args.get('estado', ''), severidad=request.args.get('severidad', ''), fecha=request.args.get('fecha', '')) }}" title="Página siguiente">
                 <i class="fa-solid fa-chevron-right"></i>
               </a>
             {% else %}
@@ -204,9 +212,12 @@
           </li>
         </ul>
       </div>
+      {% endif %}
+      {% if pagination.total_items > 0 %}
       <p class="text-center text-muted text-sm mt-3">
         Mostrando {{ pagination.first_item }}–{{ pagination.last_item }} de {{ pagination.total_items }}
       </p>
+      {% endif %}
     {% endif %}
 
   </div>

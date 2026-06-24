@@ -18,5 +18,6 @@ app.register_blueprint(admin_bp)
 app.register_blueprint(biblio_bp)
 app.secret_key = config.SECRET_KEY
 
+
 if __name__ == "__main__":
     app.run(host=config.HOST, port=config.PORT, debug=config.DEBUG)

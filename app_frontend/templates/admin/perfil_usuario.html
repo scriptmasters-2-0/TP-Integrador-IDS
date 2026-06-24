@@ -72,7 +72,7 @@
         </div>
         <div class="data-group">
           <label>Carrera</label>
-          <div class="data-value">{{ usuario.carrera }}</div>
+          <div class="data-value">{{ usuario.carrera if usuario.rol == 'alumno' and usuario.carrera and usuario.carrera != 'None' and usuario.carrera != 'No aplica' else 'No aplica' }}</div>
         </div>
         <div class="data-group">
           <label>Rol actual</label>

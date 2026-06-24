@@ -1,7 +1,7 @@
 """Utilidades reutilizables para paginar listados en vistas."""
 
 DEFAULT_PER_PAGE = 5
-DEFAULT_API_LIMIT = 10
+DEFAULT_API_LIMIT = 12
 
 
 def paginas_visibles(pagina_actual, total_paginas):

@@ -96,7 +96,7 @@
         <select id="f-tipo" name="tipo" class="admin-select">
           <option value="">Todos los tipos</option>
           {% for t in tipos %}
-            <option value="{{ t.lower() }}" {% if filtro_tipo == t.lower() %}selected{% endif %}>
+            <option value="{{ t }}" {% if filtro_tipo.lower() == t.lower() %}selected{% endif %}>
               {{ t }}
             </option>
           {% endfor %}
@@ -107,7 +107,7 @@
         <select id="f-seccion" name="seccion" class="admin-select">
           <option value="">Todas las secciones</option>
           {% for s in secciones %}
-            <option value="{{ s.lower() }}" {% if filtro_seccion == s.lower() %}selected{% endif %}>
+            <option value="{{ s }}" {% if filtro_seccion.lower() == s.lower() %}selected{% endif %}>
               {{ s }}
             </option>
           {% endfor %}
@@ -124,6 +124,8 @@
         {% endif %}
       </div>
     </form>
+
+    <hr class="filter-separator" />
 
     {# ── Tabla ── #}
     <div class="history-table-wrapper">
@@ -203,7 +205,9 @@
       </table>
     </div>
 
-    {% if pagination and pagination.total_pages > 1 %}
+    {# ── Paginación ── #}
+    {% if pagination %}
+      {% if pagination.total_pages > 1 %}
       <div class="pagination-container">
         <ul class="pagination">
           <li>
@@ -237,9 +241,12 @@
           </li>
         </ul>
       </div>
+      {% endif %}
+      {% if pagination.total_items > 0 %}
       <p class="text-center text-muted text-sm mt-3">
         Mostrando {{ pagination.first_item }}–{{ pagination.last_item }} de {{ pagination.total_items }}
       </p>
+      {% endif %}
     {% endif %}
   </div>
 {% endblock %}
