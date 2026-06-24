@@ -43,7 +43,7 @@ def _datetime_to_argentina_iso(value):
     if value is None:
         return None
     if value.tzinfo is None:
-        value = value.replace(tzinfo=timezone.utc)
+        value = value.replace(tzinfo=ARGENTINA_TZ)
     return value.astimezone(ARGENTINA_TZ).isoformat(timespec="seconds")
 
 
