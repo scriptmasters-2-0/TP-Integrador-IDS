@@ -65,32 +65,42 @@
       <p class="text-danger fw-bold mb-4">{{ mensaje_error }}</p>
     {% endif %}
 
-    <form method="POST" class="normativa-form">
-      <input
-        type="hidden"
-        name="id"
-        value="{{ normativa_editada.id if normativa_editada else '' }}" />
-
-      <div>
-        <label>Título</label>
+    {% if normativa_editada or creando_normativa %}
+      <form method="POST" class="normativa-form">
         <input
-          type="text"
-          name="titulo"
-          value="{{ normativa_editada.titulo if normativa_editada else '' }}"
-          required />
-      </div>
+          type="hidden"
+          name="id"
+          value="{{ normativa_editada.id if normativa_editada else '' }}" />
 
-      <div>
-        <label>Descripción</label>
-        <textarea name="descripcion" rows="4" required>
-          {{ normativa_editada.descripcion if normativa_editada else '' }}
-        </textarea>
-      </div>
+        <div>
+          <label>Título</label>
+          <input
+            type="text"
+            name="titulo"
+            value="{{ normativa_editada.titulo if normativa_editada else '' }}"
+            required />
+        </div>
 
-      <button type="submit" class="btn-create">
-        {{ 'Actualizar normativa' if normativa_editada else 'Crear normativa' }}
-      </button>
-    </form>
+        <div>
+          <label>Descripción</label>
+          <textarea name="descripcion" rows="4" required>{{ normativa_editada.descripcion if normativa_editada else '' }}</textarea>
+        </div>
+
+        <button type="submit" class="btn-create">
+          {{ 'Actualizar normativa' if normativa_editada else 'Crear normativa' }}
+        </button>
+      </form>
+
+      <br/>
+
+      <a href="{{ url_for('admin.normativas') }}" class="btn-delete-abm">
+        Cancelar
+      </a>
+    {% else %}
+      <a href="{{ url_for('admin.normativas', creando_normativa=1) }}" class="btn-create-abm">
+        Crear nueva normativa
+      </a>
+    {% endif %}
 
     <div class="history-table-wrapper">
       <table class="history-table">
@@ -115,7 +125,7 @@
                 <td>{{ normativa.fecha }}</td>
 
                 <td>
-                  <a href="{{ url_for('admin.normativas', editar=normativa.id) }}" class="btn-edit-abm">
+                  <a href="{{ url_for('admin.normativas', editar=normativa.id, page=pagination.page if pagination else 1) }}" class="btn-edit-abm">
                     Editar
                   </a>
 
@@ -134,5 +144,48 @@
         </tbody>
       </table>
     </div>
+
+    {% if pagination %}
+      {% if pagination.total_pages > 1 %}
+      <div class="pagination-container">
+        <ul class="pagination">
+          <li>
+            {% if pagination.has_prev %}
+              <a class="page-link" href="{{ url_for('admin.normativas', page=pagination.prev_page) }}" title="Página anterior">
+                <i class="fa-solid fa-chevron-left"></i>
+              </a>
+            {% else %}
+              <span class="page-link disabled"><i class="fa-solid fa-chevron-left"></i></span>
+            {% endif %}
+          </li>
+          {% for p in pagination.pages %}
+            {% if p is none %}
+              <li><span class="page-dots">…</span></li>
+            {% elif p == pagination.page %}
+              <li><span class="page-link active">{{ p }}</span></li>
+            {% else %}
+              <li>
+                <a class="page-link" href="{{ url_for('admin.normativas', page=p) }}">{{ p }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+          <li>
+            {% if pagination.has_next %}
+              <a class="page-link" href="{{ url_for('admin.normativas', page=pagination.next_page) }}" title="Página siguiente">
+                <i class="fa-solid fa-chevron-right"></i>
+              </a>
+            {% else %}
+              <span class="page-link disabled"><i class="fa-solid fa-chevron-right"></i></span>
+            {% endif %}
+          </li>
+        </ul>
+      </div>
+      {% endif %}
+      {% if pagination.total_items > 0 %}
+      <p class="text-center text-muted text-sm mt-3">
+        Mostrando {{ pagination.first_item }}–{{ pagination.last_item }} de {{ pagination.total_items }}
+      </p>
+      {% endif %}
+    {% endif %}
   </div>
 {% endblock %}

@@ -44,9 +44,9 @@
           <i class="fa-solid fa-arrow-left"></i>Volver
         </a>
       </div>
-    </div>
   {% endif %}
   
+  {% if not acceso_denegado %}
   <div class="ticket-container reveal delay-2">
     <div class="ticket">
 
@@ -99,4 +99,5 @@
 
     </div>
   </div>
+  {% endif %}
 {% endblock %}

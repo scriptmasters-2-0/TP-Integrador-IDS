@@ -68,7 +68,7 @@
         </div>
         <div class="data-group">
           <label>Departamento</label>
-          <div class="data-value">{{ perfil.carrera if perfil and perfil.carrera else '—' }}</div>
+          <div class="data-value">{{ perfil.carrera if perfil and perfil.carrera and perfil.carrera != 'None' and perfil.carrera != 'No aplica' else 'No aplica' }}</div>
         </div>
       </div>
 

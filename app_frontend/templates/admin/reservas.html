@@ -136,12 +136,15 @@
       </table>
     </div>
 
-    {% if pagination and pagination.total_pages > 1 %}
+    {% if pagination %}
+      {% if pagination.total_pages > 1 %}
       <div class="pagination-container">
         <ul class="pagination">
           <li>
             {% if pagination.has_prev %}
-              <a class="page-link" href="{{ url_for('admin.lista_reservas', page=pagination.prev_page, estado=estado, usuario=usuario, fecha=fecha) }}" title="Página anterior">
+              <a
+                href="{{ url_for('admin.lista_reservas', page=pagination.prev_page, estado=request.args.get('estado', ''), usuario=request.args.get('usuario', ''), fecha=request.args.get('fecha', '')) }}"
+                class="page-link">
                 <i class="fa-solid fa-chevron-left"></i>
               </a>
             {% else %}
@@ -151,17 +154,21 @@
           {% for p in pagination.pages %}
             {% if p is none %}
               <li><span class="page-dots">…</span></li>
-            {% elif p == pagination.page %}
-              <li><span class="page-link active">{{ p }}</span></li>
             {% else %}
               <li>
-                <a class="page-link" href="{{ url_for('admin.lista_reservas', page=p, estado=estado, usuario=usuario, fecha=fecha) }}">{{ p }}</a>
+                <a
+                  href="{{ url_for('admin.lista_reservas', page=p, estado=request.args.get('estado', ''), usuario=request.args.get('usuario', ''), fecha=request.args.get('fecha', '')) }}"
+                  class="page-link {% if p == pagination.page %}active{% endif %}">
+                  {{ p }}
+                </a>
               </li>
             {% endif %}
           {% endfor %}
           <li>
             {% if pagination.has_next %}
-              <a class="page-link" href="{{ url_for('public.mostrar_catalogo', page=pagination.next_page, tipo=tipo_actual, seccion=seccion_actual) }}" title="Página siguiente">
+              <a
+                href="{{ url_for('admin.lista_reservas', page=pagination.next_page, estado=request.args.get('estado', ''), usuario=request.args.get('usuario', ''), fecha=request.args.get('fecha', '')) }}"
+                class="page-link">
                 <i class="fa-solid fa-chevron-right"></i>
               </a>
             {% else %}
@@ -170,9 +177,12 @@
           </li>
         </ul>
       </div>
+      {% endif %}
+      {% if pagination.total_items > 0 %}
       <p class="text-center text-muted text-sm mt-3">
         Mostrando {{ pagination.first_item }}–{{ pagination.last_item }} de {{ pagination.total_items }}
       </p>
+      {% endif %}
     {% endif %}
 
   </div>

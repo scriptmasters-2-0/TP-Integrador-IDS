@@ -183,6 +183,15 @@ def comprobante(id):
     try:
         datos_api = reservas_servicio.obtener_detalle_reserva(id, token=token)
         
+        # Si la reserva no está en estado "aprobado" o "entregado", el alumno no debe ver el comprobante
+        if datos_api.get("estado_reserva") not in ["aprobado", "entregado"]:
+            return render_template(
+                "alumno/comprobante.html",
+                reserva=None,
+                qr=None,
+                acceso_denegado=True
+            )
+
         reserva = {
             "id": datos_api.get("id", id),
             "estado_texto": datos_api.get("estado_reserva", "pendiente"),
@@ -199,29 +208,27 @@ def comprobante(id):
             "titular_legajo": datos_api.get("id_usuario", "N/A"),
         }
         qr, qr_error = reservas_servicio.obtener_qr_reserva(id, token=token)
+        if qr_error:
+            return render_template(
+                "alumno/comprobante.html",
+                reserva=None,
+                qr=None,
+                acceso_denegado=True
+            )
     except Exception:
         logger.exception("Error al obtener el detalle de la reserva con ID %s", id)
-        reserva = {
-            "id": id,
-            "estado_texto": "Error al cargar",
-            "estado_clase": "status-error",
-            "equipo_nombre": "No disponible",
-            "equipo_id": "N/A",
-            "sede": "No especificada",
-            "fecha_reserva": "N/A",
-            "fecha_retiro": "N/A",
-            "fecha_limite": "N/A",
-            "titular_nombre": "Usuario",
-            "titular_legajo": "N/A",
-        }
-        qr = None
-        qr_error = "No se pudo obtener el QR de la reserva."
+        return render_template(
+            "alumno/comprobante.html",
+            reserva=None,
+            qr=None,
+            acceso_denegado=True
+        )
 
     return render_template(
         "alumno/comprobante.html",
         reserva=reserva,
         qr=qr or {},
-        fetch_error=qr_error,
+        acceso_denegado=False
     )
 
 

@@ -15,6 +15,7 @@ from servicios.normativas_servicio import (
     crear_normativa,
     eliminar_normativa,
     obtener_normativas,
+    obtener_normativas_paginadas,
 )
 from servicios.reports_servicio import obtener_reportes
 from servicios import articulos_servicio
@@ -291,6 +292,7 @@ def normativas():
                 return redirect(
                     url_for(
                         "admin.normativas",
+                        editar=id_normativa,
                         mensaje_error="No se pudo actualizar la normativa.",
                     )
                 )
@@ -300,18 +302,28 @@ def normativas():
                 return redirect(
                     url_for(
                         "admin.normativas",
+                        creando_normativa=1,
                         mensaje_error="No se pudo crear la normativa.",
                     )
                 )
         return redirect(url_for("admin.normativas"))
+
+    page = request.args.get("page", 1, type=int) or 1
+    offset = calcular_offset(page, DEFAULT_API_LIMIT)
+
+    payload_paginado, fetch_error = obtener_normativas_paginadas(
+        params={"limit": DEFAULT_API_LIMIT, "offset": offset}
+    )
+    normativas_raw = payload_paginado.get("data", []) if not fetch_error else []
 
     normativas = [
         {
             **normativa,
             "fecha": formatear_fecha_argentina(normativa.get("fecha")),
         }
-        for normativa in obtener_normativas()
+        for normativa in normativas_raw
     ]
+    pagination = adaptar_pagination_hateoas(payload_paginado, pagina=page)
     normativa_editada = None
     id_editar = request.args.get("editar")
 
@@ -324,8 +336,10 @@ def normativas():
     return render_template(
         "admin/normativas.html",
         normativas=normativas,
+        pagination=pagination,
         normativa_editada=normativa_editada,
-        mensaje_error=request.args.get("mensaje_error"),
+        creando_normativa=request.args.get("creando_normativa") == "1",
+        mensaje_error=request.args.get("mensaje_error") or fetch_error,
     )
 
 
@@ -367,6 +381,7 @@ def usuarios():
             "nombre": request.form.get("nombre"),
             "email": request.form.get("email"),
             "carrera": request.form.get("carrera"),
+            "rol": request.form.get("rol"),
         }
         if id_usuario:
             data["activo"] = request.form.get("activo") == "1"

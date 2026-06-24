@@ -180,7 +180,8 @@
         </table>
       </div>
 
-      {% if pagination and pagination.total_pages > 1 %}
+      {% if pagination %}
+        {% if pagination.total_pages > 1 %}
         <div class="pagination-container">
           <ul class="pagination">
             <li>
@@ -214,9 +215,12 @@
             </li>
           </ul>
         </div>
+        {% endif %}
+        {% if pagination.total_items > 0 %}
         <p class="text-center text-muted text-sm mt-3">
           Mostrando {{ pagination.first_item }}–{{ pagination.last_item }} de {{ pagination.total_items }}
         </p>
+        {% endif %}
       {% endif %}
     {% else %}
       <div class="empty-state">

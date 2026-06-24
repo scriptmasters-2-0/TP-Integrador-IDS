@@ -1,224 +1,294 @@
 {% extends "layouts/base_dashboard.html" %}
 
 {% block sidebar_links %}
-  <li>
-    <a href="{{ url_for('admin.dashboard') }}" class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
-      <i class="fa-solid fa-gauge"></i> Dashboard
-    </a>
-  </li>
-  <li>
-    <a href="{{ url_for('admin.reportes') }}" class="{% if request.endpoint == 'admin.reportes' %}active{% endif %}">
-      <i class="fa-solid fa-chart-bar"></i> Reportes
-    </a>
-  </li>
-  <li>
-    <a href="{{ url_for('admin.lista_reservas') }}" class="{% if request.endpoint == 'admin.lista_reservas' %}active{% endif %}">
-      <i class="fa-solid fa-clipboard-list"></i> Reservas
-    </a>
-  </li>
-  <li>
-    <a href="{{ url_for('admin.listar_articulos') }}" class="{% if request.endpoint == 'admin.listar_articulos' %}active{% endif %}">
-      <i class="fa-solid fa-box"></i> Artículos
-    </a>
-  </li>
-  <li>
-    <a href="{{ url_for('admin.crear_articulo') }}" class="{% if request.endpoint == 'admin.crear_articulo' %}active{% endif %}">
-      <i class="fa-solid fa-plus"></i> Nuevo Artículo
-    </a>
-  </li>
-  <li>
-    <a href="{{ url_for('admin.normativas') }}" class="{% if request.endpoint == 'admin.normativas' %}active{% endif %}">
-      <i class="fa-solid fa-clipboard-list"></i> Normativas
-    </a>
-  </li>
-  <li>
-    <a href="{{ url_for('admin.usuarios') }}" class="{% if request.endpoint == 'admin.usuarios' %}active{% endif %}">
-      <i class="fa-solid fa-users"></i> Usuarios
-    </a>
-  </li>
-  <li>
-    <a href="{{ url_for('admin.listar_penalizaciones') }}" class="{% if request.endpoint == 'admin.listar_penalizaciones' %}active{% endif %}">
-      <i class="fa-solid fa-ban"></i> Penalizaciones
-    </a>
-  </li>
-  <li>
-    <a href="{{ url_for('admin.reporte_morosidad') }}" class="{% if request.endpoint == 'admin.reporte_morosidad' %}active{% endif %}">
-      <i class="fa-solid fa-chart-column"></i> Morosidad
-    </a>
-  </li>
+<li>
+  <a href="{{ url_for('admin.dashboard') }}" class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+    <i class="fa-solid fa-gauge"></i> Dashboard
+  </a>
+</li>
+<li>
+  <a href="{{ url_for('admin.reportes') }}" class="{% if request.endpoint == 'admin.reportes' %}active{% endif %}">
+    <i class="fa-solid fa-chart-bar"></i> Reportes
+  </a>
+</li>
+<li>
+  <a href="{{ url_for('admin.lista_reservas') }}"
+    class="{% if request.endpoint == 'admin.lista_reservas' %}active{% endif %}">
+    <i class="fa-solid fa-clipboard-list"></i> Reservas
+  </a>
+</li>
+<li>
+  <a href="{{ url_for('admin.listar_articulos') }}"
+    class="{% if request.endpoint == 'admin.listar_articulos' %}active{% endif %}">
+    <i class="fa-solid fa-box"></i> Artículos
+  </a>
+</li>
+<li>
+  <a href="{{ url_for('admin.crear_articulo') }}"
+    class="{% if request.endpoint == 'admin.crear_articulo' %}active{% endif %}">
+    <i class="fa-solid fa-plus"></i> Nuevo Artículo
+  </a>
+</li>
+<li>
+  <a href="{{ url_for('admin.normativas') }}" class="{% if request.endpoint == 'admin.normativas' %}active{% endif %}">
+    <i class="fa-solid fa-clipboard-list"></i> Normativas
+  </a>
+</li>
+<li>
+  <a href="{{ url_for('admin.usuarios') }}" class="{% if request.endpoint == 'admin.usuarios' %}active{% endif %}">
+    <i class="fa-solid fa-users"></i> Usuarios
+  </a>
+</li>
+<li>
+  <a href="{{ url_for('admin.listar_penalizaciones') }}"
+    class="{% if request.endpoint == 'admin.listar_penalizaciones' %}active{% endif %}">
+    <i class="fa-solid fa-ban"></i> Penalizaciones
+  </a>
+</li>
+<li>
+  <a href="{{ url_for('admin.reporte_morosidad') }}"
+    class="{% if request.endpoint == 'admin.reporte_morosidad' %}active{% endif %}">
+    <i class="fa-solid fa-chart-column"></i> Morosidad
+  </a>
+</li>
 {% endblock %}
 
 {% block dashboard_content %}
-  <div class="breadcrumb reveal">
-    <a href="{{ url_for('admin.dashboard') }}">{% if session.rol == 'bibliotecario' %}Bibliotecario{% else %}Admin{% endif %}</a>
-    <i class="fa-solid fa-chevron-right"></i>
-    <span>Usuarios</span>
+<div class="breadcrumb reveal">
+  <a href="{{ url_for('admin.dashboard') }}">{% if session.rol == 'bibliotecario' %}Bibliotecario{% else %}Admin{% endif
+    %}</a>
+  <i class="fa-solid fa-chevron-right"></i>
+  <span>Usuarios</span>
+</div>
+
+<div class="history-container">
+  <div class="history-header">
+    <h2>Gestión de usuarios</h2>
+    <p>Consulta y administra los usuarios registrados en el sistema.</p>
   </div>
 
-  <div class="history-container">
-    <div class="history-header">
-      <h2>Gestión de usuarios</h2>
-      <p>Consulta y administra los usuarios registrados en el sistema.</p>
+  {% if mensaje_error %}
+  <p class="text-danger fw-bold mb-4">{{ mensaje_error }}</p>
+  {% endif %}
+
+  {% if usuario_editado or creando_usuario %}
+  <form method="POST" class="normativa-form">
+    <input type="hidden" name="id" value="{{ usuario_editado.id if usuario_editado else '' }}">
+
+    <div>
+      <label>Nombre</label>
+      <input type="text" name="nombre" class="admin-input"
+        value="{{ usuario_editado.nombre if usuario_editado else '' }}" required>
     </div>
 
-    {% if mensaje_error %}
-      <p class="text-danger fw-bold mb-4">{{ mensaje_error }}</p>
+    <div>
+      <label>Email</label>
+      <input type="email" name="email" class="admin-input"
+        value="{{ usuario_editado.email if usuario_editado else '' }}" required>
+    </div>
+
+
+    <div>
+      <label>Rol</label>
+      <select id="rol-select" name="rol" class="admin-input" required>
+        <option value="alumno" {% if usuario_editado and usuario_editado.rol == 'alumno' %}selected{% endif %}>Alumno</option>
+        <option value="profesor" {% if usuario_editado and usuario_editado.rol == 'profesor' %}selected{% endif %}>Profesor</option>
+        <option value="bibliotecario" {% if usuario_editado and usuario_editado.rol == 'bibliotecario' %}selected{% endif %}>Bibliotecario</option>
+        <option value="admin" {% if usuario_editado and usuario_editado.rol == 'admin' %}selected{% endif %}>Admin</option>
+      </select>
+    </div>
+
+    <div id="carrera-group">
+      <label>Carrera</label>
+      <select id="carrera" name="carrera" class="admin-input" required>
+        {% set selected_carrera = usuario_editado.carrera if usuario_editado else '' %}
+        {% include "admin/opciones_carreras.html" %}
+      </select>
+    </div>
+
+
+    {% if usuario_editado %}
+    <div>
+      <label>Estado</label>
+      <select name="activo" class="admin-input" required>
+        <option value="1" {% if usuario_editado.activo %}selected{% endif %}>
+          Activo
+        </option>
+        <option value="0" {% if not usuario_editado.activo %}selected{% endif %}>
+          Inactivo
+        </option>
+      </select>
+    </div>
     {% endif %}
 
-    {% if usuario_editado or creando_usuario %}
-      <form method="POST" class="normativa-form">
-        <input type="hidden" name="id" value="{{ usuario_editado.id if usuario_editado else '' }}">
-
-        <div>
-          <label>Nombre</label>
-          <input type="text" name="nombre" class="admin-input" value="{{ usuario_editado.nombre if usuario_editado else '' }}" required>
-        </div>
-
-        <div>
-          <label>Email</label>
-          <input type="email" name="email" class="admin-input" value="{{ usuario_editado.email if usuario_editado else '' }}" required>
-        </div>
-
-        <div>
-          <label>Carrera</label>
-          <input type="text" name="carrera" class="admin-input" value="{{ usuario_editado.carrera if usuario_editado else '' }}" required>
-        </div>
-
-        {% if usuario_editado %}
-          <div>
-            <label>Estado</label>
-            <select name="activo" class="admin-input" required>
-              <option value="1" {% if usuario_editado.activo %}selected{% endif %}>
-                Activo
-              </option>
-              <option value="0" {% if not usuario_editado.activo %}selected{% endif %}>
-                Inactivo
-              </option>
-            </select>
-          </div>
-        {% endif %}
-
-        {% if not usuario_editado %}
-          <div>
-            <label>Contraseña</label>
-            <input type="password" name="contrasenia" class="admin-input" required>
-          </div>
-        {% endif %}
-
-        <button type="submit" class="btn-create">
-          {{ 'Actualizar usuario' if usuario_editado else 'Crear usuario' }}
-        </button>
-      </form>
-
-      <br/>
-
-      <a href="{{ url_for('admin.usuarios') }}" class="btn-delete-abm">
-        Cancelar
-      </a>
-    {% else %}
-      <a href="{{ url_for('admin.usuarios', creando_usuario=1) }}" class="btn-create-abm">
-        Crear nuevo usuario
-      </a>
+    {% if not usuario_editado %}
+    <div>
+      <label>Contraseña</label>
+      <input type="password" name="contrasenia" class="admin-input" required>
+    </div>
     {% endif %}
 
-    <form method="get" class="history-filter-form">
-      <div class="filter-group">
-        <input type="text" name="usuario" id="usuario" class="admin-input" value="{{ usuario or '' }}" placeholder="Buscar por nombre">
-        <br/>
-        <button type="submit" class="res-btn btn-primary">Buscar</button>
-      </div>
-    </form>
+    <button type="submit" class="btn-create">
+      {{ 'Actualizar usuario' if usuario_editado else 'Crear usuario' }}
+    </button>
+  </form>
 
-    <br/>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const rolSelect = document.getElementById("rol-select");
+      const carreraGroup = document.getElementById("carrera-group");
+      const carreraSelect = document.getElementById("carrera");
 
-    <div class="history-table-wrapper">
-      {% set usuario_busqueda = usuario or '' %}
-      {% set pagina_actual = pagination.page if pagination else 1 %}
-      <table class="history-table">
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Carrera</th>
-            <th>Email</th>
-            <th>Estado</th>
-            <th> </th>
-          </tr>
-        </thead>
+      function actualizarCarrera() {
+        if (!rolSelect || !carreraGroup || !carreraSelect) return;
+        const noAplicaOption = carreraSelect.querySelector('option[value="No aplica"]');
+        if (rolSelect.value === "alumno") {
+          carreraGroup.style.display = "block";
+          carreraSelect.required = true;
+          if (noAplicaOption) {
+            noAplicaOption.disabled = true;
+            noAplicaOption.style.display = "none";
+          }
+          if (carreraSelect.value === "No aplica") {
+            carreraSelect.value = "";
+          }
+        } else {
+          carreraGroup.style.display = "none";
+          carreraSelect.required = false;
+          if (noAplicaOption) {
+            noAplicaOption.disabled = false;
+            noAplicaOption.style.display = "block";
+          }
+          carreraSelect.value = "No aplica";
+        }
+      }
 
-        <tbody>
-          {% if usuarios %}
-            {% for usuario in usuarios %}
-              <tr>
-                <td>{{ usuario.nombre }}</td>
-                <td>{{ usuario.carrera }}</td>
-                <td>{{ usuario.email }}</td>
-                <td>
-                  {% if usuario.activo %}
-                    <span class="badge bg-success-light text-success">Activo</span>
-                  {% else %}
-                    <span class="badge bg-danger-light text-danger">Inactivo</span>
-                  {% endif %}
-                </td>
-                <td>
-                  <a href="{{ url_for('admin.usuarios', editar=usuario.id, page=pagina_actual, usuario=usuario_busqueda) }}" class="btn-edit-abm">
-                    Editar
-                  </a>
-                  <form action="{{ url_for('admin.eliminar_usuario', id=usuario.id) }}" method="POST">
-                    <button type="submit" class="btn-delete-abm">
-                      Eliminar
-                    </button>
-                  </form>
-                </td>
-              </tr>
-            {% endfor %}
+      if (rolSelect) {
+        rolSelect.addEventListener("change", actualizarCarrera);
+        actualizarCarrera();
+      }
+    });
+  </script>
+
+  <br />
+
+  <a href="{{ url_for('admin.usuarios') }}" class="btn-delete-abm">
+    Cancelar
+  </a>
+  {% else %}
+  <a href="{{ url_for('admin.usuarios', creando_usuario=1) }}" class="btn-create-abm">
+    Crear nuevo usuario
+  </a>
+  {% endif %}
+
+  <form method="get" class="history-filter-form">
+    <div class="filter-group">
+      <input type="text" name="usuario" id="usuario" class="admin-input" value="{{ usuario or '' }}"
+        placeholder="Buscar por nombre">
+      <br />
+      <button type="submit" class="res-btn btn-primary">Buscar</button>
+    </div>
+  </form>
+
+  <br />
+
+  <div class="history-table-wrapper">
+    {% set usuario_busqueda = usuario or '' %}
+    {% set pagina_actual = pagination.page if pagination else 1 %}
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Carrera</th>
+          <th>Email</th>
+          <th>Estado</th>
+          <th> </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% if usuarios %}
+        {% for usuario in usuarios %}
+        <tr>
+          <td>{{ usuario.nombre }}</td>
+          <td>{{ usuario.carrera if usuario.rol == 'alumno' and usuario.carrera and usuario.carrera != 'None' and usuario.carrera != 'No aplica' else 'No aplica' }}</td>
+          <td>{{ usuario.email }}</td>
+          <td>
+            {% if usuario.activo %}
+            <span class="badge bg-success-light text-success">Activo</span>
+            {% else %}
+            <span class="badge bg-danger-light text-danger">Inactivo</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{{ url_for('admin.usuarios', editar=usuario.id, page=pagina_actual, usuario=usuario_busqueda) }}"
+              class="btn-edit-abm">
+              Editar
+            </a>
+            <form action="{{ url_for('admin.eliminar_usuario', id=usuario.id) }}" method="POST">
+              <button type="submit" class="btn-delete-abm">
+                Eliminar
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+        {% else %}
+        <tr>
+          <td colspan="5" class="text-center text-muted">
+            No hay usuarios para mostrar.
+          </td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+
+    {% if pagination %}
+      {% if pagination.total_pages > 1 %}
+      <div class="pagination-container">
+        <ul class="pagination">
+          <li>
+            {% if pagination.has_prev %}
+            <a class="page-link"
+              href="{{ url_for('admin.usuarios', page=pagination.prev_page, usuario=usuario_busqueda) }}"
+              title="Página anterior">
+              <i class="fa-solid fa-chevron-left"></i>
+            </a>
+            {% else %}
+            <span class="page-link disabled"><i class="fa-solid fa-chevron-left"></i></span>
+            {% endif %}
+          </li>
+          {% for p in pagination.pages %}
+          {% if p is none %}
+          <li><span class="page-dots">…</span></li>
+          {% elif p == pagination.page %}
+          <li><span class="page-link active">{{ p }}</span></li>
           {% else %}
-            <tr>
-              <td colspan="5" class="text-center text-muted">
-                No hay usuarios para mostrar.
-              </td>
-            </tr>
+          <li>
+            <a class="page-link" href="{{ url_for('admin.usuarios', page=p, usuario=usuario_busqueda) }}">{{ p }}</a>
+          </li>
           {% endif %}
-        </tbody>
-      </table>
-
-      {% if pagination and pagination.total_pages > 1 %}
-        <div class="pagination-container">
-          <ul class="pagination">
-            <li>
-              {% if pagination.has_prev %}
-                <a class="page-link" href="{{ url_for('admin.usuarios', page=pagination.prev_page, usuario=usuario_busqueda) }}" title="Página anterior">
-                  <i class="fa-solid fa-chevron-left"></i>
-                </a>
-              {% else %}
-                <span class="page-link disabled"><i class="fa-solid fa-chevron-left"></i></span>
-              {% endif %}
-            </li>
-            {% for p in pagination.pages %}
-              {% if p is none %}
-                <li><span class="page-dots">…</span></li>
-              {% elif p == pagination.page %}
-                <li><span class="page-link active">{{ p }}</span></li>
-              {% else %}
-                <li>
-                  <a class="page-link" href="{{ url_for('admin.usuarios', page=p, usuario=usuario_busqueda) }}">{{ p }}</a>
-                </li>
-              {% endif %}
-            {% endfor %}
-            <li>
-              {% if pagination.has_next %}
-                <a class="page-link" href="{{ url_for('admin.usuarios', page=pagination.next_page, usuario=usuario_busqueda) }}" title="Página siguiente">
-                  <i class="fa-solid fa-chevron-right"></i>
-                </a>
-              {% else %}
-                <span class="page-link disabled"><i class="fa-solid fa-chevron-right"></i></span>
-              {% endif %}
-            </li>
-          </ul>
-        </div>
-        <p class="text-center text-muted text-sm mt-3">
-          Mostrando {{ pagination.first_item }}–{{ pagination.last_item }} de {{ pagination.total_items }}
-        </p>
+          {% endfor %}
+          <li>
+            {% if pagination.has_next %}
+            <a class="page-link"
+              href="{{ url_for('admin.usuarios', page=pagination.next_page, usuario=usuario_busqueda) }}"
+              title="Página siguiente">
+              <i class="fa-solid fa-chevron-right"></i>
+            </a>
+            {% else %}
+            <span class="page-link disabled"><i class="fa-solid fa-chevron-right"></i></span>
+            {% endif %}
+          </li>
+        </ul>
+      </div>
       {% endif %}
-    </div>
+      {% if pagination.total_items > 0 %}
+      <p class="text-center text-muted text-sm mt-3">
+        Mostrando {{ pagination.first_item }}–{{ pagination.last_item }} de {{ pagination.total_items }}
+      </p>
+      {% endif %}
+    {% endif %}
   </div>
+</div>
 {% endblock %}
