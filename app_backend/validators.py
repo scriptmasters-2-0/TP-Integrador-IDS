@@ -533,9 +533,51 @@ def valid_penalty_patch(data):
     return True, None
 
 
+def valid_penalizaciones_filters(filters):
+    """ Valida y parsea los filtros de penalizaciones.
+        estado, usuario, severidad, fecha.
+    """
+    parsed_filters = {
+        "estado": None,
+        "usuario": None,
+        "fecha": None,
+        "severidad": None,
+    }
+
+    estado = filters.get("estado")
+    if estado is not None:
+        if estado not in ["activa", "levantada"]:
+            return False, "invalid_value:estado", None
+        parsed_filters["estado"] = estado
+
+    fecha = filters.get("fecha")
+    if fecha is not None:
+        if fecha.strip() == "":
+            parsed_filters["fecha"] = None
+        else: 
+            try:
+                date.fromisoformat(fecha)
+            except (TypeError, ValueError):
+                return False, "invalid_value:fecha", None
+            parsed_filters["fecha"] = fecha
+
+    usuario = filters.get("usuario")
+    if usuario is not None:
+        if usuario.strip() == "":
+            return False, "empty:usuario", None
+        parsed_filters["usuario"] = usuario
+
+    severidad = filters.get("severidad")
+    if severidad is not None:
+        if severidad not in ["baja", "media", "alta"]:
+            return False, "invalid_value:severidad", None
+        parsed_filters["severidad"] = severidad
+
+    return True, None, parsed_filters
+
+        
 def valid_reserva_filters(filters):
-    """
-    """
+    """ Valida y parsea los filtros de reservas."""
     parsed_filters = {
         "estado": None,
         "usuario": None,

@@ -600,6 +600,21 @@ def listar_penalizaciones():
     pagina = request.args.get("page", 1, type=int)
     offset = calcular_offset(pagina, DEFAULT_API_LIMIT)
     filtros = {"limit": DEFAULT_API_LIMIT, "offset": offset}
+
+    usuario = request.args.get("usuario")
+    estado = request.args.get("estado")
+    severidad = request.args.get("severidad")
+    fecha = request.args.get("fecha")
+
+    if usuario:
+        filtros["usuario"] = usuario
+    if estado: 
+        filtros["estado"] = estado
+    if severidad:
+        filtros["severidad"] = severidad
+    if fecha:
+        filtros["fecha"] = fecha
+        
     payload_paginado, fetch_error = penalizaciones_servicio.obtener_penalizaciones_paginadas(
         params=filtros,
         token=token,

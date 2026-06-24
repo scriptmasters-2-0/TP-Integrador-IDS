@@ -78,7 +78,8 @@ def login():
             return redirect(url_for("profesor.dashboard"))
         return redirect(url_for("alumno.dashboard"))
 
-    return render_template("public/login.html")
+    articulo_id = request.args.get("articulo_id", "")
+    return render_template("public/login.html", articulo_id=articulo_id)
 
 
 @public_bp.route("/login", methods=["POST"])
@@ -143,6 +144,12 @@ def login_submit():
     session["rol"] = rol
     session["usuario"] = usuario_data
 
+    articulo_id = request.form.get("articulo_id", "").strip()
+    if rol == "profesor":
+        return redirect(url_for("profesor.nueva_reserva", articulo_id=articulo_id))
+    if rol == "alumno":
+        return redirect(url_for("alumno.nueva_reserva", articulo_id=articulo_id))
+    
     if rol in ("admin", "bibliotecario"):
         return redirect(url_for("admin.dashboard"))
     if rol == "profesor":
