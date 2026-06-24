@@ -6,41 +6,10 @@ entre el backend y la base de datos.
 
 from flask import Blueprint, jsonify
 
-from database import obtener_conexion
 from http_codes_and_messages import HTTP_OK
+from utiles.servicios import verificar_backend_db
 
 salud_bp = Blueprint("salud", __name__)
-
-
-def verificar_backend_db():
-    """Verifica que la conexión con la base de datos esté activa.
-
-    Returns:
-        tuple | None: Resultado de la consulta de prueba si tiene éxito,
-            None si ocurre un error.
-
-    """
-    try:
-        conexion = obtener_conexion()
-        if conexion is None:
-            return None
-
-        cursor = conexion.cursor()
-
-        cursor.execute("SELECT 1")
-
-        resultado = None
-
-        for fila in cursor:
-            resultado = fila
-
-        cursor.close()
-        conexion.close()
-
-        return resultado
-
-    except Exception:
-        return None
 
 
 @salud_bp.route("/ping", methods=["GET"])

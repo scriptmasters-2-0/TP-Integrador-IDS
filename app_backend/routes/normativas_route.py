@@ -1,3 +1,5 @@
+"""Rutas para los endpoints de normativas."""
+
 import logging
 
 import mysql.connector
@@ -16,17 +18,11 @@ from http_codes_and_messages import (
     MSG_NOT_FOUND,
 )
 from paginacion import construir_respuesta_paginada, obtener_parametros_paginacion
-from routes.auth_route import requiere_auth
+from utiles.autenticacion import requiere_auth
+from utiles.servicios import revertir_transaccion_normativas
 
 normativas_bp = Blueprint("normativas", __name__, url_prefix="/api/normativas")
 logger = logging.getLogger(__name__)
-
-
-def _revertir_transaccion(conn):
-    try:
-        conn.rollback()
-    except Exception:
-        logger.exception("No se pudo revertir la transacción de normativas")
 
 
 @normativas_bp.route("/", methods=["GET"])
@@ -121,11 +117,11 @@ def crear_normativa():
 
         return jsonify({"mensaje": "Normativa creada"}), HTTP_CREATED
     except mysql.connector.Error as err:
-        _revertir_transaccion(conn)
+        revertir_transaccion_normativas(conn)
         logger.error("Error de base de datos al crear normativa: %s", err)
         return jsonify({"error": MSG_DB_QUERY_FAILED}), HTTP_INTERNAL_SERVER_ERROR
     except Exception:
-        _revertir_transaccion(conn)
+        revertir_transaccion_normativas(conn)
         logger.exception("Error inesperado al crear normativa")
         return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
     finally:
@@ -167,11 +163,11 @@ def editar_normativa(id):
 
         return jsonify({"mensaje": "Normativa actualizada"}), HTTP_OK
     except mysql.connector.Error as err:
-        _revertir_transaccion(conn)
+        revertir_transaccion_normativas(conn)
         logger.error("Error de base de datos al editar normativa: %s", err)
         return jsonify({"error": MSG_DB_QUERY_FAILED}), HTTP_INTERNAL_SERVER_ERROR
     except Exception:
-        _revertir_transaccion(conn)
+        revertir_transaccion_normativas(conn)
         logger.exception("Error inesperado al editar normativa")
         return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
     finally:
@@ -201,11 +197,11 @@ def eliminar_normativa(id):
 
         return jsonify({"mensaje": "Normativa eliminada"}), HTTP_OK
     except mysql.connector.Error as err:
-        _revertir_transaccion(conn)
+        revertir_transaccion_normativas(conn)
         logger.error("Error de base de datos al eliminar normativa: %s", err)
         return jsonify({"error": MSG_DB_QUERY_FAILED}), HTTP_INTERNAL_SERVER_ERROR
     except Exception:
-        _revertir_transaccion(conn)
+        revertir_transaccion_normativas(conn)
         logger.exception("Error inesperado al eliminar normativa")
         return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
     finally:

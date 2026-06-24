@@ -7,6 +7,7 @@ JWT y generación de códigos QR.
 
 import logging
 import os
+from zoneinfo import ZoneInfo
 
 from dotenv import find_dotenv, load_dotenv
 
@@ -43,3 +44,12 @@ JWT_ALGORITMO = os.environ.get("JWT_ALGORITMO", "HS256")
 # QR settings
 QR_BORDE = int(os.environ.get("QR_BORDER", "4"))
 QR_TAMANIO = int(os.environ.get("QR_TAMANIO", "10"))
+
+ESTADOS_LIBERAN_STOCK = {"cancelado", "rechazado", "devuelto"}
+CONDICIONES_DEVOLUCION = {
+    "bueno": ("Buen estado (sin daños)", False),
+    "danado": ("Dañado (requiere revisión)", True),
+    "perdido": ("Extraviado / no devuelto", True),
+}
+
+ARGENTINA_TZ = ZoneInfo("America/Argentina/Buenos_Aires")

@@ -5,11 +5,10 @@ y eliminar usuarios del sistema.
 """
 
 import logging
-from datetime import timezone
-from zoneinfo import ZoneInfo
 
 import mysql.connector
 from flask import Blueprint, jsonify, request
+from mysql.connector import errorcode
 
 from database import obtener_conexion
 from http_codes_and_messages import (
@@ -29,36 +28,12 @@ from http_codes_and_messages import (
 )
 from paginacion import construir_respuesta_paginada, obtener_parametros_paginacion
 from routes.auth_route import hashear_contrasenia, requiere_auth
+from utiles.formateadores import formatear_usuario_reserva
+from utiles.servicios import eliminar_usuario_db
 from validators import valid_contrasenia, valid_id, valid_usuario, valid_usuario_update
 
 usuarios_bp = Blueprint("usuarios", __name__)
 logger = logging.getLogger(__name__)
-ARGENTINA_TZ = ZoneInfo("America/Argentina/Buenos_Aires")
-DUPLICATE_ENTRY_ERRNO = 1062
-FOREIGN_KEY_CONSTRAINT_ERRNO = 1451
-
-
-def _datetime_to_argentina_iso(value):
-    """Convierte un datetime de base de datos a ISO 8601 en hora argentina."""
-    if value is None:
-        return None
-    if value.tzinfo is None:
-        value = value.replace(tzinfo=ARGENTINA_TZ)
-    return value.astimezone(ARGENTINA_TZ).isoformat(timespec="seconds")
-
-
-def format_usuario_reserva(row):
-    """Formatea una reserva de usuario para evitar serialización GMT de Flask."""
-    nombre_articulo = row.get("nombre_articulo")
-    return {
-        "id": row.get("id"),
-        "id_reservado": row.get("id_reservado"),
-        "nombre_articulo": nombre_articulo,
-        "nombre_art": nombre_articulo,
-        "estado_reserva": row.get("estado_reserva"),
-        "fecha_retiro": _datetime_to_argentina_iso(row.get("fecha_retiro")),
-        "fecha_regreso": _datetime_to_argentina_iso(row.get("fecha_regreso")),
-    }
 
 
 @usuarios_bp.route("/api/usuarios", methods=["GET"])
@@ -154,51 +129,6 @@ def get_all_usuarios():
             pass
 
 
-def eliminar_usuario_db(id_usuario):
-    """Elimina un usuario de la base de datos.
-
-    Args:
-        id_usuario (int): Identificador del usuario a eliminar.
-            Debe ser un entero positivo.
-
-    Returns:
-        tuple: (eliminado, error, status), con error y status en None
-            cuando la eliminación fue procesada sin fallos.
-
-    """
-    conexion = obtener_conexion()
-    if conexion is None:
-        return False, MSG_DB_CONNECTION_FAILED, HTTP_INTERNAL_SERVER_ERROR
-
-    cursor = None
-    try:
-        cursor = conexion.cursor()
-        cursor.execute("DELETE FROM usuario WHERE id = %s", (id_usuario,))
-        conexion.commit()
-        return cursor.rowcount > 0, None, None
-    except mysql.connector.Error as err:
-        if err.errno == FOREIGN_KEY_CONSTRAINT_ERRNO:
-            return (
-                False,
-                "No se pudo eliminar el usuario por una restricción de base de datos",
-                HTTP_CONFLICT,
-            )
-        return False, MSG_INTERNAL_SERVER_ERROR, HTTP_INTERNAL_SERVER_ERROR
-    except Exception:
-        return False, MSG_INTERNAL_SERVER_ERROR, HTTP_INTERNAL_SERVER_ERROR
-    finally:
-        try:
-            if cursor:
-                cursor.close()
-        except Exception:
-            pass
-        try:
-            if conexion:
-                conexion.close()
-        except Exception:
-            pass
-
-
 @usuarios_bp.route("/api/usuarios/<int:usuario_id>/reservas", methods=["GET"])
 @requiere_auth(roles=["admin", "profesor", "bibliotecario", "alumno"])
 def get_usuario_reservas(usuario_id):
@@ -216,14 +146,11 @@ def get_usuario_reservas(usuario_id):
 
     """
     pagination, error = obtener_parametros_paginacion(request.args)
-        
+
     if error:
         return jsonify({"error": error}), HTTP_BAD_REQUEST
-        
-    if (
-        request.usuario_rol not in ("admin", "bibliotecario")
-        and usuario_id != request.usuario_id
-    ):
+
+    if request.usuario_rol not in ("admin", "bibliotecario") and usuario_id != request.usuario_id:
         return jsonify({"error": MSG_FORBIDDEN}), HTTP_FORBIDDEN
 
     conn = obtener_conexion()
@@ -265,19 +192,19 @@ def get_usuario_reservas(usuario_id):
         """
         values = {**pagination, "usuario_id": usuario_id}
 
-        cursor.execute(sql_query, values) 
-        reservas = [format_usuario_reserva(row) for row in cursor.fetchall()]
+        cursor.execute(sql_query, values)
+        reservas = [formatear_usuario_reserva(row) for row in cursor.fetchall()]
 
         return (
-        jsonify(
-            construir_respuesta_paginada(
-                reservas,
-                total,
-                request,
-                pagination["limit"],
-                pagination["offset"],
-            )
-        ),
+            jsonify(
+                construir_respuesta_paginada(
+                    reservas,
+                    total,
+                    request,
+                    pagination["limit"],
+                    pagination["offset"],
+                )
+            ),
             HTTP_OK,
         )
 
@@ -373,7 +300,7 @@ def create_usuario():
 
     except mysql.connector.Error as err:
         try:
-            if err.errno == DUPLICATE_ENTRY_ERRNO:
+            if err.errno == errorcode.ER_DUP_ENTRY:
                 return (
                     jsonify({"error": MSG_CONFLICT, "detail": "duplicate_entry"}),
                     HTTP_CONFLICT,
@@ -521,7 +448,7 @@ def update_usuario(usuario_id):
 
     except mysql.connector.Error as err:
         try:
-            if err.errno == DUPLICATE_ENTRY_ERRNO:
+            if err.errno == errorcode.ER_DUP_ENTRY:
                 return (
                     jsonify({"error": MSG_CONFLICT, "detail": "duplicate_entry"}),
                     HTTP_CONFLICT,
