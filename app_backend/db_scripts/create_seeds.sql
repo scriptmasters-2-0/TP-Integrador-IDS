@@ -33,6 +33,7 @@ SET
 
 INSERT INTO
   usuario (
+    padron,
     nombre,
     email,
     rol,
@@ -42,6 +43,7 @@ INSERT INTO
   )
 VALUES
   (
+    100000,
     'Admin Sistema',
     'admin@fi.uba.ar',
     'admin',
@@ -51,6 +53,7 @@ VALUES
   )
   ,
   (
+    100001,
     'Biblio Principal',
     'biblioteca@fi.uba.ar',
     'bibliotecario',
@@ -60,6 +63,7 @@ VALUES
   )
   ,
   (
+    100002,
     'Profesor Laboratorio',
     'proflab@fi.uba.ar',
     'profesor',
@@ -69,6 +73,7 @@ VALUES
   )
   ,
   (
+    100003,
     'Profesor Taller',
     'proftaller@fi.uba.ar',
     'profesor',
@@ -78,6 +83,7 @@ VALUES
   )
   ,
   (
+    100004,
     'Profesor Sistemas',
     'profsis@fi.uba.ar',
     'profesor',
@@ -87,6 +93,7 @@ VALUES
   )
   ,
   (
+    100005,
     'Ana Martinez',
     'amartinez@fi.uba.ar',
     'alumno',
@@ -96,6 +103,7 @@ VALUES
   )
   ,
   (
+    100006,
     'Carlos Ruiz',
     'cruiz@fi.uba.ar',
     'alumno',
@@ -105,6 +113,7 @@ VALUES
   )
   ,
   (
+    100007,
     'Laura Gomez',
     'lgomez@fi.uba.ar',
     'alumno',
@@ -114,6 +123,7 @@ VALUES
   )
   ,
   (
+    100008,
     'Diego Fernandez',
     'dfernandez@fi.uba.ar',
     'alumno',
@@ -123,6 +133,7 @@ VALUES
   )
   ,
   (
+    100009,
     'Sofia Silva',
     'ssilva@fi.uba.ar',
     'alumno',
@@ -132,6 +143,7 @@ VALUES
   )
   ,
   (
+    100010,
     'Martin Castro',
     'mcastro@fi.uba.ar',
     'alumno',
@@ -141,6 +153,7 @@ VALUES
   )
   ,
   (
+    100011,
     'Lucia Torres',
     'ltorres@fi.uba.ar',
     'alumno',
@@ -150,6 +163,7 @@ VALUES
   )
   ,
   (
+    100012,
     'Javier Lopez',
     'jlopez@fi.uba.ar',
     'alumno',
@@ -159,6 +173,7 @@ VALUES
   )
   ,
   (
+    100013,
     'Camila Diaz',
     'cdiaz@fi.uba.ar',
     'alumno',
@@ -168,6 +183,7 @@ VALUES
   )
   ,
   (
+    100014,
     'Facundo Morales',
     'fmorales@fi.uba.ar',
     'alumno',
@@ -177,6 +193,7 @@ VALUES
   )
   ,
   (
+    100015,
     'Valentina Herrera',
     'vherrera@fi.uba.ar',
     'alumno',
@@ -186,6 +203,7 @@ VALUES
   )
   ,
   (
+    100016,
     'Matias Romero',
     'mromero@fi.uba.ar',
     'alumno',
@@ -195,6 +213,7 @@ VALUES
   )
   ,
   (
+    100017,
     'Florencia Suarez',
     'fsuarez@fi.uba.ar',
     'alumno',
@@ -204,6 +223,7 @@ VALUES
   )
   ,
   (
+    100018,
     'Ezequiel Dominguez',
     'edominguez@fi.uba.ar',
     'alumno',
@@ -213,6 +233,7 @@ VALUES
   )
   ,
   (
+    100019,
     'Julieta Gimenez',
     'jgimenez@fi.uba.ar',
     'alumno',
@@ -222,6 +243,7 @@ VALUES
   )
   ,
   (
+    100020,
     'Tomas Alonso',
     'talonso@fi.uba.ar',
     'alumno',
@@ -231,6 +253,7 @@ VALUES
   )
   ,
   (
+    100021,
     'Rocio Blanco',
     'rblanco@fi.uba.ar',
     'alumno',
@@ -240,6 +263,7 @@ VALUES
   )
   ,
   (
+    100022,
     'Nicolas Medina',
     'nmedina@fi.uba.ar',
     'alumno',
@@ -249,6 +273,7 @@ VALUES
   )
   ,
   (
+    100023,
     'Micaela Vega',
     'mvega@fi.uba.ar',
     'alumno',
@@ -258,6 +283,7 @@ VALUES
   )
   ,
   (
+    100024,
     'Gaston Navarro',
     'gnavarro@fi.uba.ar',
     'alumno',
@@ -267,6 +293,7 @@ VALUES
   )
   ,
   (
+    100025,
     'Paula Iglesias',
     'piglesias@fi.uba.ar',
     'alumno',
@@ -276,6 +303,7 @@ VALUES
   )
   ,
   (
+    100026,
     'Agustin Cabrera',
     'acabrera@fi.uba.ar',
     'alumno',
@@ -285,6 +313,7 @@ VALUES
   )
   ,
   (
+    100027,
     'Carolina Vidal',
     'cvidal@fi.uba.ar',
     'alumno',
@@ -294,6 +323,7 @@ VALUES
   )
   ,
   (
+    100028,
     'Julian Mendoza',
     'jmendoza@fi.uba.ar',
     'alumno',
@@ -303,6 +333,7 @@ VALUES
   )
   ,
   (
+    100029,
     'Emilia Ortiz',
     'eortiz@fi.uba.ar',
     'alumno',
@@ -312,6 +343,7 @@ VALUES
   )
   ,
   (
+    100030,
     'Lucas Rios',
     'lrios@fi.uba.ar',
     'alumno',
@@ -321,6 +353,7 @@ VALUES
   )
   ,
   (
+    100031,
     'Agostina Castillo',
     'acastillo@fi.uba.ar',
     'alumno',
@@ -330,6 +363,7 @@ VALUES
   )
   ,
   (
+    100032,
     'Franco Acosta',
     'facosta@fi.uba.ar',
     'alumno',
@@ -339,6 +373,7 @@ VALUES
   )
   ,
   (
+    100033,
     'Daniela Peralta',
     'dperalta@fi.uba.ar',
     'alumno',
@@ -348,6 +383,7 @@ VALUES
   )
   ,
   (
+    100034,
     'Ignacio Paz',
     'ipaz@fi.uba.ar',
     'alumno',
@@ -357,6 +393,7 @@ VALUES
   )
   ,
   (
+    100035,
     'Martina Nuñez',
     'mnunez@fi.uba.ar',
     'alumno',
@@ -366,6 +403,7 @@ VALUES
   )
   ,
   (
+    100036,
     'Pablo Aguilar',
     'paguilar@fi.uba.ar',
     'alumno',
@@ -375,6 +413,7 @@ VALUES
   )
   ,
   (
+    100037,
     'Victoria Mendez',
     'vmendez@fi.uba.ar',
     'alumno',
@@ -384,6 +423,7 @@ VALUES
   )
   ,
   (
+    100038,
     'Rodrigo Cruz',
     'rcruz@fi.uba.ar',
     'alumno',
@@ -393,6 +433,7 @@ VALUES
   )
   ,
   (
+    100039,
     'Belen Arias',
     'barias@fi.uba.ar',
     'alumno',
@@ -402,6 +443,7 @@ VALUES
   )
   ,
   (
+    100040,
     'Joaquin Cabrera',
     'jcabrera@fi.uba.ar',
     'alumno',
@@ -411,6 +453,7 @@ VALUES
   )
   ,
   (
+    100041,
     'Candela Molina',
     'cmolina@fi.uba.ar',
     'alumno',
@@ -420,6 +463,7 @@ VALUES
   )
   ,
   (
+    100042,
     'Alejandro Rojas',
     'arojas@fi.uba.ar',
     'alumno',
@@ -429,6 +473,7 @@ VALUES
   )
   ,
   (
+    100043,
     'Renata Luna',
     'rluna@fi.uba.ar',
     'alumno',
@@ -438,6 +483,7 @@ VALUES
   )
   ,
   (
+    100044,
     'Esteban Miranda',
     'emiranda@fi.uba.ar',
     'alumno',
@@ -447,6 +493,7 @@ VALUES
   )
   ,
   (
+    100045,
     'Josefina Soto',
     'jsoto@fi.uba.ar',
     'alumno',
@@ -456,6 +503,7 @@ VALUES
   )
   ,
   (
+    100046,
     'Marcos Bravo',
     'mbravo@fi.uba.ar',
     'alumno',
@@ -465,6 +513,7 @@ VALUES
   )
   ,
   (
+    100047,
     'Antonella Gallardo',
     'agallardo@fi.uba.ar',
     'alumno',
@@ -474,6 +523,7 @@ VALUES
   )
   ,
   (
+    100048,
     'Leandro Marquez',
     'lmarquez@fi.uba.ar',
     'alumno',
@@ -483,6 +533,7 @@ VALUES
   )
   ,
   (
+    100049,
     'Solange Paredes',
     'sparedes@fi.uba.ar',
     'alumno',
@@ -492,6 +543,7 @@ VALUES
   )
   ,
   (
+    100050,
     'Emanuel Rivas',
     'erivas@fi.uba.ar',
     'alumno',
@@ -501,6 +553,7 @@ VALUES
   )
   ,
   (
+    100051,
     'Abril Ferreyra',
     'aferreyra@fi.uba.ar',
     'alumno',
@@ -510,6 +563,7 @@ VALUES
   )
   ,
   (
+    100052,
     'Guillermo Ponce',
     'gponce@fi.uba.ar',
     'alumno',
@@ -519,6 +573,7 @@ VALUES
   )
   ,
   (
+    100053,
     'Melina Correa',
     'mcorrea@fi.uba.ar',
     'alumno',
@@ -528,6 +583,7 @@ VALUES
   )
   ,
   (
+    100054,
     'Hernan Varela',
     'hvarela@fi.uba.ar',
     'alumno',

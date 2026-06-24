@@ -61,18 +61,22 @@ def valid_usuario(data):
     if not isinstance(data, dict):
         return False, "payload_must_be_object"
 
-    allowed_fields = ["nombre", "email", "rol", "carrera", "contrasenia"]
+    allowed_fields = ["padron", "nombre", "email", "rol", "carrera", "contrasenia"]
     for f in data:
         if f not in allowed_fields:
             return False, f"invalid_field:{f}"
 
-    required = ["nombre", "email", "carrera"]
+    required = ["padron", "nombre", "email", "carrera"]
     for f in required:
         v = data.get(f)
         if v is None:
             return False, f"missing:{f}"
         if isinstance(v, str) and v.strip() == "":
             return False, f"empty:{f}"
+
+    padron = data.get("padron")
+    if not isinstance(padron, int) or not (padron >= 100000 and padron <= 999999):
+        return False, "invalid:padron"
 
     email = data.get("email")
     if not isinstance(email, str) or not email.endswith("@fi.uba.ar"):

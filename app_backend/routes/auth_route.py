@@ -318,6 +318,7 @@ def obtener_perfil():
         sql_query = """
             SELECT
                 u.id,
+                u.padron,
                 u.nombre,
                 u.email,
                 u.rol,
@@ -342,6 +343,7 @@ def obtener_perfil():
 
         usuario_profile = {
             "id": usuario.get("id"),
+            "legajo": usuario.get("padron"),
             "nombre": usuario.get("nombre"),
             "email": usuario.get("email"),
             "rol": usuario.get("rol"),
@@ -403,10 +405,11 @@ def logup():
     try:
         cursor = conn.cursor()
         sql = """
-            INSERT INTO usuario (nombre, email, rol, carrera, contrasenia_hash)
-            VALUES (%(nombre)s, %(email)s, %(rol)s, %(carrera)s, %(contrasenia_hash)s)
+            INSERT INTO usuario (padron, nombre, email, rol, carrera, contrasenia_hash)
+            VALUES (%(padron)s, %(nombre)s, %(email)s, %(rol)s, %(carrera)s, %(contrasenia_hash)s)
         """
         values = {
+            "padron": data.get("padron"),
             "nombre": data.get("nombre"),
             "email": data.get("email"),
             "rol": "alumno",
@@ -419,6 +422,7 @@ def logup():
 
         usuario_profile = {
             "id": usuario_id,
+            "padron": data.get("padron"),
             "nombre": data.get("nombre"),
             "email": data.get("email"),
             "rol": "alumno",
