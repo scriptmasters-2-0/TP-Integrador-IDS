@@ -726,7 +726,7 @@ def crear_penalizacion():
         motivo = request.form.get("reason")
 
         if not usuario_id or not motivo:
-            usuarios = usuario_servicio.obtener_usuarios(token=token)
+            usuarios = usuario_servicio.obtener_usuarios(params={"limit": 1000}, token=token)
             return render_template(
                 "admin/penalizaciones_form.html",
                 usuarios=usuarios,
@@ -739,7 +739,7 @@ def crear_penalizacion():
         )
 
         if not resultado:
-            usuarios = usuario_servicio.obtener_usuarios(token=token)
+            usuarios = usuario_servicio.obtener_usuarios(params={"limit": 1000}, token=token)
             return render_template(
                 "admin/penalizaciones_form.html",
                 usuarios=usuarios,
@@ -748,7 +748,7 @@ def crear_penalizacion():
 
         return redirect(url_for("admin.listar_penalizaciones"))
 
-    usuarios = usuario_servicio.obtener_usuarios(token=token)
+    usuarios = usuario_servicio.obtener_usuarios(params={"limit": 1000}, token=token)
 
     return render_template(
         "admin/penalizaciones_form.html",
