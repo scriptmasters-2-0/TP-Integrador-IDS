@@ -4,120 +4,20 @@ Define los endpoints para generar y obtener códigos QR asociados
 a las reservas del sistema.
 """
 
-import base64
-import io
-import json
-
-import qrcode
 from flask import Blueprint, jsonify, request
 
-from config import QR_BORDE, QR_TAMANIO
-from database import obtener_conexion
 from http_codes_and_messages import (
     HTTP_FORBIDDEN,
     HTTP_INTERNAL_SERVER_ERROR,
     HTTP_NOT_FOUND,
     HTTP_OK,
-    MSG_DB_CONNECTION_FAILED,
     MSG_FORBIDDEN,
 )
-from routes.auth_route import requiere_auth
+from utiles.autenticacion import requiere_auth
+from utiles.qr import construir_contenido_qr, generar_qr
+from utiles.servicios import obtener_reserva_por_id
 
 qr_bp = Blueprint("qr", __name__)
-
-
-def generar_qr(datos):
-    """Genera una imagen QR codificada en base64 a partir de un string.
-
-    Args:
-        datos (str): Contenido a codificar en el código QR.
-            No debe estar vacío.
-
-    Returns:
-        str: String en base64 que representa la imagen PNG del código QR.
-
-    """
-    codigo_qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_H,
-        box_size=QR_TAMANIO,
-        border=QR_BORDE,
-    )
-    codigo_qr.add_data(datos)
-    codigo_qr.make(fit=True)
-
-    imagen = codigo_qr.make_image(fill_color="black", back_color="white")
-
-    buffer = io.BytesIO()
-    imagen.save(buffer, format="PNG")
-    buffer.seek(0)
-
-    return base64.b64encode(buffer.getvalue()).decode("utf-8")
-
-
-def construir_contenido_qr(reserva):
-    """Construye el contenido JSON para codificar en el código QR.
-
-    Extrae los datos relevantes de la reserva sin incluir información
-    sensible del usuario.
-
-    Args:
-        reserva (dict): Diccionario con las claves 'id_reserva',
-            'id_reservado', 'fecha_retiro' y 'fecha_regreso'.
-
-    Returns:
-        str: String JSON con los datos de la reserva.
-
-    """
-    datos_qr = {
-        "id_reserva": reserva["id"],
-        "id_articulo": reserva["id_reservado"],
-        "fecha_retiro": str(reserva["fecha_retiro"]),
-        "fecha_regreso": str(reserva["fecha_regreso"]),
-    }
-    return json.dumps(datos_qr)
-
-
-def obtener_reserva_por_id(id_reserva):
-    """Obtiene los datos de una reserva por su identificador.
-
-    Args:
-        id_reserva (int): Identificador de la reserva a buscar.
-
-    Returns:
-        tuple: Reserva encontrada y error de conexión si corresponde.
-
-    """
-    conexion = obtener_conexion()
-    if conexion is None:
-        return None, MSG_DB_CONNECTION_FAILED
-
-    cursor = None
-    try:
-        cursor = conexion.cursor(dictionary=True)
-        cursor.execute(
-            """
-            SELECT id,
-                   id_usuario,
-                   id_reservado,
-                   fecha_retiro,
-                   fecha_regreso
-            FROM reserva
-            WHERE id = %s
-            """,
-            (id_reserva,),
-        )
-        return cursor.fetchone(), None
-    finally:
-        try:
-            if cursor:
-                cursor.close()
-        except Exception:
-            pass
-        try:
-            conexion.close()
-        except Exception:
-            pass
 
 
 @qr_bp.route("/api/qr/reservas/<int:id_reserva>", methods=["GET"])
@@ -142,10 +42,7 @@ def obtener_qr_reserva(id_reserva):
     if reserva is None:
         return jsonify({"error": "Reserva no encontrada"}), HTTP_NOT_FOUND
 
-    if (
-        request.usuario_rol not in ("admin", "bibliotecario")
-        and reserva.get("id_usuario") != request.usuario_id
-    ):
+    if request.usuario_rol not in ("admin", "bibliotecario") and reserva.get("id_usuario") != request.usuario_id:
         return jsonify({"error": MSG_FORBIDDEN}), HTTP_FORBIDDEN
 
     contenido_qr = construir_contenido_qr(reserva)

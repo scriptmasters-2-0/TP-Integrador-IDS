@@ -24,211 +24,13 @@ from http_codes_and_messages import (
     MSG_NOT_FOUND,
 )
 from paginacion import construir_respuesta_paginada, obtener_parametros_paginacion
-from routes.auth_route import requiere_auth
 from validators import valid_id, valid_penalty_patch, valid_usuario_id_query, valid_penalizaciones_filters
+from utiles.autenticacion import requiere_auth
+from utiles.formateadores import formatear_penalizaciones
+from utiles.servicios import crear_penalizacion_db, existe_reserva, obtener_penalizacion_por_id, usuario_existe
 
 penalizaciones_bp = Blueprint("penalizaciones", __name__)
 logger = logging.getLogger(__name__)
-
-
-def usuario_existe(id_usuario):
-    """Verifica si un usuario existe en la base de datos.
-
-    Args:
-        id_usuario (int): Identificador del usuario a verificar.
-
-    Returns:
-        tuple: Existencia del usuario y error de conexión si corresponde.
-
-    """
-    conexion = obtener_conexion()
-    if conexion is None:
-        return False, MSG_DB_CONNECTION_FAILED
-
-    cursor = None
-    try:
-        cursor = conexion.cursor()
-        cursor.execute("SELECT id FROM usuario WHERE id = %s", (id_usuario,))
-        return cursor.fetchone() is not None, None
-    finally:
-        try:
-            if cursor:
-                cursor.close()
-        except Exception:
-            pass
-        try:
-            conexion.close()
-        except Exception:
-            pass
-
-
-def existe_reserva(id_reserva):
-    """Verifica si una reserva existe en la base de datos.
-
-    Args:
-        id_reserva (int): Identificador de la reserva a verificar.
-
-    Returns:
-        tuple: Existencia de la reserva y error de conexión si corresponde.
-
-    """
-    conexion = obtener_conexion()
-    if conexion is None:
-        return False, MSG_DB_CONNECTION_FAILED
-
-    cursor = None
-    try:
-        cursor = conexion.cursor()
-        cursor.execute("SELECT id FROM reserva WHERE id = %s", (id_reserva,))
-        return cursor.fetchone() is not None, None
-    finally:
-        try:
-            if cursor:
-                cursor.close()
-        except Exception:
-            pass
-        try:
-            conexion.close()
-        except Exception:
-            pass
-
-
-def listar_penalizaciones_db():
-    """Obtiene todas las penalizaciones de la base de datos.
-
-    Returns:
-        tuple: Lista de penalizaciones y error de conexión si corresponde.
-
-    """
-    conexion = obtener_conexion()
-    if conexion is None:
-        return None, MSG_DB_CONNECTION_FAILED
-
-    cursor = None
-    try:
-        cursor = conexion.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM penalizacion")
-        return cursor.fetchall(), None
-    finally:
-        try:
-            if cursor:
-                cursor.close()
-        except Exception:
-            pass
-        try:
-            conexion.close()
-        except Exception:
-            pass
-
-
-def crear_penalizacion_db(id_usuario, motivo, severidad="media", id_reserva=None):
-    """Inserta una nueva penalización activa en la base de datos.
-
-    Crea una penalización con duración de 15 días a partir de la
-    fecha actual.
-
-    Args:
-        id_usuario (int): Identificador del usuario a penalizar.
-            Debe ser un entero positivo.
-        motivo (str): Motivo de la penalización. No debe estar vacío.
-        severidad (str): Severidad de la penalización ('baja', 'media', 'alta').
-            Por defecto 'media'.
-        id_reserva (int): Identificador opcional de la reserva asociada.
-
-    Returns:
-        tuple: Identificador generado y error de conexión si corresponde.
-
-    """
-    conexion = obtener_conexion()
-    if conexion is None:
-        return None, MSG_DB_CONNECTION_FAILED
-
-    cursor = None
-    try:
-        cursor = conexion.cursor()
-        cursor.execute(
-            """
-            INSERT INTO penalizacion (id_usuario, id_reserva, motivo, fecha_inicio, fecha_fin, activa, severidad)
-            VALUES (%s, %s, %s, NOW(), DATE_ADD(NOW(), INTERVAL 15 DAY), TRUE, %s)
-            """,
-            (id_usuario, id_reserva, motivo, severidad),
-        )
-        conexion.commit()
-        return cursor.lastrowid, None
-    except mysql.connector.Error as err:
-        logger.error("Error de base de datos al crear penalización: %s", err)
-        return None, MSG_INTERNAL_SERVER_ERROR
-    except Exception:
-        logger.exception("Error inesperado al crear penalización")
-        return None, MSG_INTERNAL_SERVER_ERROR
-    finally:
-        try:
-            if cursor:
-                cursor.close()
-        except Exception:
-            pass
-        try:
-            conexion.close()
-        except Exception:
-            pass
-
-def format_penalty(row):
-    """Formatea una fila de penalización de la BD como respuesta de la API.
-
-    Args:
-        row (dict): Diccionario con los datos de la penalización obtenidos
-            de la base de datos.
-
-    Returns:
-        dict: Diccionario con los campos formateados para la respuesta
-            de la API.
-
-    """
-    return {
-        "id": row.get("id"),
-        "usuarioId": row.get("id_usuario"),
-        "reservaId": row.get("id_reserva"),
-        "reason": row.get("motivo"),
-        "status": "Activa" if row.get("activa") else "Levantada",
-        "severidad": row.get("severidad"),
-        "createdAt": (
-            row.get("fecha_inicio").isoformat() if row.get("fecha_inicio") else None
-        ),
-        "resolvedAt": (
-            row.get("fecha_fin").isoformat() if row.get("fecha_fin") else None
-        ),
-    }
-
-
-def obtener_penalizacion_por_id(id_penalizacion):
-    """Obtiene una penalización por su identificador.
-
-    Args:
-        id_penalizacion (int): Identificador de la penalización a buscar.
-
-    Returns:
-        tuple: Penalización encontrada y error de conexión si corresponde.
-
-    """
-    conexion = obtener_conexion()
-    if conexion is None:
-        return None, MSG_DB_CONNECTION_FAILED
-
-    cursor = None
-    try:
-        cursor = conexion.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM penalizacion WHERE id = %s", (id_penalizacion,))
-        return cursor.fetchone(), None
-    finally:
-        try:
-            if cursor:
-                cursor.close()
-        except Exception:
-            pass
-        try:
-            conexion.close()
-        except Exception:
-            pass
 
 
 @penalizaciones_bp.route("/api/penalizaciones/<int:penalty_id>", methods=["GET"])
@@ -278,7 +80,7 @@ def get_penalty(penalty_id):
         if not row:
             return jsonify({"error": MSG_NOT_FOUND}), HTTP_NOT_FOUND
 
-        return jsonify(format_penalty(row)), HTTP_OK
+        return jsonify(formatear_penalizaciones(row)), HTTP_OK
 
     except mysql.connector.Error:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
@@ -384,7 +186,7 @@ def patch_penalty(penalty_id):
         if not row:
             return jsonify({"error": MSG_NOT_FOUND}), HTTP_NOT_FOUND
 
-        return jsonify(format_penalty(row)), HTTP_OK
+        return jsonify(formatear_penalizaciones(row)), HTTP_OK
 
     except mysql.connector.Error:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
@@ -439,9 +241,7 @@ def listar_penalizaciones():
     if "usuario_id" in request.args:
         is_valid, error, usuario_id = valid_usuario_id_query(request.args)
         if not is_valid:
-            return jsonify(
-                {"error": "Parámetros de consulta inválidos", "detail": error}
-            ), HTTP_BAD_REQUEST
+            return jsonify({"error": "Parámetros de consulta inválidos", "detail": error}), HTTP_BAD_REQUEST
 
     if request.usuario_rol not in ("admin", "bibliotecario"):
         if usuario_id is None or usuario_id != request.usuario_id:
@@ -455,7 +255,8 @@ def listar_penalizaciones():
 
     try:
         cursor = conn.cursor(dictionary=True)
-        consulta_penalizaciones = """SELECT penalizacion.id, nombre, nombre_art, severidad, motivo, activa, fecha_inicio,
+        consulta_penalizaciones = """
+            SELECT penalizacion.id, nombre, nombre_art, severidad, motivo, activa, fecha_inicio,
             DATE_FORMAT(fecha_fin, '%d/%m/%y') as fecha_fin, DATEDIFF(CURDATE(), fecha_fin) as retraso
             FROM penalizacion
             INNER JOIN usuario ON penalizacion.id_usuario = usuario.id
@@ -477,9 +278,7 @@ def listar_penalizaciones():
             usuario_existe_db = cursor.fetchone()
 
             if not usuario_existe_db:
-                return jsonify(
-                    {"error": f"Usuario con ID {usuario_id} no encontrado"}
-                ), HTTP_NOT_FOUND
+                return jsonify({"error": f"Usuario con ID {usuario_id} no encontrado"}), HTTP_NOT_FOUND
             condiciones_where.append("penalizacion.id_usuario = %(usuario_id)s")
             valores["usuario_id"] = usuario_id
 
@@ -498,12 +297,8 @@ def listar_penalizaciones():
         if parsed_filters["severidad"] is not None:
             condiciones_where.append("penalizacion.severidad = %(severidad)s")
             valores["severidad"] = parsed_filters["severidad"]
-        
-        clausula_where = (
-            " WHERE " + " AND ".join(condiciones_where)
-            if condiciones_where
-            else ""
-        )
+
+        clausula_where = " WHERE " + " AND ".join(condiciones_where) if condiciones_where else ""
         cursor.execute(consulta_total_penalizaciones + clausula_where, valores)
         total = cursor.fetchone()["total"]
 

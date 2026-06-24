@@ -4,6 +4,7 @@ import logging
 
 import mysql.connector
 from flask import Blueprint, jsonify, request
+from mysql.connector import errorcode
 
 from database import obtener_conexion
 from http_codes_and_messages import (
@@ -22,33 +23,10 @@ from routes.auth_route import requiere_auth
 from utils.opciones_articulo import obtener_opciones_articulo
 from validators import valid_id, valid_articulo, valid_articulo_filters, valid_articulo_update
 from paginacion import construir_respuesta_paginada, obtener_parametros_paginacion
+from utiles.formateadores import formatear_articulo
 
 articulos_bp = Blueprint("articulos", __name__)
 logger = logging.getLogger(__name__)
-FOREIGN_KEY_CONSTRAINT_ERRNO = 1451
-
-
-def format_articulo(row):
-    """Formatea una fila de artículo de la base de datos como respuesta de la API.
-
-    Args:
-        row (dict): Diccionario con los datos del artículo obtenidos de la
-            base de datos.
-
-    Returns:
-        dict: Diccionario formateado con los campos del artículo para la respuesta.
-
-    """
-    return {
-        "id": row.get("id"),
-        "nombre_art": row.get("nombre_art"),
-        "tipo": row.get("tipo"),
-        "seccion": row.get("seccion"),
-        "prestacion_maxima": row.get("prestacion_maxima"),
-        "stock": row.get("stock"),
-        "necesita_reparacion": bool(row.get("necesita_reparacion")),
-        "activo": bool(row.get("activo")),
-    }
 
 
 @articulos_bp.route("/api/articulos/opciones", methods=["GET"])
@@ -83,7 +61,7 @@ def get_articulos():
     pagination, pag_error = obtener_parametros_paginacion(request.args)
     if pag_error:
         return jsonify({"error": pag_error}), HTTP_BAD_REQUEST
-    
+
     conn = obtener_conexion()
     if conn is None:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
@@ -117,8 +95,7 @@ def get_articulos():
     where_clause = ""
     if where_conditions:
         where_clause = " WHERE " + " AND ".join(where_conditions)
-    
-    
+
     sql_count = f"SELECT COUNT(*) AS total FROM articulos{where_clause}"
 
     sql = f"""
@@ -142,21 +119,15 @@ def get_articulos():
         cursor = conn.cursor(dictionary=True)
         cursor.execute(sql_count, values)
         total = cursor.fetchone()["total"]
-        
+
         values_page = dict(values)
         values_page["limit"] = pagination["limit"]
         values_page["offset"] = pagination["offset"]
         cursor.execute(sql, values_page)
 
-        articulos = [format_articulo(row) for row in cursor.fetchall()]
+        articulos = [formatear_articulo(row) for row in cursor.fetchall()]
 
-        respuesta = construir_respuesta_paginada(
-            articulos, 
-            total, 
-            request, 
-            pagination["limit"], 
-            pagination["offset"]
-        )
+        respuesta = construir_respuesta_paginada(articulos, total, request, pagination["limit"], pagination["offset"])
 
         return jsonify(respuesta), HTTP_OK
 
@@ -252,7 +223,7 @@ def create_articulo():
         )
         articulo = cursor.fetchone()
 
-        return jsonify(format_articulo(articulo)), HTTP_CREATED
+        return jsonify(formatear_articulo(articulo)), HTTP_CREATED
 
     except mysql.connector.Error:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
@@ -343,7 +314,7 @@ def update_articulo(articulo_id):
         if not articulo:
             return jsonify({"error": MSG_NOT_FOUND}), HTTP_NOT_FOUND
 
-        return jsonify(format_articulo(articulo)), HTTP_OK
+        return jsonify(formatear_articulo(articulo)), HTTP_OK
 
     except mysql.connector.Error:
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
@@ -398,10 +369,8 @@ def eliminar_articulo(articulo_id):
         return jsonify({"mensaje": "Artículo eliminado con éxito"}), HTTP_OK
 
     except mysql.connector.Error as err:
-        if err.errno == FOREIGN_KEY_CONSTRAINT_ERRNO:
-            return jsonify(
-                {"error": "No se puede eliminar el artículo porque tiene reservas asociadas"}
-            ), HTTP_CONFLICT
+        if err.errno == errorcode.ER_ROW_IS_REFERENCED_2:  # FOREIGN_KEY_CONSTRAIN_ERRNO
+            return jsonify({"error": "No se puede eliminar el artículo porque tiene reservas asociadas"}), HTTP_CONFLICT
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
 
     except Exception:
@@ -446,11 +415,9 @@ def get_articulo_by_id(articulo_id):
         articulo = cursor.fetchone()
 
         if not articulo:
-            return jsonify(
-                {"error": f"Artículo con ID {articulo_id} no encontrado"}
-            ), HTTP_NOT_FOUND
+            return jsonify({"error": f"Artículo con ID {articulo_id} no encontrado"}), HTTP_NOT_FOUND
 
-        return jsonify(format_articulo(articulo)), HTTP_OK
+        return jsonify(formatear_articulo(articulo)), HTTP_OK
 
     except mysql.connector.Error as query_err:
         logger.error("Error en la consulta a la base de datos en get_articulo_by_id: %s", query_err)

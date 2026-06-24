@@ -5,6 +5,7 @@ import logging
 import mysql.connector
 from flask import Blueprint, jsonify, request
 
+from config import ESTADOS_LIBERAN_STOCK
 from database import obtener_conexion
 from http_codes_and_messages import (
     HTTP_BAD_REQUEST,
@@ -20,19 +21,19 @@ from http_codes_and_messages import (
     MSG_NOT_FOUND,
 )
 from paginacion import construir_respuesta_paginada, obtener_parametros_paginacion
-from routes.auth_route import requiere_auth
-from validators import valid_id, valid_reserva_create, valid_reserva_status_update, valid_reserva_filters
-from paginacion import obtener_parametros_paginacion, construir_respuesta_paginada
+from utiles.autenticacion import requiere_auth
+from utiles.formateadores import formatear_reservas
+from utiles.servicios import (
+    obtener_detalle_reserva_db,
+    registrar_devolucion,
+    restar_stock_si_hay,
+    revertir_transaccion,
+    sumar_stock,
+)
+from validators import valid_id, valid_reserva_create, valid_reserva_filters, valid_reserva_status_update
 
 reservas_bp = Blueprint("reservas", __name__)
 logger = logging.getLogger(__name__)
-ESTADOS_LIBERAN_STOCK = {"cancelado", "rechazado", "devuelto"}
-CONDICIONES_DEVOLUCION = {
-    "bueno": ("Buen estado (sin daños)", False),
-    "danado": ("Dañado (requiere revisión)", True),
-    "perdido": ("Extraviado / no devuelto", True),
-}
-
 
 def _debe_liberar_stock(estado_actual, nuevo_estado):
     return (
@@ -48,123 +49,14 @@ def _debe_consumir_stock(estado_actual, nuevo_estado):
     )
 
 
-def _sumar_stock(cursor, articulo_id):
-    cursor.execute(
-        """
-        UPDATE articulos
-        SET stock = stock + 1
-        WHERE id = %(articulo_id)s
-        """,
-        {"articulo_id": articulo_id},
-    )
-
-
-def _restar_stock_si_hay(cursor, articulo_id):
-    cursor.execute(
-        """
-        UPDATE articulos
-        SET stock = stock - 1
-        WHERE id = %(articulo_id)s
-          AND stock > 0
-        """,
-        {"articulo_id": articulo_id},
-    )
-    return cursor.rowcount > 0
-
-
 def _ajustar_stock_reserva(cursor, estado_actual, articulo_id, nuevo_estado):
     if _debe_liberar_stock(estado_actual, nuevo_estado):
-        _sumar_stock(cursor, articulo_id)
+        sumar_stock(cursor, articulo_id)
         return True, None
     if _debe_consumir_stock(estado_actual, nuevo_estado):
-        if not _restar_stock_si_hay(cursor, articulo_id):
+        if not restar_stock_si_hay(cursor, articulo_id):
             return False, "stock_insuficiente"
     return True, None
-
-
-def _registrar_devolucion(cursor, reserva, estado_devuelto):
-    condicion = CONDICIONES_DEVOLUCION.get(estado_devuelto)
-    if condicion is None:
-        return
-
-    condiciones, necesita_reparacion = condicion
-    cursor.execute(
-        """
-        DELETE FROM estado_devuelto
-        WHERE id_reserva = %(id_reserva)s
-        """,
-        {"id_reserva": reserva.get("id")},
-    )
-    cursor.execute(
-        """
-        INSERT INTO estado_devuelto (id_reserva, dias_retraso, condiciones)
-        VALUES (
-            %(id_reserva)s,
-            GREATEST(DATEDIFF(CURDATE(), DATE(%(fecha_regreso)s)), 0),
-            %(condiciones)s
-        )
-        """,
-        {
-            "id_reserva": reserva.get("id"),
-            "fecha_regreso": reserva.get("fecha_regreso"),
-            "condiciones": condiciones,
-        },
-    )
-    if necesita_reparacion:
-        cursor.execute(
-            """
-            UPDATE articulos
-            SET necesita_reparacion = 1
-            WHERE id = %(articulo_id)s
-            """,
-            {"articulo_id": reserva.get("id_reservado")},
-        )
-    else:
-        cursor.execute(
-            """
-            UPDATE articulos
-            SET necesita_reparacion = 0
-            WHERE id = %(articulo_id)s
-            """,
-            {"articulo_id": reserva.get("id_reservado")},
-        )
-
-
-def _revertir_transaccion(conn):
-    try:
-        conn.rollback()
-    except Exception:
-        logger.exception("No se pudo revertir la transacción")
-
-
-def format_reserva(row):
-    """Formatea una fila de préstamo de la base de datos como respuesta de la API.
-
-    Convierte los campos de fecha a formato ISO 8601 cuando están presentes.
-
-    Args:
-        row (dict): Diccionario con los datos del préstamo obtenidos de la
-            base de datos.
-
-    Returns:
-        dict: Diccionario formateado con los campos del préstamo para la respuesta.
-
-    """
-    return {
-        "id": row.get("id"),
-        "id_usuario": row.get("id_usuario"),
-        "usuario_nombre": row.get("usuario_nombre"),
-        "id_reservado": row.get("id_reservado"),
-        "nombre_art": row.get("nombre_art"),
-        "estado_reserva": row.get("estado_reserva"),
-        "fecha_retiro": (
-            row.get("fecha_retiro").isoformat() if row.get("fecha_retiro") else None
-        ),
-        "fecha_regreso": (
-            row.get("fecha_regreso").isoformat() if row.get("fecha_regreso") else None
-        ),
-    }
-
 
 @reservas_bp.route("/api/reservas", methods=["GET"])
 @requiere_auth(roles=["admin", "profesor", "bibliotecario", "alumno"])
@@ -240,7 +132,7 @@ def listar_reservas():
         values_page["offset"] = pagination["offset"]
         cursor.execute(query, values_page)
 
-        reservas = [format_reserva(row) for row in cursor.fetchall()]
+        reservas = [formatear_reservas(row) for row in cursor.fetchall()]
 
         respuesta = construir_respuesta_paginada(
             reservas,
@@ -262,76 +154,6 @@ def listar_reservas():
             pass
         try:
             conn.close()
-        except Exception:
-            pass
-
-
-
-def obtener_detalle_reserva_db(reserva_id):
-    """Obtiene el detalle completo de un préstamo.
-
-    Args:
-        reserva_id (int): Identificador único del préstamo a consultar.
-
-    Returns:
-        tuple: Reserva encontrada y error de conexión si corresponde.
-
-    """
-    conexion = obtener_conexion()
-    if conexion is None:
-        return None, MSG_DB_CONNECTION_FAILED
-
-    cursor = None
-    try:
-        cursor = conexion.cursor(dictionary=True)
-
-        cursor.execute(
-            """
-            SELECT
-                reserva.id,
-                reserva.id_usuario,
-                reserva.id_reservado,
-                usuario.nombre,
-                usuario.email,
-                usuario.carrera,
-                articulos.nombre_art,
-                reserva.estado_reserva,
-                reserva.fecha_retiro,
-                reserva.fecha_regreso,
-                estado_devuelto.dias_retraso,
-                estado_devuelto.condiciones,
-                CASE estado_devuelto.condiciones
-                    WHEN 'Buen estado (sin daños)' THEN 'bueno'
-                    WHEN 'Dañado (requiere revisión)' THEN 'danado'
-                    WHEN 'Extraviado / no devuelto' THEN 'perdido'
-                    ELSE NULL
-                END AS estado_devuelto
-            FROM reserva
-            JOIN usuario
-                ON reserva.id_usuario = usuario.id
-            JOIN articulos
-                ON reserva.id_reservado = articulos.id
-            LEFT JOIN estado_devuelto
-                ON estado_devuelto.id_reserva = reserva.id
-            WHERE reserva.id = %s
-            """,
-            (reserva_id,),
-        )
-
-        reserva = None
-
-        for fila in cursor:
-            reserva = fila
-
-        return reserva, None
-    finally:
-        try:
-            if cursor:
-                cursor.close()
-        except Exception:
-            pass
-        try:
-            conexion.close()
         except Exception:
             pass
 
@@ -410,14 +232,14 @@ def patch_reserva_status(reserva_id):
             nuevo_estado,
         )
         if not stock_ok:
-            _revertir_transaccion(conn)
+            revertir_transaccion(conn)
             return (
                 jsonify({"error": MSG_BAD_REQUEST, "detail": stock_error}),
                 HTTP_BAD_REQUEST,
             )
 
         if nuevo_estado == "devuelto":
-            _registrar_devolucion(
+            registrar_devolucion(
                 cursor,
                 reserva_actual,
                 data.get("estado_devuelto"),
@@ -455,14 +277,14 @@ def patch_reserva_status(reserva_id):
         if not reserva:
             return jsonify({"error": MSG_NOT_FOUND}), HTTP_NOT_FOUND
 
-        return jsonify(format_reserva(reserva)), HTTP_OK
+        return jsonify(formatear_reservas(reserva)), HTTP_OK
 
     except mysql.connector.Error:
-        _revertir_transaccion(conn)
+        revertir_transaccion(conn)
         return jsonify({"error": MSG_DB_CONNECTION_FAILED}), HTTP_INTERNAL_SERVER_ERROR
 
     except Exception:
-        _revertir_transaccion(conn)
+        revertir_transaccion(conn)
         return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
 
     finally:
@@ -637,8 +459,8 @@ def crear_reserva():
             )
             cursor.execute(insert_query, (usuario_id, articulo_id))
         new_reserva_id = cursor.lastrowid
-        if not _restar_stock_si_hay(cursor, articulo_id):
-            _revertir_transaccion(conn)
+        if not restar_stock_si_hay(cursor, articulo_id):
+            revertir_transaccion(conn)
             return jsonify(
                 {"error": f"El artículo con ID {articulo_id} no está disponible"}
             ), HTTP_BAD_REQUEST
@@ -654,12 +476,12 @@ def crear_reserva():
         ), HTTP_CREATED
 
     except mysql.connector.Error:
-        _revertir_transaccion(conn)
+        revertir_transaccion(conn)
         logger.exception("Error de base de datos al crear reserva")
         return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
 
     except Exception:
-        _revertir_transaccion(conn)
+        revertir_transaccion(conn)
         return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
 
     finally:
@@ -744,7 +566,7 @@ def escanear_qr(reserva_id):
             nuevo_estado,
         )
         if not stock_ok:
-            _revertir_transaccion(conn)
+            revertir_transaccion(conn)
             return (
                 jsonify({"error": MSG_BAD_REQUEST, "detail": stock_error}),
                 HTTP_BAD_REQUEST,
@@ -761,7 +583,7 @@ def escanear_qr(reserva_id):
         return jsonify({"reserva_id": reserva_id, "estado_reserva": nuevo_estado}), HTTP_OK
 
     except Exception:
-        _revertir_transaccion(conn)
+        revertir_transaccion(conn)
         return jsonify({"error": MSG_INTERNAL_SERVER_ERROR}), HTTP_INTERNAL_SERVER_ERROR
 
     finally:
