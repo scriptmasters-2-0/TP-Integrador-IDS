@@ -73,6 +73,43 @@
       <p class="text-danger fw-bold mb-4">{{ mensaje_error }}</p>
     {% endif %}
 
+
+    <form method="GET" class="data-grid mb-4">
+      <div class="data-group">
+        <label>Usuario</label>
+        <input type="text" name="usuario" class="admin-input" placeholder="Buscar por usuario..." value="{{ request.args.get('usuario', '') }}"/>
+      </div>
+      <div class="data-group">
+        <label>Estado</label>
+        <select name="estado" class="admin-select">
+          <option value="" {% if not request.args.get('estado') %}selected{% endif %}>Todos</option>
+          <option value="activa" {% if request.args.get('estado') == 'activa' %}selected{% endif %}>Activa</option>
+          <option value="levantada" {% if request.args.get('estado') == 'levantada' %}selected{% endif %}>Levantada</option>
+        </select>
+      </div>
+
+      <div class="data-group">
+        <label>Severidad</label>
+        <select name="severidad" class="admin-select">
+          <option value="" {% if not request.args.get('severidad') %}selected{% endif %}>Todas</option>
+          <option value="baja" {% if request.args.get('severidad') == 'baja' %}selected{% endif %}>Baja</option>
+          <option value="media" {% if request.args.get('severidad') == 'media' %}selected{% endif %}>Media</option>
+          <option value="alta" {% if request.args.get('severidad') == 'alta' %}selected{% endif %}>Alta</option>
+        </select>
+      </div>
+
+      <div class="data-group">
+        <label>Fecha</label>
+        <input type="date" name="fecha" class="admin-input" value="{{ request.args.get('fecha', '') }}"/>
+      </div>
+
+      <div class="data-group align-items-end">
+        <button type="submit" class="register-btn-nav">
+          Filtrar
+        </button>
+      </div>
+    </form>
+
     <div class="history-table-wrapper">
       <table class="history-table">
         <thead>

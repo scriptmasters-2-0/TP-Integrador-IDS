@@ -428,6 +428,10 @@ def listar_penalizaciones():
         return jsonify({"error": error}), HTTP_BAD_REQUEST
 
     nombre_usuario = request.args.get("usuario")
+    estado = request.args.get("estado")
+    severidad = request.args.get("severidad")
+    fecha = request.args.get("fecha")
+
     usuario_id = None
     if "usuario_id" in request.args:
         is_valid, error, usuario_id = valid_usuario_id_query(request.args)
@@ -479,6 +483,27 @@ def listar_penalizaciones():
         if nombre_usuario:
             condiciones_where.append("usuario.nombre LIKE %(nombre_usuario)s")
             valores["nombre_usuario"] = f"%{nombre_usuario}%"
+
+        if estado: 
+            if estado == "activa":
+                condiciones_where.append("penalizacion.activa = TRUE")
+            elif estado == "levantada":
+                condiciones_where.append("penalizacion.activa = FALSE")
+
+        if severidad:
+            condiciones_where.append("penalizacion.severidad = %(severidad)s")
+            valores["severidad"] = severidad
+
+        if fecha:
+            condiciones_where.append(
+                """
+                (
+                    DATE(penalizacion.fecha_inicio) = %(fecha)s
+                    OR DATE(penalizacion.fecha_fin) = %(fecha)s
+                )
+                """     
+            )
+            valores["fecha"] = fecha
 
         clausula_where = (
             " WHERE " + " AND ".join(condiciones_where)
