@@ -159,7 +159,7 @@ def nueva_reserva():
                 )
         return redirect(url_for("alumno.historial"))
 
-    articulos = articulos_servicio.obtener_articulos(params={"limit": 100, "offset": 0}, token=token)
+    articulos = articulos_servicio.obtener_articulos(params={"disponible": "true", "limit": 100}, token=token)
     fetch_error = None
 
     articulo_preseleccionado = request.args.get("articulo_id", type=int)

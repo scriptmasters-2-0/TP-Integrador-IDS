@@ -408,6 +408,7 @@ def valid_articulo_update(data):
         "prestacion_maxima",
         "stock",
         "necesita_reparacion",
+        "activo",
     ]
 
     if not any(k in data for k in allowed):
@@ -431,6 +432,10 @@ def valid_articulo_update(data):
         return False, error
 
     is_valid, error = _valid_optional_bool(data, "necesita_reparacion")
+    if not is_valid:
+        return False, error
+
+    is_valid, error = _valid_optional_bool(data, "activo")
     if not is_valid:
         return False, error
 

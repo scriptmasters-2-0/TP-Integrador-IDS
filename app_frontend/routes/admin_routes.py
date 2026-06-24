@@ -136,8 +136,10 @@ def listar_articulos():
     pagina = request.args.get("page", 1, type=int)
     offset = calcular_offset(pagina, DEFAULT_API_LIMIT)
 
-    todos = articulos_servicio.obtener_articulos(params={"limit": 100, "offset": 0}, token=token)
-    todos = extraer_data_paginada(todos)
+    todos = articulos_servicio.obtener_articulos(
+        params={"incluir_inactivos": 1}, token=token
+    )
+
     tipos = sorted({(a.get("tipo") or "").strip() for a in todos if a.get("tipo")})
     secciones = sorted({(a.get("seccion") or "").strip() for a in todos if a.get("seccion")})
 
@@ -510,12 +512,15 @@ def editar_articulo(id):
             "seccion": request.form.get("seccion"),
             "stock": stock,
             "necesita_reparacion": request.form.get("necesita_reparacion") == "on",
+            "activo": request.form.get("activo") == "1",
         }
 
         resultado = articulos_servicio.actualizar_articulo(id, datos_actualizados, token=token)
 
         if not resultado:
-            articulo, fetch_error = articulos_servicio.obtener_articulo(id, token=token)
+            articulo, fetch_error = articulos_servicio.obtener_articulo(
+                id, token=token, params={"incluir_inactivos": 1}
+            )
             return render_template(
                 "admin/editar_articulo.html",
                 articulo=articulo,
@@ -524,7 +529,9 @@ def editar_articulo(id):
 
         return redirect(url_for("admin.listar_articulos"))
 
-    articulo, fetch_error = articulos_servicio.obtener_articulo(id, token=token)
+    articulo, fetch_error = articulos_servicio.obtener_articulo(
+        id, token=token, params={"incluir_inactivos": 1}
+    )
 
     return render_template(
         "admin/editar_articulo.html",
