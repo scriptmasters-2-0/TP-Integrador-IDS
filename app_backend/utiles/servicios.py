@@ -95,28 +95,6 @@ def usuario_existe(id_usuario):
             pass
 
 
-def desactivar_usuario_db(id_usuario):
-    """Marca un usuario como inactivo en la base de datos (baja lógica).
-
-    Args:
-        id_usuario (int): Identificador del usuario a desactivar.
-            Debe ser un entero positivo.
-
-    Returns:
-        bool: True si el usuario fue actualizado exitosamente,
-            False si no existía.
-
-    """
-    conexion = obtener_conexion()
-    cursor = conexion.cursor()
-    cursor.execute("UPDATE usuario SET activo = FALSE WHERE id = %s", (id_usuario,))
-    conexion.commit()
-    actualizado = cursor.rowcount > 0
-    cursor.close()
-    conexion.close()
-    return actualizado
-
-
 def eliminar_usuario_db(id_usuario):
     """Elimina un usuario de la base de datos.
 
