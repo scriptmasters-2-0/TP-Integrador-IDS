@@ -25,7 +25,7 @@ from http_codes_and_messages import (
 )
 from paginacion import construir_respuesta_paginada, obtener_parametros_paginacion
 from routes.auth_route import requiere_auth
-from validators import valid_id, valid_penalty_patch, valid_usuario_id_query
+from validators import valid_id, valid_penalty_patch, valid_usuario_id_query, valid_penalizaciones_filters
 
 penalizaciones_bp = Blueprint("penalizaciones", __name__)
 logger = logging.getLogger(__name__)
@@ -427,10 +427,14 @@ def listar_penalizaciones():
     if error:
         return jsonify({"error": error}), HTTP_BAD_REQUEST
 
-    nombre_usuario = request.args.get("usuario")
-    estado = request.args.get("estado")
-    severidad = request.args.get("severidad")
-    fecha = request.args.get("fecha")
+    filters = {
+        "usuario": request.args.get("usuario"),
+        "estado": request.args.get("estado"),
+        "severidad": request.args.get("severidad"),
+        "fecha": request.args.get("fecha"),
+    }
+
+    is_valid, error, parsed_filters = valid_penalizaciones_filters(filters)
 
     usuario_id = None
     if "usuario_id" in request.args:
@@ -480,31 +484,22 @@ def listar_penalizaciones():
             condiciones_where.append("penalizacion.id_usuario = %(usuario_id)s")
             valores["usuario_id"] = usuario_id
 
-        if nombre_usuario:
-            condiciones_where.append("usuario.nombre LIKE %(nombre_usuario)s")
-            valores["nombre_usuario"] = f"%{nombre_usuario}%"
-
-        if estado: 
-            if estado == "activa":
-                condiciones_where.append("penalizacion.activa = TRUE")
-            elif estado == "levantada":
-                condiciones_where.append("penalizacion.activa = FALSE")
-
-        if severidad:
+        if parsed_filters.get("estado") is not None:
+            if parsed_filters["estado"] == "activa":
+                valores["activa"] = 1
+            else:
+                valores["activa"] = 0
+            condiciones_where.append("penalizacion.activa = %(activa)s")
+        if parsed_filters.get("usuario") is not None:
+            condiciones_where.append("usuario.nombre LIKE %(usuario)s")
+            valores["usuario"] = f"%{parsed_filters.get('usuario')}%"
+        if parsed_filters.get("fecha") is not None:
+            condiciones_where.append("DATE(penalizacion.fecha_inicio) = %(fecha)s")
+            valores["fecha"] = parsed_filters.get("fecha")
+        if parsed_filters["severidad"] is not None:
             condiciones_where.append("penalizacion.severidad = %(severidad)s")
-            valores["severidad"] = severidad
-
-        if fecha:
-            condiciones_where.append(
-                """
-                (
-                    DATE(penalizacion.fecha_inicio) = %(fecha)s
-                    OR DATE(penalizacion.fecha_fin) = %(fecha)s
-                )
-                """     
-            )
-            valores["fecha"] = fecha
-
+            valores["severidad"] = parsed_filters["severidad"]
+        
         clausula_where = (
             " WHERE " + " AND ".join(condiciones_where)
             if condiciones_where
