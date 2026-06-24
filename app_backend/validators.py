@@ -4,6 +4,11 @@ Contiene funciones de validación para los payloads de creación,
 actualización y filtrado de usuarios, ítems, préstamos y penalidades.
 """
 
+from utils.opciones_articulo import (
+    SECCIONES_ARTICULO_VALIDAS,
+    TIPOS_ARTICULO_VALIDOS,
+)
+
 MIN_USERNAME_LENGTH = 3
 MIN_PASSWORD_LENGTH = 8
 ESTADOS_VALIDOS = (
@@ -347,6 +352,13 @@ def _valid_optional_bool(data, field):
     return True, None
 
 
+def _validar_opcion(data, campo, opciones_validas):
+    valor = data.get(campo)
+    if valor not in opciones_validas:
+        return False, f"invalid_value:{campo}"
+    return True, None
+
+
 def valid_articulo(data):
     """Valida el payload de creación de un ítem.
 
@@ -369,6 +381,14 @@ def valid_articulo(data):
         is_valid, error = _valid_required_string(data, field)
         if not is_valid:
             return False, error
+
+    is_valid, error = _validar_opcion(data, "tipo", TIPOS_ARTICULO_VALIDOS)
+    if not is_valid:
+        return False, error
+
+    is_valid, error = _validar_opcion(data, "seccion", SECCIONES_ARTICULO_VALIDAS)
+    if not is_valid:
+        return False, error
 
     if data.get("prestacion_maxima") is None:
         return False, "missing:prestacion_maxima"
@@ -427,6 +447,16 @@ def valid_articulo_update(data):
         if not is_valid:
             return False, error
 
+    if "tipo" in data:
+        is_valid, error = _validar_opcion(data, "tipo", TIPOS_ARTICULO_VALIDOS)
+        if not is_valid:
+            return False, error
+
+    if "seccion" in data:
+        is_valid, error = _validar_opcion(data, "seccion", SECCIONES_ARTICULO_VALIDAS)
+        if not is_valid:
+            return False, error
+
     is_valid, error = _valid_optional_positive_int(data, "prestacion_maxima")
     if not is_valid:
         return False, error
@@ -473,6 +503,10 @@ def valid_articulo_filters(filters):
         if value is not None:
             if value.strip() == "":
                 return False, f"empty:{field}", None
+            if field == "tipo" and value not in TIPOS_ARTICULO_VALIDOS:
+                return False, f"invalid_value:{field}", None
+            if field == "seccion" and value not in SECCIONES_ARTICULO_VALIDAS:
+                return False, f"invalid_value:{field}", None
             parsed_filters[field] = value
 
     for field in ("disponible", "necesita_reparacion"):

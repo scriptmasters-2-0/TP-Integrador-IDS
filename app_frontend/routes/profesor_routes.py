@@ -76,9 +76,10 @@ def dashboard():
 
     return render_template(
         "profesor/dashboard.html",
-        reservas=reservas,
+        reservas=reservas[:3],
         estadisticas=estadisticas,
         fetch_error=error,
+        mostrar_ver_mas_reservas=total_activas > 3,
     )
 
 @profesor_bp.route("/historial", methods=["GET"])
@@ -226,32 +227,27 @@ def mis_reservas():
     payload, error = obtener_reservas_usuario(usuario_id, token=token)
 
     reservas_activas = []
-    reservas_historicas = []
 
     if not error and isinstance(payload, list):
         for reserva in payload:
             estado = reserva.get("estado_reserva", "")
-            entrada = {
-                "id": reserva.get("id"),
-                "nombre_articulo": (
-                    reserva.get("nombre_articulo")
-                    or reserva.get("nombre_art")
-                    or "Artículo"
-                ),
-                "estado_reserva": estado,
-                "estado_clase": reservas_servicio.badge_class(estado),
-                "fecha_retiro": formatear_fecha_argentina(reserva.get("fecha_retiro")),
-                "fecha_regreso": formatear_fecha_argentina(reserva.get("fecha_regreso")),
-            }
             if estado in ("pendiente", "aprobado", "entregado"):
-                reservas_activas.append(entrada)
-            else:
-                reservas_historicas.append(entrada)
+                reservas_activas.append({
+                    "id": reserva.get("id"),
+                    "nombre_articulo": (
+                        reserva.get("nombre_articulo")
+                        or reserva.get("nombre_art")
+                        or "Artículo"
+                    ),
+                    "estado_reserva": estado,
+                    "estado_clase": reservas_servicio.badge_class(estado),
+                    "fecha_retiro": formatear_fecha_argentina(reserva.get("fecha_retiro")),
+                    "fecha_regreso": formatear_fecha_argentina(reserva.get("fecha_regreso")),
+                })
 
     return render_template(
         "profesor/mis-reservas.html",
         reservas_activas=reservas_activas,
-        reservas_historicas=reservas_historicas,
         fetch_error=error,
         mensaje_error=mensaje_error,
     )

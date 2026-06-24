@@ -191,7 +191,6 @@ def format_penalty(row):
         "reason": row.get("motivo"),
         "status": "Activa" if row.get("activa") else "Levantada",
         "severidad": row.get("severidad"),
-        "notes": row.get("motivo"),
         "createdAt": (
             row.get("fecha_inicio").isoformat() if row.get("fecha_inicio") else None
         ),

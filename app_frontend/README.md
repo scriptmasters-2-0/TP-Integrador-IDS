@@ -37,7 +37,7 @@ Esto es algo que habíamos estado conversando con Erick
 | `GET` | `/alumno/historial` | Historial completo de reservas pasadas |
 | `GET` | `/alumno/penalizaciones` | Penalizaciones activas: motivo, severidad (`baja`/`media`/`alta`), fecha inicio/fin |
 | `GET` | `/alumno/reservas/{id}` | Detalle de reserva: estado, fecha retiro/regreso, QR |
-| `GET` | `/alumno/reservas/{id}/comprobante` | Ticket de reserva con código QR dinámico (tabla `qr`) |
+| `GET` | `/alumno/reservas/{id}/comprobante` | Ticket de reserva con código QR dinámico |
 
 ---
 
@@ -91,5 +91,5 @@ Esto es algo que habíamos estado conversando con Erick
 - Redirección post-login según rol: `alumno` → `/alumno/dashboard`, `profesor` → `/profesor/dashboard`, `bibliotecario`/`admin` → `/admin/dashboard`
 - Las rutas de alumno/profesor/admin verifican sesión activa y rol; sin sesión redirigen a `/login`
 - El backend valida stock, penalizaciones activas y `prestacion_maxima` antes de confirmar reserva
-- El QR se genera en el backend (tabla `qr`) y se incluye en el comprobante
+- El QR se genera dinámicamente en el backend y se incluye en el comprobante
 - Las notificaciones por email se disparan desde el backend al confirmar la reserva

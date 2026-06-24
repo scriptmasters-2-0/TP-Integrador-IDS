@@ -23,22 +23,13 @@ Alta (ABM) de un nuevo usuario. **(Admin y bibliotecario)**.
 * **`GET /api/usuarios/{id}`**
 Obtiene los detalles de un usuario específico. **(Admin y bibliotecario)**.
 * **`PUT /api/usuarios/{id}`**
-Modifica los datos de un usuario existente (reemplazo completo).
+Modifica los datos de un usuario existente, incluido el campo `activo`.
 * **`DELETE /api/usuarios/{id}`**
-Baja o desactivación lógica de un usuario (Opción 1).
-* **`PATCH /api/usuarios/{id}/status`**
-Activa o desactiva a un usuario (Opción 2).
+Elimina físicamente un usuario.
 * **`GET /api/usuarios/{id}/reservas`**
 Obtiene el historial personal de préstamos/reservas de un alumno y sus estados.
 * **`GET /api/usuarios/{id}/penalizaciones`**
 Obtiene las penalizaciones vigentes e históricas de un alumno.
-
-### Compatibilidad de Endpoints (`/api/usuario`)
-
-* **`GET /api/usuario`**
-Lista usuarios desde la tabla `usuarios` (endpoint agregado en cambios recientes).
-* **`GET /api/usuario/<int:usuario_id>`**
-Obtiene un usuario puntual desde la tabla `usuarios` por su identificador. **(Admin y bibliotecario)**.
 
 ### Inventario y Materiales (`/api/articulos`)
 

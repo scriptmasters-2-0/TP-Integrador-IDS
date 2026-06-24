@@ -23,7 +23,7 @@ def formatear_fecha_argentina(fecha):
                 fecha_dt = parsedate_to_datetime(fecha_texto)
 
         if fecha_dt.tzinfo is None:
-            fecha_dt = fecha_dt.replace(tzinfo=timezone.utc)
+            fecha_dt = fecha_dt.replace(tzinfo=ARGENTINA_TZ)
 
         fecha_argentina = fecha_dt.astimezone(ARGENTINA_TZ)
         return fecha_argentina.strftime("%d/%m/%Y %H:%M")

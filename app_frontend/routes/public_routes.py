@@ -5,7 +5,7 @@ import logging
 from flask import Blueprint, redirect, render_template, request, session, url_for
 
 from http_codes_and_messages import HTTP_FORBIDDEN, HTTP_UNAUTHORIZED
-from servicios import auth_servicio, normativas_servicio
+from servicios import auth_servicio, articulos_servicio, normativas_servicio
 from servicios.api_client import get_json, post_json
 from servicios.articulos_servicio import obtener_articulos_paginados
 from servicios.paginacion_servicio import adaptar_pagination_hateoas, calcular_offset, DEFAULT_API_LIMIT
@@ -116,30 +116,6 @@ def login_submit():
 
     rol = (payload or {}).get("rol", "alumno")
     usuario_data = (payload or {}).get("usuario", {})
-    
-    estado_usr = str(usuario_data.get("estado", "")).lower()
-    estado_pay = str((payload or {}).get("estado", "")).lower()
-    activo_usr = usuario_data.get("activo")
-    activo_pay = (payload or {}).get("activo")
-    is_active = usuario_data.get("is_active") or (payload or {}).get("is_active")
-    
-    cuenta_inactiva = (
-        estado_usr in ["inactivo", "suspendido", "baja", "false", "0"] or
-        estado_pay in ["inactivo", "suspendido", "baja", "false", "0"] or
-        activo_usr in [False, "False", "false", 0, "0"] or
-        activo_pay in [False, "False", "false", 0, "0"] or
-        is_active in [False, "False", "false", 0, "0"]
-    )
-    
-    if cuenta_inactiva:
-        return (
-            render_template(
-                "public/login.html",
-                hasError=True,
-                errorMessage="Tu cuenta está inactiva o suspendida. Contacta al administrador.",
-            ),
-            401,
-        )
 
     session["token"] = (payload or {}).get("token")
     session["rol"] = rol
@@ -205,8 +181,19 @@ def normas():
 @public_bp.route("/catalogo", methods=["GET"])
 def mostrar_catalogo():
     """Muestra el catálogo completo de artículos paginado con filtros opcionales."""
+    opciones = articulos_servicio.obtener_opciones_articulo()
+    tipos = opciones.get("tipos", [])
+    secciones = opciones.get("secciones", [])
+    tipos_validos = {opcion.get("valor") for opcion in tipos}
+    secciones_validas = {opcion.get("valor") for opcion in secciones}
+
     tipo_actual = request.args.get("tipo", "")
     seccion_actual = request.args.get("seccion", "")
+    if tipo_actual not in tipos_validos:
+        tipo_actual = ""
+    if seccion_actual not in secciones_validas:
+        seccion_actual = ""
+
     pagina = request.args.get("page", 1, type=int)
     offset = calcular_offset(pagina, DEFAULT_API_LIMIT)
 
@@ -224,8 +211,11 @@ def mostrar_catalogo():
         "public/catalogo.html",
         articulos=articulos,
         pagination=pagination,
+        tipos=tipos,
+        secciones=secciones,
         tipo_actual=tipo_actual,
         seccion_actual=seccion_actual,
+        iconos_tipo=articulos_servicio.ICONOS_TIPO_ARTICULO,
     )
 
 

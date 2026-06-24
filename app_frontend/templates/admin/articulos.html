@@ -95,9 +95,9 @@
         <label for="f-tipo">Tipo</label>
         <select id="f-tipo" name="tipo" class="admin-select">
           <option value="">Todos los tipos</option>
-          {% for t in tipos %}
-            <option value="{{ t }}" {% if filtro_tipo.lower() == t.lower() %}selected{% endif %}>
-              {{ t }}
+          {% for tipo in tipos %}
+            <option value="{{ tipo.valor }}" {% if filtro_tipo == tipo.valor %}selected{% endif %}>
+              {{ tipo.etiqueta }}
             </option>
           {% endfor %}
         </select>
@@ -106,9 +106,9 @@
         <label for="f-seccion">Sección</label>
         <select id="f-seccion" name="seccion" class="admin-select">
           <option value="">Todas las secciones</option>
-          {% for s in secciones %}
-            <option value="{{ s }}" {% if filtro_seccion.lower() == s.lower() %}selected{% endif %}>
-              {{ s }}
+          {% for seccion in secciones %}
+            <option value="{{ seccion.valor }}" {% if filtro_seccion == seccion.valor %}selected{% endif %}>
+              {{ seccion.etiqueta }}
             </option>
           {% endfor %}
         </select>

@@ -11,19 +11,11 @@
           <label for="tipo">Tipos:</label>
           <select name="tipo" id="tipo">
             <option value="">Tipos de artículos</option>
-            <option value="Libro" {% if tipo_actual == 'Libro' %}selected{% endif %}>Libros</option>
-            <option value="Electronicos" {% if tipo_actual == 'Electronicos' %}selected{% endif %}>
-              Equipos Electrónicos
-            </option>
-            <option value="Herramienta" {% if tipo_actual == 'Herramienta' %}selected{% endif %}>
-              Herramientas
-            </option>
-            <option value="Proyector" {% if tipo_actual == 'Proyector' %}selected{% endif %}>
-              Proyectores
-            </option>
-            <option value="Accesorios" {% if tipo_actual == 'Accesorios' %}selected{% endif %}>
-              Accesorios y Cables
-            </option>
+            {% for tipo in tipos %}
+              <option value="{{ tipo.valor }}" {% if tipo_actual == tipo.valor %}selected{% endif %}>
+                {{ tipo.etiqueta }}
+              </option>
+            {% endfor %}
           </select>
         </div>
 
@@ -31,21 +23,11 @@
           <label for="seccion">Sección:</label>
           <select name="seccion" id="seccion">
             <option value="">Todas las secciones</option>
-            <option value="Biblioteca" {% if seccion_actual == 'Biblioteca' %}selected{% endif %}>
-              Biblioteca
-            </option>
-            <option value="Tecnologia" {% if seccion_actual == 'Tecnologia' %}selected{% endif %}>
-              Tecnología
-            </option>
-            <option value="Bedelia" {% if seccion_actual == 'Bedelia' %}selected{% endif %}>
-              Bedelía
-            </option>
-            <option value="Laboratorio" {%if seccion_actual == 'Laboratorio' %}selected{% endif %}>
-              Laboratorio
-            </option>
-            <option value="Otros" {% if seccion_actual == 'Otros' %}selected{% endif %}>
-              Otros
-            </option>
+            {% for seccion in secciones %}
+              <option value="{{ seccion.valor }}" {% if seccion_actual == seccion.valor %}selected{% endif %}>
+                {{ seccion.etiqueta }}
+              </option>
+            {% endfor %}
           </select>
         </div>
 
@@ -58,19 +40,7 @@
             <h3 class="card-title">{{ articulo.nombre_art }}</h3>
 
             <div class="card-icon">
-              {% if articulo.tipo == 'Libro' %}
-                <i class="fa-solid fa-book"></i>
-              {% elif articulo.tipo == 'Electronicos' %}
-                <i class="fa-solid fa-laptop"></i>
-              {% elif articulo.tipo == 'Proyector' %}
-                <i class="fa-solid fa-display"></i>
-              {% elif articulo.tipo == 'Accesorios' %}
-                <i class="fa-solid fa-plug"></i>
-              {% elif articulo.tipo == 'Herramienta' %}
-                <i class="fa-solid fa-screwdriver-wrench"></i>
-              {% else %}
-                <i class="fa-solid fa-box"></i>
-              {% endif %}
+              <i class="fa-solid {{ iconos_tipo.get(articulo.tipo, 'fa-box') }}"></i>
             </div>
 
             <div class="status">

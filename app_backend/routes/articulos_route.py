@@ -19,6 +19,7 @@ from http_codes_and_messages import (
     MSG_NOT_FOUND,
 )
 from routes.auth_route import requiere_auth
+from utils.opciones_articulo import obtener_opciones_articulo
 from validators import valid_id, valid_articulo, valid_articulo_filters, valid_articulo_update
 from paginacion import construir_respuesta_paginada, obtener_parametros_paginacion
 
@@ -48,6 +49,12 @@ def format_articulo(row):
         "necesita_reparacion": bool(row.get("necesita_reparacion")),
         "activo": bool(row.get("activo")),
     }
+
+
+@articulos_bp.route("/api/articulos/opciones", methods=["GET"])
+def obtener_opciones_articulos():
+    """Retorna las opciones canonicas de tipos y secciones de articulos."""
+    return jsonify(obtener_opciones_articulo()), HTTP_OK
 
 
 @articulos_bp.route("/api/articulos", methods=["GET"])
