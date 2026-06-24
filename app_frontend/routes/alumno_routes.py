@@ -268,7 +268,9 @@ def dashboard():
             else:
                 total_historicas += 1
 
-    penalizaciones = usuario.get("penalizaciones")
+    penalizaciones, _ = penalizaciones_servicio.obtener_penalizaciones(
+        params={"usuario_id": usuario_id}, token=token
+    )
     penalizaciones = penalizaciones if isinstance(penalizaciones, list) else []
     estadisticas = {
         "actuales": total_activas,
@@ -340,6 +342,11 @@ def alumno_penalizaciones():
         params={"usuario_id": usuario_id},
         token=token,
     )
+
+    if isinstance(penalizaciones, list):
+        for p in penalizaciones:
+            p["fecha_inicio"] = formatear_fecha_argentina(p.get("fecha_inicio"))
+            p["fecha_fin"] = formatear_fecha_argentina(p.get("fecha_fin"))
 
     return render_template(
         "alumno/penalizaciones.html",
