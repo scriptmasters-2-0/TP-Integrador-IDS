@@ -26,12 +26,20 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (mode === "register") {
+          const padron = form.querySelector("#padron");
           const nombre = form.querySelector("#nombre");
           const email = form.querySelector("#email");
           const contrasenia = form.querySelector("#contrasenia");
+          const padronValue = padron ? padron.valueAsNumber : "";
           const nombreValue = nombre ? nombre.value.trim() : "";
           const emailValue = email ? email.value.trim() : "";
           const contraseniaValue = contrasenia ? contrasenia.value : "";
+
+          if (!padronValue || padronValue < 100000 || padronValue > 999999) {
+            event.preventDefault();
+            alert("El padron debe tener 6 caracteres.");
+            return;
+          }
 
           if (nombreValue.length < 3) {
             event.preventDefault();
