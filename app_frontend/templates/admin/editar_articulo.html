@@ -85,11 +85,11 @@
           <label for="tipo">Tipo</label>
           <select id="tipo" name="tipo" class="admin-select" required>
             <option value="">Seleccione un tipo</option>
-            <option value="electronica" {% if articulo and articulo.tipo in ['electronica','Electronicos','Electrónica'] %}selected{% endif %}>Electrónica</option>
-            <option value="libros" {% if articulo and articulo.tipo in ['libros','Libros','Libro'] %}selected{% endif %}>Libros</option>
-            <option value="herramientas" {% if articulo and articulo.tipo in ['herramientas','Herramientas','Herramienta'] %}selected{% endif %}>Herramientas</option>
-            <option value="material" {% if articulo and articulo.tipo in ['material','Material'] %}selected{% endif %}>Material</option>
-            <option value="equipo" {% if articulo and articulo.tipo in ['equipo','Equipo'] %}selected{% endif %}>Equipo</option>
+            {% for tipo in tipos %}
+              <option value="{{ tipo.valor }}" {% if articulo and articulo.tipo == tipo.valor %}selected{% endif %}>
+                {{ tipo.etiqueta }}
+              </option>
+            {% endfor %}
           </select>
         </div>
       </div>
@@ -107,13 +107,14 @@
         </div>
         <div class="data-group">
           <label for="seccion">Sección / Ubicación</label>
-          <input
-            type="text"
-            id="seccion"
-            name="seccion"
-            class="admin-input"
-            value="{{ articulo.seccion if articulo else '' }}"
-            placeholder="Ej: Laboratorio 4" />
+          <select id="seccion" name="seccion" class="admin-select" required>
+            <option value="">Seleccione una sección</option>
+            {% for seccion in secciones %}
+              <option value="{{ seccion.valor }}" {% if articulo and articulo.seccion == seccion.valor %}selected{% endif %}>
+                {{ seccion.etiqueta }}
+              </option>
+            {% endfor %}
+          </select>
         </div>
         <div class="data-group form-check-group">
           <input

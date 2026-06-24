@@ -278,11 +278,12 @@ def dashboard():
 
     return render_template(
         "alumno/dashboard.html",
-        reservas=reservas,
+        reservas=reservas[:3],
         estadisticas=estadisticas,
         penalizaciones=penalizaciones,
         fetch_error=error,
         mensaje_error=mensaje_error,
+        mostrar_ver_mas_reservas=total_activas > 3,
     )
 
 

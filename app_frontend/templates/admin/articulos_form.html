@@ -85,9 +85,9 @@
           <label for="tipo">Tipo</label>
           <select id="tipo" name="tipo" class="admin-select" required>
             <option value="">Seleccione un tipo</option>
-            <option value="electronica">Electrónica</option>
-            <option value="libros">Libros</option>
-            <option value="herramientas">Herramientas</option>
+            {% for tipo in tipos %}
+              <option value="{{ tipo.valor }}">{{ tipo.etiqueta }}</option>
+            {% endfor %}
           </select>
         </div>
       </div>
@@ -98,12 +98,12 @@
         </div>
         <div class="data-group">
           <label for="seccion">Sección/Ubicación</label>
-          <input
-            type="text"
-            id="seccion"
-            name="seccion"
-            class="admin-input"
-            placeholder="Ej: Laboratorio 4" />
+          <select id="seccion" name="seccion" class="admin-select" required>
+            <option value="">Seleccione una sección</option>
+            {% for seccion in secciones %}
+              <option value="{{ seccion.valor }}">{{ seccion.etiqueta }}</option>
+            {% endfor %}
+          </select>
         </div>
         <div class="admin-form-actions">
           <button type="button" class="btn-secondary" onclick="history.back()">Cancelar</button>
